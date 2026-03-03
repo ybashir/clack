@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
+  SquarePen,
   LogOut,
   Star,
   User,
@@ -180,8 +181,8 @@ export function Sidebar() {
             <span className="text-[18px] font-bold">Slawk</span>
             <ChevronDown className="h-4 w-4" />
           </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
-            <Plus className="h-4 w-4" />
+          <button onClick={handleOpenAddTeammates} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+            <SquarePen className="h-4 w-4" />
           </button>
         </div>
 
