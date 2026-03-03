@@ -12,6 +12,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useDMStore } from '@/stores/useDMStore';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useMessageHover } from '@/hooks/useMessageHover';
+import { useMessageEdit } from '@/hooks/useMessageEdit';
 import { MessageToolbar } from './MessageToolbar';
 import { MessageActionsMenu } from './MessageActionsMenu';
 import type { DMMessage } from '@/stores/useDMStore';
@@ -41,6 +43,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const loadError = useDMStore((s) => s.loadError);
   const isSending = useDMStore((s) => s.isSending);
   const fetchConversation = useDMStore((s) => s.fetchConversation);
+  const sendError = useDMStore((s) => s.sendError);
+  const clearSendError = useDMStore((s) => s.clearSendError);
   const storeSendMessage = useDMStore((s) => s.sendMessage);
   const storeEditMessage = useDMStore((s) => s.editMessage);
   const storeDeleteMessage = useDMStore((s) => s.deleteMessage);
@@ -49,14 +53,17 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
   const [showMoreMenuId, setShowMoreMenuId] = useState<number | null>(null);
   const [showEmojiPickerId, setShowEmojiPickerId] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editContent, setEditContent] = useState('');
   const [showPins, setShowPins] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const editInputRef = useRef<HTMLTextAreaElement>(null);
   const hoverLeaveTimer = useRef<ReturnType<typeof setTimeout>>();
   const currentUser = useAuthStore((s) => s.user);
+  const {
+    editingId, editContent, setEditContent, editInputRef,
+    startEdit, cancelEdit, saveEdit, handleEditKeyDown,
+  } = useMessageEdit({
+    onSave: (id, content) => storeEditMessage(id, content, userId),
+  });
 
   useEffect(() => {
     fetchConversation(userId);
@@ -65,14 +72,6 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
-
-  useEffect(() => {
-    if (editingId !== null && editInputRef.current) {
-      editInputRef.current.focus();
-      const len = editContent.length;
-      editInputRef.current.setSelectionRange(len, len);
-    }
-  }, [editingId]);
 
   const handleSend = async () => {
     const text = messageText.trim();
@@ -90,34 +89,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   };
 
   const handleStartEdit = (msg: { id: number; content: string }) => {
-    setEditingId(msg.id);
-    setEditContent(msg.content);
+    startEdit(msg.id, msg.content);
     setShowMoreMenuId(null);
-  };
-
-  const handleSaveEdit = async () => {
-    if (editingId === null) return;
-    const trimmed = editContent.trim();
-    const original = messages.find((m) => m.id === editingId);
-    if (trimmed && original && trimmed !== original.content) {
-      await storeEditMessage(editingId, trimmed, userId);
-    }
-    setEditingId(null);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditContent('');
-  };
-
-  const handleEditKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSaveEdit();
-    }
-    if (e.key === 'Escape') {
-      handleCancelEdit();
-    }
   };
 
   const handleDelete = async (msgId: number) => {
@@ -179,15 +152,15 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
           {/* Messages list */}
           <div className="flex-1 overflow-y-auto bg-white px-5 pb-4 pt-5">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center text-sm text-gray-500">
+              <div className="flex h-full items-center justify-center text-sm text-slack-hint">
                 Loading messages...
               </div>
             ) : loadError ? (
-              <div className="flex h-full items-center justify-center text-sm text-red-600">
+              <div className="flex h-full items-center justify-center text-sm text-slack-error">
                 {loadError}
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-gray-500">
+              <div className="flex h-full flex-col items-center justify-center text-slack-hint">
                 <p className="text-lg font-medium">
                   Start of your conversation with {userName}
                 </p>
@@ -270,20 +243,20 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                                 data-testid="dm-edit-input"
                                 value={editContent}
                                 onChange={(e) => setEditContent(e.target.value)}
-                                onKeyDown={handleEditKeyDown}
+                                onKeyDown={(e) => handleEditKeyDown(e, msg.content)}
                                 className="w-full resize-none rounded border border-slack-link bg-white p-2 text-[15px] leading-[22px] text-slack-primary outline-none"
                                 rows={2}
                               />
                               <div className="mt-1 flex items-center gap-2 text-[12px]">
                                 <button
-                                  onClick={handleCancelEdit}
+                                  onClick={cancelEdit}
                                   className="text-slack-secondary hover:underline"
                                 >
                                   Cancel
                                 </button>
                                 <button
                                   data-testid="dm-edit-save"
-                                  onClick={handleSaveEdit}
+                                  onClick={() => saveEdit(msg.content)}
                                   className="rounded bg-slack-btn px-3 py-1 text-white hover:bg-slack-btn-hover"
                                 >
                                   Save
@@ -372,12 +345,20 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                   'flex h-7 w-7 items-center justify-center rounded transition-colors',
                   messageText.trim()
                     ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
-                    : 'text-gray-400',
+                    : 'text-slack-disabled',
                 )}
               >
                 <SendHorizontal className="h-4 w-4" />
               </button>
             </div>
+            {sendError && (
+              <div className="mt-2 flex items-center justify-between rounded-md bg-slack-error-bg border border-slack-error-border px-3 py-2 text-[13px] text-slack-error">
+                <span>{sendError}</span>
+                <button onClick={clearSendError} className="ml-2 text-red-500 hover:text-slack-error">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -400,7 +381,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                 <X className="h-4 w-4 text-slack-secondary" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 text-center text-sm text-gray-500">
+            <div className="flex-1 overflow-y-auto p-4 text-center text-sm text-slack-hint">
               No pinned messages yet
             </div>
           </div>
@@ -425,7 +406,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                 <X className="h-4 w-4 text-slack-secondary" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 text-center text-sm text-gray-500">
+            <div className="flex-1 overflow-y-auto p-4 text-center text-sm text-slack-hint">
               No files shared yet
             </div>
           </div>

@@ -16,27 +16,31 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
   const isOwnProfile = !userId || userId === currentUser?.id;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
     const fetcher = isOwnProfile ? getMyProfile() : getUserProfile(userId!);
+    setLoadError(null);
     fetcher
       .then((data) => {
         setProfile(data);
         setEditName(data.name);
         setEditBio(data.bio || '');
       })
-      .catch((err) => console.error('Failed to load profile:', err))
+      .catch(() => setLoadError('Failed to load profile.'))
       .finally(() => setIsLoading(false));
   }, [userId, isOwnProfile]);
 
   const handleSave = async () => {
     if (!profile) return;
     setIsSaving(true);
+    setSaveError(null);
     try {
       const updated = await updateMyProfile({
         name: editName.trim() || profile.name,
@@ -44,8 +48,8 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
       });
       setProfile(updated);
       setIsEditing(false);
-    } catch (err) {
-      console.error('Failed to update profile:', err);
+    } catch {
+      setSaveError('Failed to save profile. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -59,15 +63,17 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-slack-border-light px-5 py-4">
           <h2 className="text-[17px] font-bold text-slack-primary">Profile</h2>
           <Button variant="toolbar" size="icon-sm" onClick={onClose}>
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-slack-hint" />
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-sm text-gray-500">Loading...</div>
+          <div className="p-8 text-center text-sm text-slack-hint">Loading...</div>
+        ) : loadError ? (
+          <div className="p-8 text-center text-sm text-slack-error">{loadError}</div>
         ) : profile ? (
           <div className="p-5">
             {/* Avatar and name */}
@@ -81,36 +87,40 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
               />
               <div>
                 <p className="text-[18px] font-bold text-slack-primary">{profile.name}</p>
-                <p className="text-[13px] text-gray-500">{profile.email}</p>
+                <p className="text-[13px] text-slack-hint">{profile.email}</p>
               </div>
             </div>
 
             {isEditing ? (
               <div className="space-y-3">
                 <div>
-                  <label className="text-[13px] font-medium text-gray-700">Name</label>
+                  <label className="text-[13px] font-medium text-slack-muted">Name</label>
                   <input
                     type="text"
                     name="name"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-slack-link"
+                    className="mt-1 w-full rounded border border-slack-input-border px-3 py-2 text-[14px] outline-none focus:border-slack-link"
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-gray-700">Bio</label>
+                  <label className="text-[13px] font-medium text-slack-muted">Bio</label>
                   <textarea
                     name="bio"
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
                     placeholder="Tell people about yourself"
                     rows={3}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-slack-link resize-none"
+                    className="mt-1 w-full rounded border border-slack-input-border px-3 py-2 text-[14px] outline-none focus:border-slack-link resize-none"
                   />
                 </div>
+                {saveError && (
+                  <p className="text-[13px] text-slack-error">{saveError}</p>
+                )}
                 <div className="flex justify-end gap-2">
                   <Button variant="ghost" size="sm" onClick={() => {
                       setIsEditing(false);
+                      setSaveError(null);
                       setEditName(profile.name);
                       setEditBio(profile.bio || '');
                     }}>
@@ -126,20 +136,20 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                 {/* Bio */}
                 {profile.bio && (
                   <div className="mb-4">
-                    <p className="text-[13px] font-medium text-gray-500 mb-1">Bio</p>
+                    <p className="text-[13px] font-medium text-slack-hint mb-1">Bio</p>
                     <p className="text-[14px] text-slack-primary">{profile.bio}</p>
                   </div>
                 )}
 
                 {/* Status */}
                 <div className="mb-4">
-                  <p className="text-[13px] font-medium text-gray-500 mb-1">Status</p>
+                  <p className="text-[13px] font-medium text-slack-hint mb-1">Status</p>
                   <p className="text-[14px] text-slack-primary capitalize">{profile.status || 'offline'}</p>
                 </div>
 
                 {/* Joined date */}
                 <div className="mb-4">
-                  <p className="text-[13px] font-medium text-gray-500 mb-1">Joined</p>
+                  <p className="text-[13px] font-medium text-slack-hint mb-1">Joined</p>
                   <p className="text-[14px] text-slack-primary">
                     {format(new Date(profile.createdAt), 'MMMM d, yyyy')}
                   </p>
@@ -155,7 +165,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
             )}
           </div>
         ) : (
-          <div className="p-8 text-center text-sm text-gray-500">Profile not found</div>
+          <div className="p-8 text-center text-sm text-slack-hint">Profile not found</div>
         )}
       </div>
     </div>

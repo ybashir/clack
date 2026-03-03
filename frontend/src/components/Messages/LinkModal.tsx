@@ -106,7 +106,7 @@ export function LinkModal({
             disabled={!linkUrl.trim()}
             className={cn(
               'px-4 py-1.5 text-[14px] font-medium',
-              !linkUrl.trim() && 'bg-gray-300 cursor-not-allowed hover:bg-gray-300',
+              !linkUrl.trim() && 'bg-slack-border cursor-not-allowed hover:bg-slack-border',
             )}
           >
             Save

@@ -24,6 +24,7 @@ interface ChannelState {
   activeChannelId: number | null;
   activeDMId: number | null;
   isLoading: boolean;
+  loadError: string | null;
 
   fetchChannels: () => Promise<void>;
   fetchDirectMessages: () => Promise<void>;
@@ -49,6 +50,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   activeChannelId: null,
   activeDMId: null,
   isLoading: false,
+  loadError: null,
 
   fetchDirectMessages: async () => {
     try {
@@ -62,13 +64,13 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         unreadCount: c.unreadCount,
       }));
       set({ directMessages: dms });
-    } catch (err) {
-      console.error('Failed to fetch DMs:', err);
+    } catch {
+      set({ loadError: 'Failed to load conversations.' });
     }
   },
 
   fetchChannels: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, loadError: null });
     try {
       const starred = loadStarred();
       const apiChannels = await api.getChannels();
@@ -85,9 +87,8 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         channels,
         isLoading: false,
       });
-    } catch (err) {
-      console.error('Failed to fetch channels:', err);
-      set({ isLoading: false });
+    } catch {
+      set({ isLoading: false, loadError: 'Failed to load channels.' });
     }
   },
 

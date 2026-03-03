@@ -15,12 +15,14 @@ interface PinsPanelProps {
 export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
   const [pins, setPins] = useState<ApiMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchPins = useCallback(() => {
     setIsLoading(true);
+    setLoadError(null);
     getPinnedMessages(channelId)
       .then((data) => setPins(data))
-      .catch((err) => console.error('Failed to fetch pins:', err))
+      .catch(() => setLoadError('Failed to load pinned messages.'))
       .finally(() => setIsLoading(false));
   }, [channelId]);
 
@@ -39,7 +41,7 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
       // Re-fetch the canonical pin list from the server
       getPinnedMessages(channelId)
         .then((data) => setPins(data))
-        .catch((err) => console.error('Failed to refresh pins:', err));
+        .catch(() => { /* Non-critical refresh — stale pins are still usable */ });
     };
 
     socket.on('message:updated', handleMessageUpdated);
@@ -61,12 +63,14 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
       </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
+          <div className="p-4 text-center text-sm text-slack-hint">Loading...</div>
+        ) : loadError ? (
+          <div className="p-4 text-center text-sm text-slack-error">{loadError}</div>
         ) : pins.length === 0 ? (
-          <div className="p-4 text-center text-sm text-gray-500">No pinned messages yet</div>
+          <div className="p-4 text-center text-sm text-slack-hint">No pinned messages yet</div>
         ) : (
           pins.map((pin) => (
-            <div key={pin.id} className="border-b border-gray-100 px-4 py-3">
+            <div key={pin.id} className="border-b border-slack-border-light px-4 py-3">
               <div className="flex items-center gap-2">
                 <Avatar
                   src={pin.user.avatar}

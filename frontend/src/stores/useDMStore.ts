@@ -26,12 +26,14 @@ interface DMState {
   isLoading: boolean;
   loadError: string | null;
   isSending: boolean;
+  sendError: string | null;
 
   fetchConversation: (userId: number) => Promise<void>;
   sendMessage: (userId: number, content: string) => Promise<void>;
   editMessage: (messageId: number, content: string, userId: number) => Promise<void>;
   deleteMessage: (messageId: number, userId: number) => Promise<void>;
   clearConversation: (userId: number) => void;
+  clearSendError: () => void;
 }
 
 export const useDMStore = create<DMState>((set, get) => ({
@@ -39,6 +41,7 @@ export const useDMStore = create<DMState>((set, get) => ({
   isLoading: false,
   loadError: null,
   isSending: false,
+  sendError: null,
 
   fetchConversation: async (userId: number) => {
     set({ isLoading: true, loadError: null });
@@ -57,7 +60,7 @@ export const useDMStore = create<DMState>((set, get) => ({
   },
 
   sendMessage: async (userId: number, content: string) => {
-    set({ isSending: true });
+    set({ isSending: true, sendError: null });
     try {
       const dm = await sendDM(userId, content);
       const message = transformDM(dm);
@@ -68,9 +71,8 @@ export const useDMStore = create<DMState>((set, get) => ({
         },
         isSending: false,
       }));
-    } catch (err) {
-      console.error('Failed to send DM:', err);
-      set({ isSending: false });
+    } catch {
+      set({ isSending: false, sendError: 'Message failed to send. Please try again.' });
     }
   },
 
@@ -88,6 +90,7 @@ export const useDMStore = create<DMState>((set, get) => ({
       }));
     } catch (err) {
       console.error('Failed to edit DM:', err);
+      throw err;
     }
   },
 
@@ -102,8 +105,11 @@ export const useDMStore = create<DMState>((set, get) => ({
       }));
     } catch (err) {
       console.error('Failed to delete DM:', err);
+      throw err;
     }
   },
+
+  clearSendError: () => set({ sendError: null }),
 
   clearConversation: (userId: number) => {
     set((state) => {

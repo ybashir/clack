@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { FileIcon, Download, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { useMessageActions } from '@/hooks/useMessageActions';
+import { useMessageHover } from '@/hooks/useMessageHover';
+import { useMessageEdit } from '@/hooks/useMessageEdit';
 import type { Message as MessageType } from '@/lib/types';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { ImageLightbox } from './ImageLightbox';
@@ -24,64 +26,36 @@ interface MessageProps {
 }
 
 export function Message({ message, showAvatar, isCompact, onOpenThread }: MessageProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(message.content);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState<string>('');
-  const editInputRef = useRef<HTMLTextAreaElement>(null);
-  const hoverLeaveTimer = useRef<ReturnType<typeof setTimeout>>();
   const { addReaction, editMessage, deleteMessage } = useMessageStore();
   const currentUser = useAuthStore((s) => s.user);
   const { openProfile } = useProfileStore();
   const toggleBookmark = useBookmarkStore((s) => s.toggle);
   const isBookmarked = useBookmarkStore((s) => s.bookmarkedIds.has(message.id));
   const { togglePin } = useMessageActions();
+  const { isHovered, onMouseEnter, onMouseLeave } = useMessageHover();
+  const {
+    editingId, editContent, setEditContent, editInputRef,
+    startEdit, cancelEdit, saveEdit, handleEditKeyDown,
+  } = useMessageEdit({
+    onSave: (id, content) => editMessage(id, content),
+  });
   const isOwner = currentUser?.id === message.userId;
+  const isEditing = editingId === message.id;
 
   const formattedTime = format(message.createdAt, 'h:mm a');
 
-  useEffect(() => {
-    if (isEditing && editInputRef.current) {
-      editInputRef.current.focus();
-      editInputRef.current.setSelectionRange(editContent.length, editContent.length);
-    }
-  }, [isEditing]);
-
   const handleEdit = () => {
-    setIsEditing(true);
-    setEditContent(message.content);
+    startEdit(message.id, message.content);
     setShowMoreMenu(false);
-  };
-
-  const handleSaveEdit = async () => {
-    const trimmed = editContent.trim();
-    if (trimmed && trimmed !== message.content) {
-      await editMessage(message.id, trimmed);
-    }
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditContent(message.content);
   };
 
   const handleDelete = async () => {
     setShowMoreMenu(false);
     await deleteMessage(message.id);
-  };
-
-  const handleEditKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSaveEdit();
-    }
-    if (e.key === 'Escape') {
-      handleCancelEdit();
-    }
   };
 
   const keepOpen = showEmojiPicker || showMoreMenu || isEditing;
@@ -93,16 +67,8 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
         message.isPinned ? 'bg-slack-pinned hover:bg-slack-pinned' : 'hover:bg-slack-hover',
         showAvatar ? 'pt-4 pb-2' : 'py-0.5'
       )}
-      onMouseEnter={() => {
-        clearTimeout(hoverLeaveTimer.current);
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        hoverLeaveTimer.current = setTimeout(() => {
-          setIsHovered(false);
-          setShowMoreMenu(false);
-        }, 150);
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={() => onMouseLeave(() => setShowMoreMenu(false))}
     >
       {/* Fixed 36px left gutter column with 8px gap to content */}
       <div className="w-9 flex-shrink-0 mr-2">
@@ -151,19 +117,19 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
               ref={editInputRef}
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              onKeyDown={handleEditKeyDown}
+              onKeyDown={(e) => handleEditKeyDown(e, message.content)}
               className="w-full rounded border border-slack-link bg-white p-2 text-[15px] text-slack-primary leading-[22px] resize-none outline-none"
               rows={2}
             />
             <div className="mt-1 flex items-center gap-2 text-[12px]">
               <button
-                onClick={handleCancelEdit}
+                onClick={cancelEdit}
                 className="text-slack-secondary hover:underline"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSaveEdit}
+                onClick={() => saveEdit(message.content)}
                 className="rounded bg-slack-btn px-3 py-1 text-white hover:bg-slack-btn-hover"
               >
                 Save
@@ -186,7 +152,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
               <div
                 key={file.id}
                 data-testid="message-file"
-                className="rounded-lg border border-gray-200 overflow-hidden"
+                className="rounded-lg border border-slack-border overflow-hidden"
               >
                 {file.mimetype.startsWith('image/') ? (
                   <button
@@ -205,16 +171,16 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-slack-hover"
                   >
-                    <FileIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                    <FileIcon className="h-5 w-5 text-slack-hint flex-shrink-0" />
                     <span className="text-[13px] text-slack-link hover:underline truncate max-w-[200px]">
                       {file.originalName}
                     </span>
-                    <span className="text-[11px] text-gray-400 flex-shrink-0">
+                    <span className="text-[11px] text-slack-disabled flex-shrink-0">
                       {formatFileSize(file.size)}
                     </span>
-                    <Download className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <Download className="h-4 w-4 text-slack-disabled flex-shrink-0" />
                   </a>
                 )}
               </div>

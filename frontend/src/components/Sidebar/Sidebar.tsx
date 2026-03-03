@@ -153,10 +153,10 @@ export function Sidebar() {
               />
             </button>
             {showAvatarMenu && (
-              <div className="absolute bottom-10 left-0 z-50 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+              <div className="absolute bottom-10 left-0 z-50 w-48 rounded-lg border border-slack-border bg-white py-1 shadow-lg">
+                <div className="px-4 py-2 border-b border-slack-border-light">
+                  <p className="text-sm font-medium text-slack-primary">{user.name}</p>
+                  <p className="text-xs text-slack-hint">{user.email}</p>
                 </div>
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); openProfile(); }}>
                   <User className="h-4 w-4" />

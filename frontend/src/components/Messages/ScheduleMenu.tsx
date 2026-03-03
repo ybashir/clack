@@ -32,9 +32,9 @@ export function ScheduleMenu({ onSchedule, onCustom, isScheduling }: ScheduleMen
   return (
     <div
       data-testid="schedule-menu"
-      className="absolute bottom-full right-0 mb-1 w-56 rounded-lg border border-gray-200 bg-white shadow-lg z-50 overflow-hidden"
+      className="absolute bottom-full right-0 mb-1 w-56 rounded-lg border border-slack-border bg-white shadow-lg z-50 overflow-hidden"
     >
-      <div className="px-3 py-2 text-[11px] font-semibold text-slack-secondary uppercase tracking-wider border-b border-gray-100">
+      <div className="px-3 py-2 text-[11px] font-semibold text-slack-secondary uppercase tracking-wider border-b border-slack-border-light">
         Schedule message
       </div>
       {getPresetOptions().map((opt) => (
@@ -59,7 +59,7 @@ export function ScheduleMenu({ onSchedule, onCustom, isScheduling }: ScheduleMen
           </div>
         </button>
       ))}
-      <div className="border-t border-gray-100">
+      <div className="border-t border-slack-border-light">
         <button
           onClick={onCustom}
           className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-slack-primary hover:bg-slack-hover transition-colors"

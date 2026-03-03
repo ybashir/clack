@@ -1,0 +1,61 @@
+import { useState, useRef, useEffect } from 'react';
+
+interface UseMessageEditOptions {
+  onSave: (messageId: number, content: string) => Promise<void>;
+}
+
+/**
+ * Shared edit state and handlers for message editing (used by Message and DMConversation).
+ */
+export function useMessageEdit({ onSave }: UseMessageEditOptions) {
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const editInputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editingId !== null && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.setSelectionRange(editContent.length, editContent.length);
+    }
+  }, [editingId]);
+
+  const startEdit = (messageId: number, content: string) => {
+    setEditingId(messageId);
+    setEditContent(content);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditContent('');
+  };
+
+  const saveEdit = async (originalContent?: string) => {
+    if (editingId === null) return;
+    const trimmed = editContent.trim();
+    if (trimmed && trimmed !== originalContent) {
+      await onSave(editingId, trimmed);
+    }
+    setEditingId(null);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent, originalContent?: string) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveEdit(originalContent);
+    }
+    if (e.key === 'Escape') {
+      cancelEdit();
+    }
+  };
+
+  return {
+    editingId,
+    editContent,
+    setEditContent,
+    editInputRef,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    handleEditKeyDown,
+  };
+}

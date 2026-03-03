@@ -49,6 +49,24 @@
   /* Mentions */
   --color-slack-mention: rgba(29, 155, 209, 0.1);
   --color-slack-mention-hover: rgba(29, 155, 209, 0.2);
+
+  /* Text — muted / hint / disabled */
+  --color-slack-muted: #616061;
+  --color-slack-hint: #868686;
+  --color-slack-disabled: #ABABAD;
+
+  /* Error / Danger */
+  --color-slack-error: #D72B3F;
+  --color-slack-error-bg: #FFF0F0;
+  --color-slack-error-border: #F5C6CB;
+
+  /* Form borders */
+  --color-slack-input-border: #BCBCBC;
+
+  /* File type icons */
+  --color-slack-file-image: #1264A3;
+  --color-slack-file-pdf: #D72B3F;
+  --color-slack-file-archive: #9B870C;
 }
 
 /* Non-color design tokens */

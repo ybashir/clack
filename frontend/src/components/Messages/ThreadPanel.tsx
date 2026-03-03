@@ -109,9 +109,9 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
       {/* Thread messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {isLoading ? (
-          <div className="text-center text-sm text-gray-500 py-4">Loading thread...</div>
+          <div className="text-center text-sm text-slack-hint py-4">Loading thread...</div>
         ) : loadError ? (
-          <div data-testid="thread-load-error" className="text-center text-sm text-red-600 py-4">{loadError}</div>
+          <div data-testid="thread-load-error" className="text-center text-sm text-slack-error py-4">{loadError}</div>
         ) : (
           <>
             {/* Parent message */}
@@ -182,7 +182,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
       {/* Reply input */}
       <div className="border-t border-slack-border px-4 py-3">
         {replyError && (
-          <p data-testid="thread-reply-error" className="mb-2 text-xs text-red-600">{replyError}</p>
+          <p data-testid="thread-reply-error" className="mb-2 text-xs text-slack-error">{replyError}</p>
         )}
         <div className="flex items-center gap-2 rounded-lg border border-slack-border-light px-3 py-2 focus-within:border-slack-link">
           <input
@@ -201,7 +201,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
               'flex h-7 w-7 items-center justify-center rounded transition-colors',
               replyText.trim()
                 ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
-                : 'text-gray-400'
+                : 'text-slack-disabled'
             )}
           >
             <SendHorizontal className="h-4 w-4" />

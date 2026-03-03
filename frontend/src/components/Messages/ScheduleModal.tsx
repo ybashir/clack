@@ -63,7 +63,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
             className={cn(
               'px-4 py-1.5 text-[14px] font-medium',
               !(customScheduleAt && !isScheduling) &&
-                'bg-gray-300 cursor-not-allowed hover:bg-gray-300',
+                'bg-slack-border cursor-not-allowed hover:bg-slack-border',
             )}
           >
             {isScheduling ? 'Scheduling...' : 'Schedule'}

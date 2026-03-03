@@ -18,6 +18,7 @@ export function useMessageActions() {
       });
     } catch (err) {
       console.error('Failed to pin/unpin:', err);
+      throw err;
     }
   }, []);
 

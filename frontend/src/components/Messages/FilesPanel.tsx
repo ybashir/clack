@@ -17,10 +17,10 @@ function formatBytes(bytes: number): string {
 }
 
 function FileIcon({ mimetype }: { mimetype: string }) {
-  if (mimetype.startsWith('image/')) return <FileImage className="h-5 w-5 text-blue-500" />;
-  if (mimetype === 'application/pdf') return <FileText className="h-5 w-5 text-red-500" />;
-  if (mimetype.includes('zip')) return <FileArchive className="h-5 w-5 text-yellow-600" />;
-  return <FileText className="h-5 w-5 text-gray-500" />;
+  if (mimetype.startsWith('image/')) return <FileImage className="h-5 w-5 text-slack-file-image" />;
+  if (mimetype === 'application/pdf') return <FileText className="h-5 w-5 text-slack-file-pdf" />;
+  if (mimetype.includes('zip')) return <FileArchive className="h-5 w-5 text-slack-file-archive" />;
+  return <FileText className="h-5 w-5 text-slack-hint" />;
 }
 
 export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
@@ -59,14 +59,14 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
       </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
+          <div className="p-4 text-center text-sm text-slack-hint">Loading...</div>
         ) : loadError ? (
-          <div className="p-4 text-center text-sm text-red-600">{loadError}</div>
+          <div className="p-4 text-center text-sm text-slack-error">{loadError}</div>
         ) : files.length === 0 ? (
-          <div className="p-4 text-center text-sm text-gray-500">No files uploaded yet</div>
+          <div className="p-4 text-center text-sm text-slack-hint">No files uploaded yet</div>
         ) : (
           files.map((file) => (
-            <div key={file.id} className="border-b border-gray-100 px-4 py-3">
+            <div key={file.id} className="border-b border-slack-border-light px-4 py-3">
               {file.mimetype.startsWith('image/') ? (
                 <a href={file.url} target="_blank" rel="noopener noreferrer" className="block mb-2">
                   <img

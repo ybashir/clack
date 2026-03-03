@@ -51,6 +51,7 @@ function transformApiMessage(msg: api.ApiMessage): Message {
 interface MessageState {
   messages: Message[];
   isLoading: boolean;
+  loadError: string | null;
   loadedChannelId: number | null;
   sendError: string | null;
 
@@ -71,20 +72,20 @@ interface MessageState {
 export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
   isLoading: false,
+  loadError: null,
   loadedChannelId: null,
   sendError: null,
 
   fetchMessages: async (channelId: number) => {
-    set({ isLoading: true });
+    set({ isLoading: true, loadError: null });
     try {
       const data = await api.getMessages(channelId);
       const messages = data.messages.map(transformApiMessage);
       // API returns desc order, reverse to asc for display
       messages.reverse();
       set({ messages, isLoading: false, loadedChannelId: channelId });
-    } catch (err) {
-      console.error('Failed to fetch messages:', err);
-      set({ isLoading: false });
+    } catch {
+      set({ isLoading: false, loadError: 'Failed to load messages.' });
     }
   },
 
@@ -123,6 +124,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to edit message:', err);
+      throw err;
     }
   },
 
@@ -134,6 +136,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to delete message:', err);
+      throw err;
     }
   },
 

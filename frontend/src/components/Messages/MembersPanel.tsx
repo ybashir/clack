@@ -83,9 +83,9 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
       <div className="flex-1 overflow-y-auto p-3">
         {isLoading ? (
-          <div className="text-center text-sm text-gray-500 py-4">Loading...</div>
+          <div className="text-center text-sm text-slack-hint py-4">Loading...</div>
         ) : loadError ? (
-          <div className="text-center text-sm text-red-600 py-4">{loadError}</div>
+          <div className="text-center text-sm text-slack-error py-4">{loadError}</div>
         ) : (
           <>
             {onlineMembers.length > 0 && (

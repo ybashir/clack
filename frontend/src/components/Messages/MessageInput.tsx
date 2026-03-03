@@ -7,7 +7,6 @@ import {
   Smile,
   SendHorizontal,
   X,
-  FileIcon,
   ChevronDown,
   CheckCircle,
 } from 'lucide-react';
@@ -20,6 +19,8 @@ import { LinkModal } from './LinkModal';
 import { ScheduleModal } from './ScheduleModal';
 import { ScheduleMenu } from './ScheduleMenu';
 import { FormatToolbar } from './FormatToolbar';
+import { FilePreview } from './FilePreview';
+import { MentionDropdown } from './MentionDropdown';
 
 interface MessageInputProps {
   channelId: number;
@@ -50,7 +51,9 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const [showScheduleMenu, setShowScheduleMenu] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleConfirm, setScheduleConfirm] = useState<string | null>(null);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [isScheduling, setIsScheduling] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const scheduleMenuRef = useRef<HTMLDivElement>(null);
 
   const { sendMessage, sendError, clearSendError } = useMessageStore();
@@ -133,6 +136,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
       if (!text) return;
 
       setIsScheduling(true);
+      setScheduleError(null);
       try {
         await scheduleMessage(channelId, text, scheduledAt);
         quill.setText('');
@@ -150,8 +154,9 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         });
         setScheduleConfirm(`Scheduled for ${formatted}`);
         setTimeout(() => setScheduleConfirm(null), 4000);
-      } catch (err) {
-        console.error('Failed to schedule message:', err);
+      } catch {
+        setScheduleError('Failed to schedule message. Please try again.');
+        setTimeout(() => setScheduleError(null), 4000);
       } finally {
         setIsScheduling(false);
       }
@@ -330,13 +335,15 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
+    setUploadError(null);
     try {
       for (const file of Array.from(files)) {
         const uploaded = await uploadFile(file);
         setPendingFiles((prev) => [...prev, uploaded]);
       }
-    } catch (err) {
-      console.error('Failed to upload file:', err);
+    } catch {
+      setUploadError('Failed to upload file. Please try again.');
+      setTimeout(() => setUploadError(null), 4000);
     } finally {
       setIsUploading(false);
       // Reset file input
@@ -403,70 +410,24 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         <FormatToolbar onApplyFormat={applyFormat} />
 
         {/* File preview area */}
-        {pendingFiles.length > 0 && (
-          <div
-            data-testid="file-preview"
-            className="flex flex-wrap gap-2 px-3 py-2 border-b border-slack-border-light"
-          >
-            {pendingFiles.map((file) => (
-              <div
-                key={file.id}
-                className="relative flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm"
-              >
-                {file.mimetype.startsWith('image/') ? (
-                  <img
-                    src={file.url}
-                    alt={file.originalName}
-                    className="h-10 w-10 rounded object-cover"
-                  />
-                ) : (
-                  <FileIcon className="h-5 w-5 text-gray-500" />
-                )}
-                <span className="max-w-[120px] truncate text-[13px] text-slack-primary">
-                  {file.originalName}
-                </span>
-                <button
-                  onClick={() => removePendingFile(file.id)}
-                  className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <FilePreview files={pendingFiles} onRemove={removePendingFile} />
 
         {/* Upload progress indicator */}
         {isUploading && (
-          <div className="px-3 py-1 text-xs text-gray-500">Uploading...</div>
+          <div className="px-3 py-1 text-xs text-slack-hint">Uploading...</div>
         )}
 
         {/* Quill Editor */}
         <div ref={editorRef} />
 
         {/* Mention Dropdown */}
-        {showMentionDropdown && mentionUsers.length > 0 && (
-          <div
-            data-testid="mention-dropdown"
+        {showMentionDropdown && (
+          <MentionDropdown
             ref={mentionDropdownRef}
-            className="absolute bottom-full left-0 mb-1 w-[280px] max-h-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg z-50"
-          >
-            {mentionUsers.map((user, index) => (
-              <button
-                key={user.id}
-                onClick={() => insertMention(user)}
-                className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slack-link hover:text-white',
-                  index === mentionSelectedIndex ? 'bg-slack-link text-white' : 'text-slack-primary',
-                )}
-              >
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-slack-purple text-white text-xs font-medium flex-shrink-0">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="truncate font-medium">{user.name}</span>
-              </button>
-            ))}
-          </div>
+            users={mentionUsers}
+            selectedIndex={mentionSelectedIndex}
+            onSelect={insertMention}
+          />
         )}
 
         {/* Emoji Picker */}
@@ -528,7 +489,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
                 'flex h-7 items-center justify-center rounded-l px-2 transition-colors',
                 hasContent
                   ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
-                  : 'text-gray-400',
+                  : 'text-slack-disabled',
               )}
             >
               <SendHorizontal className="h-4 w-4" />
@@ -542,7 +503,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
                 'flex h-7 w-5 items-center justify-center rounded-r border-l transition-colors',
                 hasContent
                   ? 'bg-slack-btn text-white hover:bg-slack-btn-hover border-slack-btn-hover'
-                  : 'text-gray-300 border-gray-300',
+                  : 'text-slack-disabled border-slack-border',
               )}
               title="Schedule message"
             >
@@ -561,10 +522,10 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         </div>
       </div>
 
-      <p className="mt-1 text-xs text-gray-500">
-        <kbd className="rounded bg-gray-100 px-1 py-0.5 text-[10px] font-medium">Enter</kbd>{' '}
+      <p className="mt-1 text-xs text-slack-hint">
+        <kbd className="rounded bg-slack-active-tab px-1 py-0.5 text-[10px] font-medium">Enter</kbd>{' '}
         to send,{' '}
-        <kbd className="rounded bg-gray-100 px-1 py-0.5 text-[10px] font-medium">
+        <kbd className="rounded bg-slack-active-tab px-1 py-0.5 text-[10px] font-medium">
           Shift + Enter
         </kbd>{' '}
         for new line
@@ -572,9 +533,29 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
       {/* Send error banner */}
       {sendError && (
-        <div className="mt-2 flex items-center justify-between rounded-md bg-red-50 border border-red-200 px-3 py-2 text-[13px] text-red-700">
+        <div className="mt-2 flex items-center justify-between rounded-md bg-slack-error-bg border border-slack-error-border px-3 py-2 text-[13px] text-slack-error">
           <span>{sendError}</span>
-          <button onClick={clearSendError} className="ml-2 text-red-500 hover:text-red-700">
+          <button onClick={clearSendError} className="ml-2 text-slack-error hover:text-slack-error">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Upload error banner */}
+      {uploadError && (
+        <div className="mt-2 flex items-center justify-between rounded-md bg-slack-error-bg border border-slack-error-border px-3 py-2 text-[13px] text-slack-error">
+          <span>{uploadError}</span>
+          <button onClick={() => setUploadError(null)} className="ml-2 text-slack-error hover:text-slack-error">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Schedule error banner */}
+      {scheduleError && (
+        <div className="mt-2 flex items-center justify-between rounded-md bg-slack-error-bg border border-slack-error-border px-3 py-2 text-[13px] text-slack-error">
+          <span>{scheduleError}</span>
+          <button onClick={() => setScheduleError(null)} className="ml-2 text-slack-error hover:text-slack-error">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>

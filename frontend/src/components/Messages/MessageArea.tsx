@@ -52,7 +52,7 @@ export function MessageArea() {
 
   if (!activeChannel) {
     return (
-      <div className="flex flex-1 items-center justify-center text-gray-500">
+      <div className="flex flex-1 items-center justify-center text-slack-hint">
         Select a channel to start messaging
       </div>
     );

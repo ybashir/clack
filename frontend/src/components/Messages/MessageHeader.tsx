@@ -185,14 +185,14 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             />
             {/* Search Results Dropdown */}
             {showResults && (
-              <div data-testid="search-results-dropdown" className="absolute right-0 top-8 z-50 w-[360px] max-h-[400px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+              <div data-testid="search-results-dropdown" className="absolute right-0 top-8 z-50 w-[360px] max-h-[400px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
                 {isSearching ? (
-                  <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+                  <div className="p-4 text-center text-sm text-slack-hint">Searching...</div>
                 ) : searchResults.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-gray-500">No results found</div>
+                  <div className="p-4 text-center text-sm text-slack-hint">No results found</div>
                 ) : (
                   <div>
-                    <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b">
+                    <div className="px-3 py-2 text-xs font-medium text-slack-hint border-b">
                       {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
                     </div>
                     {searchResults.map((result) => (
@@ -200,10 +200,10 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
                         key={`${result.type}-${result.id}`}
                         data-testid="search-result-item"
                         onClick={() => handleResultClick(result)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        className="w-full text-left px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
                       >
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <span className="font-medium text-gray-700">{result.user.name}</span>
+                        <div className="flex items-center gap-1 text-xs text-slack-hint">
+                          <span className="font-medium text-slack-primary">{result.user.name}</span>
                           {result.channel && (
                             <>
                               <span>in</span>
@@ -211,7 +211,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
                             </>
                           )}
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-900 line-clamp-2">{renderMessageContent(result.content)}</p>
+                        <p className="mt-0.5 text-sm text-slack-primary line-clamp-2">{renderMessageContent(result.content)}</p>
                       </button>
                     ))}
                   </div>
@@ -229,7 +229,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
               <MoreVertical className="h-4 w-4 text-slack-secondary" />
             </Button>
             {showMenu && (
-              <div className="absolute right-0 top-7 z-50 min-w-[160px] rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+              <div className="absolute right-0 top-7 z-50 min-w-[160px] rounded-lg border border-slack-border bg-white shadow-lg py-1">
                 <Button
                   variant="menu-item-danger"
                   onClick={handleLeaveChannel}

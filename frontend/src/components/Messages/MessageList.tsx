@@ -43,7 +43,7 @@ function shouldShowAvatar(
 }
 
 export function MessageList({ channelId, onOpenThread }: MessageListProps) {
-  const { getMessagesForChannel, fetchMessages, isLoading } = useMessageStore();
+  const { getMessagesForChannel, fetchMessages, isLoading, loadError } = useMessageStore();
   const { markChannelAsRead } = useChannelStore();
   const messages = getMessagesForChannel(channelId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -73,15 +73,23 @@ export function MessageList({ channelId, onOpenThread }: MessageListProps) {
 
   if (isLoading && messages.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center text-gray-500">
+      <div className="flex flex-1 items-center justify-center text-slack-hint">
         <p className="text-sm">Loading messages...</p>
+      </div>
+    );
+  }
+
+  if (loadError && messages.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-sm text-slack-error">{loadError}</p>
       </div>
     );
   }
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-gray-500">
+      <div className="flex flex-1 flex-col items-center justify-center text-slack-hint">
         <p className="text-lg font-medium">No messages yet</p>
         <p className="text-sm">Be the first to send a message!</p>
       </div>
