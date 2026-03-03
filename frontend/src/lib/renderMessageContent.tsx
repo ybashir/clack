@@ -1,15 +1,15 @@
 import React from 'react';
 
 /**
- * Parses inline markdown in message content and returns React nodes.
+ * Parses inline markdown in a single line and returns React nodes.
  * Handles: **bold**, *italic*, `code`, ~~strikethrough~~, [text](url), @mentions
  */
-export function renderMessageContent(content: string): React.ReactNode {
+function renderInline(content: string, keyOffset: number = 0): React.ReactNode[] {
   const TOKEN = /(\*\*(.+?)\*\*)|(\*([^*\n]+?)\*)|(`([^`\n]+?)`)|(~~(.+?)~~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(@[\w][\w .'-]*[\w]|@\w+)/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
-  let key = 0;
+  let key = keyOffset;
   while ((m = TOKEN.exec(content)) !== null) {
     if (m.index > last) nodes.push(content.slice(last, m.index));
     if (m[1]) {
@@ -28,5 +28,84 @@ export function renderMessageContent(content: string): React.ReactNode {
     last = m.index + m[0].length;
   }
   if (last < content.length) nodes.push(content.slice(last));
+  return nodes;
+}
+
+/**
+ * Parses message content and returns React nodes.
+ * Block-level parsing (blockquotes, code blocks) runs first, then inline markdown.
+ */
+export function renderMessageContent(content: string): React.ReactNode {
+  const nodes: React.ReactNode[] = [];
+  let key = 0;
+
+  // Split into segments: code blocks (```...```) and everything else
+  const CODE_BLOCK = /```([\s\S]*?)```/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = CODE_BLOCK.exec(content)) !== null) {
+    // Process text before the code block
+    if (m.index > last) {
+      const before = content.slice(last, m.index);
+      nodes.push(...renderLines(before, key));
+      key += 1000;
+    }
+    // Render the code block
+    const codeContent = m[1].replace(/^\n/, '').replace(/\n$/, '');
+    nodes.push(
+      <pre key={key++} className="my-1 rounded bg-[rgba(29,28,29,0.08)] px-3 py-2 font-mono text-[0.875em] overflow-x-auto whitespace-pre-wrap">
+        <code>{codeContent}</code>
+      </pre>
+    );
+    last = m.index + m[0].length;
+  }
+
+  // Process any remaining text after the last code block
+  if (last < content.length) {
+    const remaining = content.slice(last);
+    nodes.push(...renderLines(remaining, key));
+  }
+
   return nodes.length > 0 ? nodes : content;
+}
+
+/**
+ * Renders a chunk of text that may contain multiple lines, some of which may be blockquotes.
+ */
+function renderLines(text: string, keyOffset: number): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  const lines = text.split('\n');
+  let key = keyOffset;
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('> ')) {
+      // Collect consecutive blockquote lines
+      const quoteLines: string[] = [];
+      while (i < lines.length && lines[i].startsWith('> ')) {
+        quoteLines.push(lines[i].slice(2));
+        i++;
+      }
+      const quoteContent = quoteLines.join('\n');
+      nodes.push(
+        <blockquote key={key++} className="border-l-4 border-[rgba(29,28,29,0.3)] pl-3 my-0.5 text-[#616061] italic">
+          {renderInline(quoteContent, key * 100)}
+        </blockquote>
+      );
+    } else {
+      // Normal line — render inline, add newline between lines (but not after the last)
+      if (nodes.length > 0 && i > 0) {
+        nodes.push('\n');
+      }
+      const inlineNodes = renderInline(line, key * 100);
+      nodes.push(...inlineNodes);
+      key++;
+      i++;
+    }
+  }
+
+  return nodes;
 }

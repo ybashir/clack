@@ -57,10 +57,64 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const { sendMessage } = useMessageStore();
 
+  const serializeDelta = useCallback((quill: Quill): string => {
+    const delta = quill.getContents();
+    let result = '';
+    let inCodeBlock = false;
+    let codeBlockLines: string[] = [];
+
+    const flushCodeBlock = () => {
+      result += '```\n' + codeBlockLines.join('\n') + '\n```';
+      codeBlockLines = [];
+      inCodeBlock = false;
+    };
+
+    for (const op of delta.ops) {
+      if (typeof op.insert !== 'string') continue;
+      const attrs = op.attributes || {};
+      const text = op.insert;
+
+      if (attrs['code-block']) {
+        // Quill emits code-block lines ending with '\n'
+        const lines = text.split('\n');
+        if (!inCodeBlock) inCodeBlock = true;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // Last segment after final '\n' may be empty — signals end of block
+          if (i === lines.length - 1 && line === '') {
+            flushCodeBlock();
+          } else {
+            codeBlockLines.push(line);
+          }
+        }
+      } else {
+        if (inCodeBlock) flushCodeBlock();
+        if (attrs['blockquote']) {
+          // Prefix each line with '> '
+          const lines = text.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (i < lines.length - 1) {
+              result += '> ' + line + '\n';
+            } else if (line !== '') {
+              result += '> ' + line;
+            }
+          }
+        } else {
+          result += text;
+        }
+      }
+    }
+
+    if (inCodeBlock) flushCodeBlock();
+
+    return result.trim();
+  }, []);
+
   const handleSend = useCallback(async () => {
     const quill = quillRef.current;
     if (!quill) return;
-    const text = quill.getText().trim();
+    const text = serializeDelta(quill);
     if (!text && pendingFiles.length === 0) return;
     const content = text || ' ';
     const fileIds = pendingFiles.map((f) => f.id);
@@ -68,7 +122,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     setPendingFiles([]);
     setCanSend(false);
     await sendMessage(channelId, content, fileIds.length > 0 ? fileIds : undefined);
-  }, [channelId, sendMessage, pendingFiles]);
+  }, [channelId, sendMessage, pendingFiles, serializeDelta]);
 
   const handleSendRef = useRef(handleSend);
   handleSendRef.current = handleSend;
