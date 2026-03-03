@@ -2,10 +2,10 @@ import React from 'react';
 
 /**
  * Parses inline markdown in message content and returns React nodes.
- * Handles: **bold**, *italic*, `code`, [text](url), @mentions
+ * Handles: **bold**, *italic*, `code`, ~~strikethrough~~, [text](url), @mentions
  */
 export function renderMessageContent(content: string): React.ReactNode {
-  const TOKEN = /(\*\*(.+?)\*\*)|(\*([^*\n]+?)\*)|(`([^`\n]+?)`)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(@[\w][\w .'-]*[\w]|@\w+)/g;
+  const TOKEN = /(\*\*(.+?)\*\*)|(\*([^*\n]+?)\*)|(`([^`\n]+?)`)|(~~(.+?)~~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(@[\w][\w .'-]*[\w]|@\w+)/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
@@ -19,9 +19,11 @@ export function renderMessageContent(content: string): React.ReactNode {
     } else if (m[5]) {
       nodes.push(<code key={key++} className="rounded-[3px] bg-[rgba(29,28,29,0.08)] px-1 py-0.5 font-mono text-[0.875em]">{m[6]}</code>);
     } else if (m[7]) {
-      nodes.push(<a key={key++} href={m[8]} target="_blank" rel="noopener noreferrer" className="text-[#1264A3] underline hover:text-[#0d4f8b]">{m[7]}</a>);
+      nodes.push(<s key={key++}>{m[8]}</s>);
     } else if (m[9]) {
-      nodes.push(<span key={key++} className="mention-highlight rounded bg-[#1d9bd11a] px-[2px] text-[#1264A3] font-medium cursor-pointer hover:bg-[#1d9bd133]">{m[9]}</span>);
+      nodes.push(<a key={key++} href={m[10]} target="_blank" rel="noopener noreferrer" className="text-[#1264A3] underline hover:text-[#0d4f8b]">{m[9]}</a>);
+    } else if (m[11]) {
+      nodes.push(<span key={key++} className="mention-highlight rounded bg-[#1d9bd11a] px-[2px] text-[#1264A3] font-medium cursor-pointer hover:bg-[#1d9bd133]">{m[11]}</span>);
     }
     last = m.index + m[0].length;
   }
