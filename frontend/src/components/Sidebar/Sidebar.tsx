@@ -18,6 +18,7 @@ import { useProfileStore } from '@/stores/useProfileStore';
 import { Avatar } from '@/components/ui/avatar';
 import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
+import { FilesPanel } from '@/components/Messages/FilesPanel';
 
 const navItems = [
   { icon: MessageSquare, label: 'DMs', id: 'dms' },
@@ -116,7 +117,14 @@ export function Sidebar() {
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => setActiveNav(item.id)}
+            data-testid={`nav-item-${item.id}`}
+            onClick={() => {
+              if (item.id === 'files') {
+                setActiveNav(activeNav === 'files' ? 'dms' : 'files');
+              } else {
+                setActiveNav(item.id);
+              }
+            }}
             className={cn(
               'relative flex flex-col h-[68px] w-[52px] items-center justify-center gap-1 rounded-lg transition-colors',
               activeNav === item.id
@@ -428,6 +436,21 @@ export function Sidebar() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Files Panel - shown when Files nav item is active */}
+      {activeNav === 'files' && (
+        <div className="fixed inset-0 z-40 flex" onClick={() => setActiveNav('dms')}>
+          <div
+            className="absolute left-[330px] top-0 h-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FilesPanel
+              title="All files"
+              onClose={() => setActiveNav('dms')}
+            />
           </div>
         </div>
       )}

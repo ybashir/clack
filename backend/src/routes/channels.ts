@@ -329,6 +329,38 @@ router.post('/:id/read', authMiddleware, async (req: AuthRequest, res: Response)
   }
 });
 
+// GET /channels/:id/files - Get files uploaded in channel
+router.get('/:id/files', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const channelId = parseInt(req.params.id);
+    const userId = req.user!.userId;
+
+    const membership = await prisma.channelMember.findUnique({
+      where: { userId_channelId: { userId, channelId } },
+    });
+
+    if (!membership) {
+      res.status(403).json({ error: 'You must be a member of this channel' });
+      return;
+    }
+
+    const files = await prisma.file.findMany({
+      where: {
+        message: { channelId, deletedAt: null },
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true, avatar: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(files);
+  } catch (error) {
+    console.error('Get channel files error:', error);
+    res.status(500).json({ error: 'Failed to get channel files' });
+  }
+});
+
 // GET /channels/:id/pins - Get pinned messages
 router.get('/:id/pins', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

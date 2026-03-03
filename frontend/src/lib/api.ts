@@ -402,3 +402,31 @@ export interface ChannelMember {
 export function getChannelMembers(channelId: number) {
   return request<ChannelMember[]>(`/channels/${channelId}/members`);
 }
+
+// ---- Scheduled Messages ----
+
+export interface ApiScheduledMessage {
+  id: number;
+  content: string;
+  channelId: number;
+  userId: number;
+  scheduledAt: string;
+  createdAt: string;
+  sent: boolean;
+  channel: { id: number; name: string };
+}
+
+export function scheduleMessage(channelId: number, content: string, scheduledAt: Date) {
+  return request<ApiScheduledMessage>('/messages/schedule', {
+    method: 'POST',
+    body: JSON.stringify({ channelId, content, scheduledAt: scheduledAt.toISOString() }),
+  });
+}
+
+export function getScheduledMessages() {
+  return request<ApiScheduledMessage[]>('/messages/scheduled');
+}
+
+export function cancelScheduledMessage(id: number) {
+  return request<{ success: boolean }>(`/messages/scheduled/${id}`, { method: 'DELETE' });
+}

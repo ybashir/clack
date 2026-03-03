@@ -13,6 +13,8 @@ interface MessageHeaderProps {
   onToggleMembers?: () => void;
   onTogglePins?: () => void;
   showPins?: boolean;
+  onToggleFiles?: () => void;
+  showFiles?: boolean;
 }
 
 const headerTabs = [
@@ -20,7 +22,7 @@ const headerTabs = [
   { id: 'pins', label: 'Pins', icon: Pin },
 ];
 
-export function MessageHeader({ channel, showMembers, onToggleMembers, onTogglePins, showPins }: MessageHeaderProps) {
+export function MessageHeader({ channel, showMembers, onToggleMembers, onTogglePins, showPins, onToggleFiles, showFiles }: MessageHeaderProps) {
   const toggleStar = useChannelStore((s) => s.toggleStar);
   const leaveChannel = useChannelStore((s) => s.leaveChannel);
   const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
@@ -243,13 +245,15 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
         {headerTabs.map((tab) => (
           <button
             key={tab.id}
+            data-testid={`header-tab-${tab.id}`}
             onClick={() => {
               setActiveTab(tab.id);
               if (tab.id === 'pins') onTogglePins?.();
+              if (tab.id === 'files') onToggleFiles?.();
             }}
             className={cn(
               'flex items-center gap-1 rounded px-2 py-[3px] text-[13px] transition-colors',
-              activeTab === tab.id
+              (tab.id === 'pins' && showPins) || (tab.id === 'files' && showFiles)
                 ? 'bg-[#F0F0F0] text-[#1D1C1D] font-medium'
                 : 'text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]'
             )}

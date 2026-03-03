@@ -8,6 +8,7 @@ import { MembersPanel } from './MembersPanel';
 import { ThreadPanel } from './ThreadPanel';
 import { DMConversation } from './DMConversation';
 import { PinsPanel } from './PinsPanel';
+import { FilesPanel } from './FilesPanel';
 
 export function MessageArea() {
   const { activeChannelId, activeDMId, getActiveChannel, getActiveDM } = useChannelStore();
@@ -15,12 +16,14 @@ export function MessageArea() {
   const activeDM = getActiveDM();
   const [showMembers, setShowMembers] = useState(false);
   const [showPins, setShowPins] = useState(false);
+  const [showFiles, setShowFiles] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
 
   // Close side panels when switching channels
   useEffect(() => {
     setShowMembers(false);
     setShowPins(false);
+    setShowFiles(false);
     setActiveThreadId(null);
   }, [activeChannelId]);
 
@@ -62,17 +65,28 @@ export function MessageArea() {
           channel={activeChannel}
           showMembers={showMembers}
           showPins={showPins}
+          showFiles={showFiles}
           onToggleMembers={() => {
             setShowMembers(!showMembers);
             if (!showMembers) {
               setActiveThreadId(null);
               setShowPins(false);
+              setShowFiles(false);
             }
           }}
           onTogglePins={() => {
             setShowPins(!showPins);
             if (!showPins) {
               setShowMembers(false);
+              setShowFiles(false);
+              setActiveThreadId(null);
+            }
+          }}
+          onToggleFiles={() => {
+            setShowFiles(!showFiles);
+            if (!showFiles) {
+              setShowMembers(false);
+              setShowPins(false);
               setActiveThreadId(null);
             }
           }}
@@ -90,6 +104,12 @@ export function MessageArea() {
         <PinsPanel
           channelId={activeChannelId!}
           onClose={() => setShowPins(false)}
+        />
+      )}
+      {showFiles && (
+        <FilesPanel
+          channelId={activeChannelId!}
+          onClose={() => setShowFiles(false)}
         />
       )}
       {activeThreadId && (
