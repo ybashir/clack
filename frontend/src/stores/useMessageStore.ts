@@ -52,6 +52,7 @@ interface MessageState {
   messages: Message[];
   isLoading: boolean;
   loadedChannelId: number | null;
+  sendError: string | null;
 
   fetchMessages: (channelId: number) => Promise<void>;
   getMessagesForChannel: (channelId: number) => Message[];
@@ -60,6 +61,7 @@ interface MessageState {
   deleteMessage: (messageId: number) => Promise<void>;
   addReaction: (messageId: number, emoji: string) => void;
   removeReaction: (messageId: number, emoji: string) => void;
+  clearSendError: () => void;
   // Socket event handlers
   onMessageNew: (msg: api.ApiMessage) => void;
   onMessageUpdated: (msg: api.ApiMessage) => void;
@@ -70,6 +72,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
   isLoading: false,
   loadedChannelId: null,
+  sendError: null,
 
   fetchMessages: async (channelId: number) => {
     set({ isLoading: true });
@@ -101,9 +104,10 @@ export const useMessageStore = create<MessageState>((set, get) => ({
         const message = transformApiMessage(apiMsg);
         set((state) => ({
           messages: [...state.messages, message],
+          sendError: null,
         }));
-      } catch (err) {
-        console.error('Failed to send message:', err);
+      } catch {
+        set({ sendError: 'Message failed to send. Please try again.' });
       }
     }
   },
@@ -132,6 +136,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       console.error('Failed to delete message:', err);
     }
   },
+
+  clearSendError: () => set({ sendError: null }),
 
   // Socket event handlers — called when we receive a broadcast from the server
   onMessageNew: (msg: api.ApiMessage) => {

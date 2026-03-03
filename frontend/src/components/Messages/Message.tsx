@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Smile, MessageSquare, MoreHorizontal, Bookmark, Pencil, Trash2, FileIcon, Download, Pin } from 'lucide-react';
+import { FileIcon, Download, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { EmojiPicker } from '@/components/ui/emoji-picker';
@@ -9,10 +9,12 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
-import { pinMessage, unpinMessage } from '@/lib/api';
+import { useMessageActions } from '@/hooks/useMessageActions';
 import type { Message as MessageType } from '@/lib/types';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { ImageLightbox } from './ImageLightbox';
+import { MessageToolbar } from './MessageToolbar';
+import { MessageActionsMenu } from './MessageActionsMenu';
 
 interface MessageProps {
   message: MessageType;
@@ -36,6 +38,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
   const { openProfile } = useProfileStore();
   const toggleBookmark = useBookmarkStore((s) => s.toggle);
   const isBookmarked = useBookmarkStore((s) => s.bookmarkedIds.has(message.id));
+  const { togglePin } = useMessageActions();
   const isOwner = currentUser?.id === message.userId;
 
   const formattedTime = format(message.createdAt, 'h:mm a');
@@ -87,7 +90,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
     <div
       className={cn(
         'group relative flex px-5',
-        message.isPinned ? 'bg-[#FEF9ED] hover:bg-[#FEF9ED]' : 'hover:bg-[#F8F8F8]',
+        message.isPinned ? 'bg-slack-pinned hover:bg-slack-pinned' : 'hover:bg-slack-hover',
         showAvatar ? 'pt-4 pb-2' : 'py-0.5'
       )}
       onMouseEnter={() => {
@@ -112,7 +115,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
             className="mt-[5px]"
           />
         ) : (
-          <span className="hidden text-[12px] text-[#616061] group-hover:inline leading-[22px]" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>
+          <span className="hidden text-[12px] text-slack-secondary group-hover:inline leading-[22px]" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>
             {format(message.createdAt, 'h:mm')}
           </span>
         )}
@@ -125,16 +128,16 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
             <button
               data-testid="sender-name"
               onClick={() => openProfile(message.userId)}
-              className="text-[15px] font-bold text-[#1D1C1D] hover:underline"
+              className="text-[15px] font-bold text-slack-primary hover:underline"
             >
               {message.user.displayName || message.user.name}
             </button>
-            <span className="text-[12px] font-normal text-[#616061] ml-1" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>{formattedTime}</span>
+            <span className="text-[12px] font-normal text-slack-secondary ml-1" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>{formattedTime}</span>
             {message.isEdited && (
-              <span className="text-[12px] text-[#616061]">(edited)</span>
+              <span className="text-[12px] text-slack-secondary">(edited)</span>
             )}
             {message.isPinned && (
-              <span data-testid="pin-indicator" className="inline-flex items-center gap-0.5 text-[12px] text-[#E8912D] ml-1">
+              <span data-testid="pin-indicator" className="inline-flex items-center gap-0.5 text-[12px] text-slack-pin-indicator ml-1">
                 <Pin className="h-3 w-3" />
                 Pinned
               </span>
@@ -149,29 +152,29 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               onKeyDown={handleEditKeyDown}
-              className="w-full rounded border border-[#1264A3] bg-white p-2 text-[15px] text-[#1D1C1D] leading-[22px] resize-none outline-none"
+              className="w-full rounded border border-slack-link bg-white p-2 text-[15px] text-slack-primary leading-[22px] resize-none outline-none"
               rows={2}
             />
             <div className="mt-1 flex items-center gap-2 text-[12px]">
               <button
                 onClick={handleCancelEdit}
-                className="text-[#616061] hover:underline"
+                className="text-slack-secondary hover:underline"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveEdit}
-                className="rounded bg-[#007a5a] px-3 py-1 text-white hover:bg-[#005e46]"
+                className="rounded bg-slack-btn px-3 py-1 text-white hover:bg-slack-btn-hover"
               >
                 Save
               </button>
             </div>
           </div>
         ) : (
-          <div className="text-[15px] font-normal text-[#1D1C1D] leading-[22px] whitespace-pre-wrap break-words">
+          <div className="text-[15px] font-normal text-slack-primary leading-[22px] whitespace-pre-wrap break-words">
             {renderMessageContent(message.content)}
             {!showAvatar && message.isEdited && (
-              <span className="text-[12px] text-[#616061] ml-1">(edited)</span>
+              <span className="text-[12px] text-slack-secondary ml-1">(edited)</span>
             )}
           </div>
         )}
@@ -205,7 +208,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
                     className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50"
                   >
                     <FileIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                    <span className="text-[13px] text-[#1264A3] hover:underline truncate max-w-[200px]">
+                    <span className="text-[13px] text-slack-link hover:underline truncate max-w-[200px]">
                       {file.originalName}
                     </span>
                     <span className="text-[11px] text-gray-400 flex-shrink-0">
@@ -231,7 +234,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
         {message.threadCount > 0 && (
           <button
             onClick={() => onOpenThread?.(message.id)}
-            className="mt-[6px] flex items-center gap-2 rounded px-1 py-0.5 text-[13px] text-[#1264A3] hover:bg-[#e8f5fa] -ml-1"
+            className="mt-[6px] flex items-center gap-2 rounded px-1 py-0.5 text-[13px] text-slack-link hover:bg-slack-highlight -ml-1"
           >
             {/* Mini avatar stack */}
             <div data-testid="thread-avatars" className="flex -space-x-1">
@@ -261,83 +264,29 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
 
       {/* Hover Actions */}
       {(isHovered || keepOpen) && (
-        <div className="absolute -top-4 right-5 flex items-center gap-0.5 rounded-lg border border-[#E0E0E0] bg-white p-0.5 shadow-sm">
-          <button
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-          >
-            <Smile className="h-4 w-4 text-[#616061]" />
-          </button>
-          <button
-            onClick={() => onOpenThread?.(message.id)}
-            className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-          >
-            <MessageSquare className="h-4 w-4 text-[#616061]" />
-          </button>
-          <button
-            data-testid="bookmark-button"
-            onClick={() => toggleBookmark(message.id)}
-            className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-            title={isBookmarked ? 'Remove bookmark' : 'Bookmark this message'}
-          >
-            <Bookmark data-testid="bookmark-icon" className={cn('h-4 w-4', isBookmarked ? 'text-yellow-500 fill-current' : 'text-[#616061]')} />
-          </button>
-          <button
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-          >
-            <MoreHorizontal className="h-4 w-4 text-[#616061]" />
-          </button>
-        </div>
+        <MessageToolbar
+          className="absolute -top-4 right-5"
+          onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          onThreadClick={() => onOpenThread?.(message.id)}
+          onBookmarkClick={() => toggleBookmark(message.id)}
+          isBookmarked={isBookmarked}
+          onMoreClick={() => setShowMoreMenu(!showMoreMenu)}
+        />
       )}
 
       {/* More actions dropdown */}
       {showMoreMenu && (
-        <div className="absolute -top-4 right-5 mt-9 z-50 w-48 rounded-lg border border-[#E0E0E0] bg-white py-1 shadow-lg">
-          <button
-            onClick={async () => {
-              setShowMoreMenu(false);
-              try {
-                if (message.isPinned) {
-                  await unpinMessage(message.id);
-                } else {
-                  await pinMessage(message.id);
-                }
-                // Update the message in the store
-                const { messages } = useMessageStore.getState();
-                useMessageStore.setState({
-                  messages: messages.map((m) =>
-                    m.id === message.id ? { ...m, isPinned: !message.isPinned } : m
-                  ),
-                });
-              } catch (err) {
-                console.error('Failed to pin/unpin:', err);
-              }
-            }}
-            className="flex w-full items-center gap-2 px-4 py-1.5 text-[14px] text-[#1D1C1D] hover:bg-[#F8F8F8]"
-          >
-            <Pin className="h-4 w-4" />
-            {message.isPinned ? 'Unpin message' : 'Pin message'}
-          </button>
-          {isOwner && (
-            <>
-              <button
-                onClick={handleEdit}
-                className="flex w-full items-center gap-2 px-4 py-1.5 text-[14px] text-[#1D1C1D] hover:bg-[#F8F8F8]"
-              >
-                <Pencil className="h-4 w-4" />
-                Edit message
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex w-full items-center gap-2 px-4 py-1.5 text-[14px] text-red-600 hover:bg-[#F8F8F8]"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete message
-              </button>
-            </>
-          )}
-        </div>
+        <MessageActionsMenu
+          className="absolute -top-4 right-5 mt-9 z-50"
+          onPin={() => {
+            setShowMoreMenu(false);
+            togglePin(message.id, message.isPinned);
+          }}
+          isPinned={message.isPinned}
+          showOwnerActions={isOwner}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
 
       {/* Emoji Picker from hover toolbar */}

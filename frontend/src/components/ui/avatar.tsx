@@ -52,7 +52,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
               onError={() => setImageError(true)}
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center bg-[#3F0E40] text-white font-medium">
+            <span className="flex h-full w-full items-center justify-center bg-slack-aubergine text-white font-medium">
               {initials}
             </span>
           )}

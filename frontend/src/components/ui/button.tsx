@@ -9,21 +9,29 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-[#007a5a] text-white shadow hover:bg-[#005e46]',
+          'bg-slack-btn text-white shadow hover:bg-slack-btn-hover',
         destructive:
           'bg-red-600 text-white shadow-sm hover:bg-red-700',
         outline:
-          'border border-[#1d1c1d] bg-transparent shadow-sm hover:bg-gray-100',
+          'border border-slack-primary bg-transparent shadow-sm hover:bg-gray-100',
         secondary:
-          'bg-gray-100 text-[#1d1c1d] shadow-sm hover:bg-gray-200',
+          'bg-gray-100 text-slack-primary shadow-sm hover:bg-gray-200',
         ghost: 'hover:bg-gray-100',
-        link: 'text-[#1264a3] underline-offset-4 hover:underline',
+        link: 'text-slack-link underline-offset-4 hover:underline',
+        toolbar:
+          'rounded text-slack-secondary hover:bg-slack-hover hover:text-slack-primary',
+        'menu-item':
+          'w-full justify-start gap-2 rounded-none px-4 py-1.5 text-[14px] font-normal text-slack-primary hover:bg-slack-hover',
+        'menu-item-danger':
+          'w-full justify-start gap-2 rounded-none px-4 py-1.5 text-[14px] font-normal text-red-600 hover:bg-slack-hover',
       },
       size: {
         default: 'h-9 px-4 py-2',
         sm: 'h-8 rounded-md px-3 text-xs',
         lg: 'h-10 rounded-md px-8',
         icon: 'h-9 w-9',
+        'icon-sm': 'h-7 w-7',
+        'icon-xs': 'h-6 w-6',
       },
     },
     defaultVariants: {

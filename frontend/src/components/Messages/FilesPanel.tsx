@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { X, FileText, FileImage, FileArchive, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { getChannelFiles, getUserFiles, type ApiFileWithUser } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 
 interface FilesPanelProps {
   channelId?: number;
@@ -25,13 +26,17 @@ function FileIcon({ mimetype }: { mimetype: string }) {
 export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchFiles = useCallback(() => {
     setIsLoading(true);
     const fetchFn = channelId ? getChannelFiles(channelId) : getUserFiles();
     fetchFn
-      .then((data) => setFiles(data))
-      .catch((err) => console.error('Failed to fetch files:', err))
+      .then((data) => {
+        setFiles(data);
+        setLoadError(null);
+      })
+      .catch(() => setLoadError('Failed to load files.'))
       .finally(() => setIsLoading(false));
   }, [channelId]);
 
@@ -42,22 +47,21 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   const panelTitle = title ?? (channelId ? 'Channel files' : 'All files');
 
   return (
-    <div data-testid="files-panel" className="flex w-[300px] flex-col border-l border-[#E0E0E0] bg-white">
-      <div className="flex h-[49px] items-center justify-between border-b border-[#E0E0E0] px-4">
+    <div data-testid="files-panel" className="flex w-[300px] flex-col border-l border-slack-border bg-white">
+      <div className="flex h-[49px] items-center justify-between border-b border-slack-border px-4">
         <div className="flex items-center gap-1.5">
-          <FileText className="h-4 w-4 text-[#616061]" />
-          <span className="text-[15px] font-bold text-[#1D1C1D]">{panelTitle}</span>
+          <FileText className="h-4 w-4 text-slack-secondary" />
+          <span className="text-[15px] font-bold text-slack-primary">{panelTitle}</span>
         </div>
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-        >
-          <X className="h-4 w-4 text-[#616061]" />
-        </button>
+        <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <X className="h-4 w-4 text-slack-secondary" />
+        </Button>
       </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
+        ) : loadError ? (
+          <div className="p-4 text-center text-sm text-red-600">{loadError}</div>
         ) : files.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500">No files uploaded yet</div>
         ) : (
@@ -81,11 +85,11 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-[13px] font-medium text-[#1264A3] hover:underline truncate"
+                    className="block text-[13px] font-medium text-slack-link hover:underline truncate"
                   >
                     {file.originalName}
                   </a>
-                  <p className="text-[11px] text-[#616061]">
+                  <p className="text-[11px] text-slack-secondary">
                     {formatBytes(file.size)} &middot; {file.user.name} &middot;{' '}
                     {format(new Date(file.createdAt), 'MMM d, yyyy')}
                   </p>
@@ -93,10 +97,10 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
                 <a
                   href={file.url}
                   download={file.originalName}
-                  className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded hover:bg-[#F8F8F8]"
+                  className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded hover:bg-slack-hover"
                   title="Download"
                 >
-                  <Download className="h-3.5 w-3.5 text-[#616061]" />
+                  <Download className="h-3.5 w-3.5 text-slack-secondary" />
                 </a>
               </div>
             </div>

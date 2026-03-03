@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { getMyProfile, getUserProfile, updateMyProfile, type UserProfile } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { format } from 'date-fns';
@@ -59,13 +60,10 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-[17px] font-bold text-[#1D1C1D]">Profile</h2>
-          <button
-            onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded hover:bg-gray-100"
-          >
+          <h2 className="text-[17px] font-bold text-slack-primary">Profile</h2>
+          <Button variant="toolbar" size="icon-sm" onClick={onClose}>
             <X className="h-4 w-4 text-gray-500" />
-          </button>
+          </Button>
         </div>
 
         {isLoading ? (
@@ -82,7 +80,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                 status={profile.status as any}
               />
               <div>
-                <p className="text-[18px] font-bold text-[#1D1C1D]">{profile.name}</p>
+                <p className="text-[18px] font-bold text-slack-primary">{profile.name}</p>
                 <p className="text-[13px] text-gray-500">{profile.email}</p>
               </div>
             </div>
@@ -96,7 +94,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                     name="name"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-[#1264A3]"
+                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-slack-link"
                   />
                 </div>
                 <div>
@@ -107,27 +105,20 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                     onChange={(e) => setEditBio(e.target.value)}
                     placeholder="Tell people about yourself"
                     rows={3}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-[#1264A3] resize-none"
+                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-[14px] outline-none focus:border-slack-link resize-none"
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => {
+                  <Button variant="ghost" size="sm" onClick={() => {
                       setIsEditing(false);
                       setEditName(profile.name);
                       setEditBio(profile.bio || '');
-                    }}
-                    className="rounded px-3 py-1.5 text-[13px] text-gray-600 hover:bg-gray-100"
-                  >
+                    }}>
                     Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="rounded bg-[#007a5a] px-4 py-1.5 text-[13px] text-white hover:bg-[#005e46] disabled:opacity-50"
-                  >
+                  </Button>
+                  <Button size="sm" disabled={isSaving} onClick={handleSave}>
                     Save
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -136,32 +127,29 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                 {profile.bio && (
                   <div className="mb-4">
                     <p className="text-[13px] font-medium text-gray-500 mb-1">Bio</p>
-                    <p className="text-[14px] text-[#1D1C1D]">{profile.bio}</p>
+                    <p className="text-[14px] text-slack-primary">{profile.bio}</p>
                   </div>
                 )}
 
                 {/* Status */}
                 <div className="mb-4">
                   <p className="text-[13px] font-medium text-gray-500 mb-1">Status</p>
-                  <p className="text-[14px] text-[#1D1C1D] capitalize">{profile.status || 'offline'}</p>
+                  <p className="text-[14px] text-slack-primary capitalize">{profile.status || 'offline'}</p>
                 </div>
 
                 {/* Joined date */}
                 <div className="mb-4">
                   <p className="text-[13px] font-medium text-gray-500 mb-1">Joined</p>
-                  <p className="text-[14px] text-[#1D1C1D]">
+                  <p className="text-[14px] text-slack-primary">
                     {format(new Date(profile.createdAt), 'MMMM d, yyyy')}
                   </p>
                 </div>
 
                 {/* Edit button for own profile */}
                 {isOwnProfile && (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="w-full rounded border border-gray-300 py-2 text-[13px] font-medium text-[#1D1C1D] hover:bg-gray-50"
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => setIsEditing(true)}>
                     Edit Profile
-                  </button>
+                  </Button>
                 )}
               </>
             )}

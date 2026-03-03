@@ -84,7 +84,8 @@ export const useAuthStore = create<AuthState>((set) => ({
             },
           });
         }).catch(() => {
-          // If profile fetch fails, token may be expired
+          localStorage.removeItem('token');
+          set({ user: null, isAuthenticated: false });
         });
       } catch {
         localStorage.removeItem('token');

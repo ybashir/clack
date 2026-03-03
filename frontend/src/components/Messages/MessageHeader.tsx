@@ -6,6 +6,7 @@ import { useChannelStore } from '@/stores/useChannelStore';
 import type { Channel } from '@/lib/types';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { Avatar } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 interface MessageHeaderProps {
   channel: Channel;
@@ -69,7 +70,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
       .then((data) => {
         if (!cancelled) setPreviewMembers(data.slice(0, 3));
       })
-      .catch(() => {});
+      .catch(() => { /* Non-critical preview — header still usable without avatars */ });
     return () => {
       cancelled = true;
     };
@@ -115,24 +116,25 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
   };
 
   return (
-    <header className="flex flex-col border-b border-[#E0E0E0] bg-white">
+    <header className="flex flex-col border-b border-slack-border bg-white">
       {/* Top Row - Channel name and actions */}
       <div className="flex h-[49px] items-center justify-between px-4">
         {/* Left Section */}
         <div className="flex items-center gap-1">
-          <button className="flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-[#F8F8F8]">
-            <Hash className="h-[16px] w-[16px] text-[#616061]" />
-            <span className="text-[18px] font-black text-[#1D1C1D]">{channel.name}</span>
-            <ChevronDown className="h-4 w-4 text-[#616061]" />
+          <button className="flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-slack-hover">
+            <Hash className="h-[16px] w-[16px] text-slack-secondary" />
+            <span className="text-[18px] font-black text-slack-primary">{channel.name}</span>
+            <ChevronDown className="h-4 w-4 text-slack-secondary" />
           </button>
-          <button
+          <Button
+            variant="toolbar"
+            size="icon-xs"
             data-testid="star-channel-button"
             onClick={() => toggleStar(channel.id)}
-            className="flex h-6 w-6 items-center justify-center rounded hover:bg-[#F8F8F8]"
             title={channel.isStarred ? 'Remove from Starred' : 'Add to Starred'}
           >
-            <Star className={cn('h-4 w-4', channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-[#616061]')} />
-          </button>
+            <Star className={cn('h-4 w-4', channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-slack-secondary')} />
+          </Button>
         </div>
 
         {/* Right Section */}
@@ -141,8 +143,8 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             data-testid="member-avatars-button"
             onClick={onToggleMembers}
             className={cn(
-              'flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[13px] hover:bg-[#F8F8F8]',
-              showMembers ? 'text-[#1264A3] bg-[#E8F5FA]' : 'text-[#616061]'
+              'flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[13px] hover:bg-slack-hover',
+              showMembers ? 'text-slack-link bg-slack-highlight' : 'text-slack-secondary'
             )}
           >
             {previewMembers.length > 0 ? (
@@ -166,20 +168,20 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             ) : null}
             <span>{channel.memberCount}</span>
           </button>
-          <div className="h-4 w-px bg-[#E0E0E0]" />
-          <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-[#F8F8F8]">
-            <Bell className="h-4 w-4 text-[#616061]" />
-          </button>
-          <div className="h-4 w-px bg-[#E0E0E0]" />
+          <div className="h-4 w-px bg-slack-border" />
+          <Button variant="toolbar" size="icon-xs">
+            <Bell className="h-4 w-4 text-slack-secondary" />
+          </Button>
+          <div className="h-4 w-px bg-slack-border" />
           <div className="relative" ref={searchRef}>
-            <Search className="absolute left-2 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-[#616061]" />
+            <Search className="absolute left-2 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-slack-secondary" />
             <input
               type="text"
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="h-[26px] w-[140px] rounded-md border border-[#E0E0E0] bg-white pl-7 pr-2 text-[13px] placeholder:text-[#616061] focus:outline-none focus:border-[#1264A3] focus:w-[240px] transition-all"
+              className="h-[26px] w-[140px] rounded-md border border-slack-border bg-white pl-7 pr-2 text-[13px] placeholder:text-slack-secondary focus:outline-none focus:border-slack-link focus:w-[240px] transition-all"
             />
             {/* Search Results Dropdown */}
             {showResults && (
@@ -218,22 +220,23 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             )}
           </div>
           <div className="relative" ref={menuRef}>
-            <button
+            <Button
+              variant="toolbar"
+              size="icon-xs"
               data-testid="channel-header-menu"
               onClick={() => setShowMenu((v) => !v)}
-              className="flex h-6 w-6 items-center justify-center rounded hover:bg-[#F8F8F8]"
             >
-              <MoreVertical className="h-4 w-4 text-[#616061]" />
-            </button>
+              <MoreVertical className="h-4 w-4 text-slack-secondary" />
+            </Button>
             {showMenu && (
               <div className="absolute right-0 top-7 z-50 min-w-[160px] rounded-lg border border-gray-200 bg-white shadow-lg py-1">
-                <button
+                <Button
+                  variant="menu-item-danger"
                   onClick={handleLeaveChannel}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
                   Leave channel
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -254,8 +257,8 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             className={cn(
               'flex items-center gap-1 rounded px-2 py-[3px] text-[13px] transition-colors',
               (tab.id === 'pins' && showPins) || (tab.id === 'files' && showFiles)
-                ? 'bg-[#F0F0F0] text-[#1D1C1D] font-medium'
-                : 'text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]'
+                ? 'bg-slack-active-tab text-slack-primary font-medium'
+                : 'text-slack-secondary hover:bg-slack-hover hover:text-slack-primary'
             )}
           >
             <tab.icon className="h-[14px] w-[14px]" />

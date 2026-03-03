@@ -24,10 +24,10 @@ export function DirectMessageItem({
         'flex w-full items-center gap-2 h-[28px] text-[15px] transition-all rounded-[6px] text-left',
         'mx-2 w-[calc(100%-16px)] px-4',
         isActive
-          ? 'bg-white text-[#1D1C1D] font-bold'
+          ? 'bg-white text-slack-primary font-bold'
           : hasUnread
-            ? 'text-white font-bold hover:bg-[rgba(255,255,255,0.1)]'
-            : 'text-white/70 font-normal hover:bg-[rgba(255,255,255,0.1)]'
+            ? 'text-white font-bold hover:bg-white/10'
+            : 'text-white/70 font-normal hover:bg-white/10'
       )}
     >
       <Avatar
@@ -41,7 +41,7 @@ export function DirectMessageItem({
       {hasUnread && (
         <span className={cn(
           'text-[12px] ml-1 min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5',
-          isActive ? 'bg-[#1D1C1D] text-white' : 'bg-[#CD2553] text-white'
+          isActive ? 'bg-slack-primary text-white' : 'bg-slack-badge text-white'
         )}>
           {dm.unreadCount}
         </span>

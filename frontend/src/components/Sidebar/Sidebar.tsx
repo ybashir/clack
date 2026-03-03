@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Plus,
   LogOut,
-  Search,
   Star,
   User,
 } from 'lucide-react';
@@ -16,9 +15,14 @@ import { useChannelStore } from '@/stores/useChannelStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { Avatar } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
 import { FilesPanel } from '@/components/Messages/FilesPanel';
+import { AddChannelDialog } from './AddChannelDialog';
+import { AddTeammatesDialog } from './AddTeammatesDialog';
+import type { Channel } from '@/lib/types';
+import type { AuthUser } from '@/lib/api';
 
 const navItems = [
   { icon: MessageSquare, label: 'DMs', id: 'dms' },
@@ -27,23 +31,17 @@ const navItems = [
 
 export function Sidebar() {
   const navigate = useNavigate();
-  const { channels, directMessages, activeChannelId, activeDMId, setActiveChannel, setActiveDM, startDM, createChannel, joinChannel, fetchChannels } =
+  const { channels, directMessages, activeChannelId, activeDMId, startDM, createChannel, joinChannel, fetchChannels } =
     useChannelStore();
   const { user, logout } = useAuthStore();
   const { openProfile } = useProfileStore();
   const [channelsExpanded, setChannelsExpanded] = useState(true);
   const [dmsExpanded, setDmsExpanded] = useState(true);
   const [activeNav, setActiveNav] = useState('dms');
-  const [showCreateChannel, setShowCreateChannel] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
-  const [addChannelMode, setAddChannelMode] = useState<'create' | 'browse'>('create');
-  const [browseChannels, setBrowseChannels] = useState<typeof channels>([]);
+  const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
   const [showAddTeammates, setShowAddTeammates] = useState(false);
-  const [users, setUsers] = useState<import('@/lib/api').AuthUser[]>([]);
-  const [teammateSearch, setTeammateSearch] = useState('');
-  const [createChannelError, setCreateChannelError] = useState('');
   const avatarMenuRef = useRef<HTMLDivElement>(null);
 
   // Close avatar menu when clicking outside
@@ -60,17 +58,17 @@ export function Sidebar() {
   }, [showAvatarMenu]);
 
   const handleOpenAddChannel = () => {
-    setAddChannelMode('create');
     setShowAddChannelDialog(true);
-    setNewChannelName('');
-    setCreateChannelError('');
   };
 
-  const handleBrowseChannels = async () => {
-    setAddChannelMode('browse');
-    // Show non-member channels
+  const handleBrowseChannels = () => {
     const nonMember = channels.filter((ch) => !ch.isMember && !ch.isPrivate);
     setBrowseChannels(nonMember);
+  };
+
+  const handleCreateChannel = async (name: string) => {
+    await createChannel(name);
+    setShowAddChannelDialog(false);
   };
 
   const handleJoinChannel = async (channelId: number) => {
@@ -85,19 +83,12 @@ export function Sidebar() {
 
   const handleOpenAddTeammates = () => {
     setShowAddTeammates(true);
-    setTeammateSearch('');
-    setUsers([]);
-    fetchTeammates();
   };
 
-  const fetchTeammates = async (search?: string) => {
-    try {
-      const { getUsers } = await import('@/lib/api');
-      const allUsers = await getUsers(search);
-      setUsers(allUsers.filter((u) => u.id !== user?.id));
-    } catch {
-      // ignore
-    }
+  const handleSelectUser = (u: AuthUser) => {
+    startDM(u.id, u.name, u.avatar ?? undefined);
+    setShowAddTeammates(false);
+    navigate(`/d/${u.id}`);
   };
 
   const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember);
@@ -107,9 +98,9 @@ export function Sidebar() {
   return (
     <div className="flex h-full">
       {/* Nav Rail - 70px wide, darker purple */}
-      <div className="flex w-[70px] flex-col items-center bg-[#39063A] pt-2 gap-0">
+      <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-2 gap-0">
         {/* Workspace Icon - 36x36px */}
-        <button className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#3F0E40] font-bold text-lg hover:rounded-xl transition-all">
+        <button className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slack-aubergine font-bold text-lg hover:rounded-xl transition-all">
           S
         </button>
 
@@ -128,7 +119,7 @@ export function Sidebar() {
             className={cn(
               'relative flex flex-col h-[68px] w-[52px] items-center justify-center gap-1 rounded-lg transition-colors',
               activeNav === item.id
-                ? 'bg-[#58427C]/50 text-white'
+                ? 'bg-slack-sidebar-hover/50 text-white'
                 : 'text-white/70 hover:bg-white/10 hover:text-white'
             )}
           >
@@ -167,26 +158,14 @@ export function Sidebar() {
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
-                <button
-                  onClick={() => {
-                    setShowAvatarMenu(false);
-                    openProfile();
-                  }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
+                <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); openProfile(); }}>
                   <User className="h-4 w-4" />
                   Profile
-                </button>
-                <button
-                  onClick={() => {
-                    setShowAvatarMenu(false);
-                    logout();
-                  }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
+                </Button>
+                <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); logout(); }}>
                   <LogOut className="h-4 w-4" />
                   Sign out
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -194,10 +173,10 @@ export function Sidebar() {
       </div>
 
       {/* Channel Sidebar - lighter/warmer purple with overlay effect */}
-      <div data-testid="sidebar" className="flex w-[260px] flex-col bg-[#4A154B] text-[rgba(255,255,255,0.7)]">
+      <div data-testid="sidebar" className="flex w-[260px] flex-col bg-slack-sidebar text-white/70">
         {/* Workspace Header - 44px height, 6px 16px padding */}
         <div className="flex h-[44px] items-center justify-between border-b border-white/10 px-4 py-[6px]">
-          <button className="flex items-center gap-1 font-bold text-white hover:bg-[rgba(88,66,124,1)] rounded px-2 py-1 -ml-2">
+          <button className="flex items-center gap-1 font-bold text-white hover:bg-slack-sidebar-hover rounded px-2 py-1 -ml-2">
             <span className="text-[18px] font-bold">Slawk</span>
             <ChevronDown className="h-4 w-4" />
           </button>
@@ -233,7 +212,7 @@ export function Sidebar() {
           <div className="mb-3 mt-3">
             <button
               onClick={() => setChannelsExpanded(!channelsExpanded)}
-              className="flex w-full items-center gap-1.5 pl-4 pr-2 py-[6px] text-[15px] hover:bg-[rgba(88,66,124,0.7)]"
+              className="flex w-full items-center gap-1.5 pl-4 pr-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
             >
               {channelsExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -264,7 +243,7 @@ export function Sidebar() {
                 ))}
                 <button
                   onClick={handleOpenAddChannel}
-                  className="flex items-center gap-2 mx-2 w-[calc(100%-16px)] px-4 h-[28px] text-[15px] rounded-[6px] text-left text-white/70 hover:bg-[rgba(88,66,124,1)] hover:text-white"
+                  className="flex items-center gap-2 mx-2 w-[calc(100%-16px)] px-4 h-[28px] text-[15px] rounded-[6px] text-left text-white/70 hover:bg-slack-sidebar-hover hover:text-white"
                 >
                   <Plus className="w-4 h-4 flex-shrink-0" />
                   <span>Add channels</span>
@@ -277,7 +256,7 @@ export function Sidebar() {
           <div>
             <button
               onClick={() => setDmsExpanded(!dmsExpanded)}
-              className="flex w-full items-center gap-1.5 pl-4 pr-2 py-[6px] text-[15px] hover:bg-[rgba(88,66,124,0.7)]"
+              className="flex w-full items-center gap-1.5 pl-4 pr-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
             >
               {dmsExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -299,7 +278,7 @@ export function Sidebar() {
                 ))}
                 <button
                   onClick={handleOpenAddTeammates}
-                  className="flex items-center gap-2 mx-2 w-[calc(100%-16px)] px-4 h-[28px] text-[15px] rounded-[6px] text-left text-white/70 hover:bg-[rgba(88,66,124,1)] hover:text-white"
+                  className="flex items-center gap-2 mx-2 w-[calc(100%-16px)] px-4 h-[28px] text-[15px] rounded-[6px] text-left text-white/70 hover:bg-slack-sidebar-hover hover:text-white"
                 >
                   <Plus className="w-5 h-5 flex-shrink-0" />
                   <span>Add teammates</span>
@@ -311,134 +290,14 @@ export function Sidebar() {
       </div>
 
       {/* Add Channel Dialog (Create + Browse) */}
-      {showAddChannelDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-[520px] rounded-lg bg-white shadow-xl">
-            {/* Tabs */}
-            <div className="flex border-b border-gray-200">
-              <button
-                onClick={() => setAddChannelMode('create')}
-                className={cn(
-                  'flex-1 px-4 py-3 text-[14px] font-medium transition-colors',
-                  addChannelMode === 'create'
-                    ? 'border-b-2 border-[#1264A3] text-[#1264A3]'
-                    : 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                Create a channel
-              </button>
-              <button
-                onClick={handleBrowseChannels}
-                className={cn(
-                  'flex-1 px-4 py-3 text-[14px] font-medium transition-colors',
-                  addChannelMode === 'browse'
-                    ? 'border-b-2 border-[#1264A3] text-[#1264A3]'
-                    : 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                Browse channels
-              </button>
-            </div>
-
-            <div className="p-6">
-              {addChannelMode === 'create' ? (
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const name = newChannelName.trim();
-                    if (!name) return;
-                    try {
-                      await createChannel(name);
-                      setNewChannelName('');
-                      setCreateChannelError('');
-                      setShowAddChannelDialog(false);
-                    } catch {
-                      setCreateChannelError('Channel name already exists');
-                    }
-                  }}
-                >
-                  <label className="block text-[14px] font-medium text-[#1D1C1D] mb-1">
-                    Channel name
-                  </label>
-                  <input
-                    type="text"
-                    value={newChannelName}
-                    onChange={(e) => {
-                      setNewChannelName(e.target.value);
-                      if (createChannelError) setCreateChannelError('');
-                    }}
-                    placeholder="e.g. plan-budget"
-                    autoFocus
-                    className="w-full rounded border border-gray-300 px-3 py-2 text-[15px] text-[#1D1C1D] outline-none focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3]"
-                  />
-                  {createChannelError && (
-                    <p data-testid="channel-error" className="mt-1 text-[13px] text-red-600">
-                      {createChannelError}
-                    </p>
-                  )}
-                  <div className="mt-4 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddChannelDialog(false);
-                        setNewChannelName('');
-                        setCreateChannelError('');
-                      }}
-                      className="rounded px-4 py-2 text-[14px] font-medium text-[#1D1C1D] hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={!newChannelName.trim()}
-                      className="rounded bg-[#007a5a] px-4 py-2 text-[14px] font-medium text-white hover:bg-[#005e46] disabled:opacity-50"
-                    >
-                      Create
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div>
-                  {browseChannels.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">No channels available to join</p>
-                  ) : (
-                    <div className="max-h-[300px] overflow-y-auto space-y-1">
-                      {browseChannels.map((ch) => (
-                        <div
-                          key={ch.id}
-                          data-channel-name={ch.name}
-                          className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-50"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">#</span>
-                            <span className="text-[15px] text-[#1D1C1D]">{ch.name}</span>
-                            <span className="text-[12px] text-gray-500">{ch.memberCount} members</span>
-                          </div>
-                          <button
-                            onClick={() => handleJoinChannel(ch.id)}
-                            className="rounded bg-[#007a5a] px-3 py-1 text-[13px] font-medium text-white hover:bg-[#005e46]"
-                          >
-                            Join
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddChannelDialog(false)}
-                      className="rounded px-4 py-2 text-[14px] font-medium text-[#1D1C1D] hover:bg-gray-100"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <AddChannelDialog
+        open={showAddChannelDialog}
+        onClose={() => setShowAddChannelDialog(false)}
+        onCreateChannel={handleCreateChannel}
+        browseChannels={browseChannels}
+        onJoinChannel={handleJoinChannel}
+        onBrowse={handleBrowseChannels}
+      />
 
       {/* Files Panel - shown when Files nav item is active */}
       {activeNav === 'files' && (
@@ -456,58 +315,11 @@ export function Sidebar() {
       )}
 
       {/* Add Teammates Dialog */}
-      {showAddTeammates && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-[480px] rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="text-[22px] font-bold text-[#1D1C1D] mb-2">Direct message</h2>
-            <p className="text-[14px] text-gray-500 mb-4">Find or start a conversation</p>
-            <input
-              data-testid="teammate-search"
-              type="text"
-              value={teammateSearch}
-              onChange={(e) => {
-                setTeammateSearch(e.target.value);
-                fetchTeammates(e.target.value || undefined);
-              }}
-              placeholder="Search by name..."
-              autoFocus
-              className="w-full rounded border border-gray-300 px-3 py-2 text-[15px] text-[#1D1C1D] outline-none focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3] mb-3"
-            />
-            {users.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No other users found</p>
-            ) : (
-              <div className="max-h-[300px] overflow-y-auto space-y-1">
-                {users.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => {
-                      startDM(u.id, u.name, u.avatar ?? undefined);
-                      setShowAddTeammates(false);
-                      navigate(`/d/${u.id}`);
-                    }}
-                    className="flex w-full items-center gap-3 rounded px-3 py-2 hover:bg-gray-50 text-left"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-[#611f69] text-white text-sm font-medium">
-                      {u.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-medium text-[#1D1C1D]">{u.name}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setShowAddTeammates(false)}
-                className="rounded px-4 py-2 text-[14px] font-medium text-[#1D1C1D] hover:bg-gray-100"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddTeammatesDialog
+        open={showAddTeammates}
+        onClose={() => setShowAddTeammates(false)}
+        onSelectUser={handleSelectUser}
+      />
     </div>
   );
 }

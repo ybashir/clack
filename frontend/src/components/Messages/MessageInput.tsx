@@ -2,48 +2,29 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import {
-  Bold,
-  Italic,
-  Strikethrough,
-  Link,
-  ListOrdered,
-  List,
-  Code,
-  CodeSquare,
-  Quote,
   Plus,
   AtSign,
   Smile,
   SendHorizontal,
   X,
   FileIcon,
-  Link2,
-  Clock,
   ChevronDown,
-  Calendar,
   CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { EmojiPicker } from '@/components/ui/emoji-picker';
 import { uploadFile, getUsers, scheduleMessage, type ApiFile, type AuthUser } from '@/lib/api';
+import { LinkModal } from './LinkModal';
+import { ScheduleModal } from './ScheduleModal';
+import { ScheduleMenu } from './ScheduleMenu';
+import { FormatToolbar } from './FormatToolbar';
 
 interface MessageInputProps {
   channelId: number;
   channelName: string;
 }
-
-const formatButtons = [
-  { icon: Bold, label: 'Bold', format: 'bold' },
-  { icon: Italic, label: 'Italic', format: 'italic' },
-  { icon: Strikethrough, label: 'Strikethrough', format: 'strike' },
-  { icon: Link, label: 'Link', format: 'link' },
-  { icon: ListOrdered, label: 'Ordered List', format: 'list', value: 'ordered' },
-  { icon: List, label: 'Bullet List', format: 'list', value: 'bullet' },
-  { icon: Code, label: 'Code', format: 'code' },
-  { icon: CodeSquare, label: 'Code Block', format: 'code-block' },
-  { icon: Quote, label: 'Quote', format: 'blockquote' },
-];
 
 export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -62,19 +43,17 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
   const linkSavedRangeRef = useRef<{ index: number; length: number } | null>(null);
-  const linkUrlInputRef = useRef<HTMLInputElement>(null);
   const mentionDropdownRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   // Schedule message state
   const [showScheduleMenu, setShowScheduleMenu] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [customScheduleAt, setCustomScheduleAt] = useState('');
   const [scheduleConfirm, setScheduleConfirm] = useState<string | null>(null);
   const [isScheduling, setIsScheduling] = useState(false);
   const scheduleMenuRef = useRef<HTMLDivElement>(null);
 
-  const { sendMessage } = useMessageStore();
+  const { sendMessage, sendError, clearSendError } = useMessageStore();
 
   const serializeDelta = useCallback((quill: Quill): string => {
     const delta = quill.getContents();
@@ -145,28 +124,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     setCanSend(false);
     await sendMessage(channelId, content, fileIds.length > 0 ? fileIds : undefined);
   }, [channelId, sendMessage, pendingFiles, serializeDelta]);
-
-  // Build preset schedule options relative to now
-  const getPresetOptions = useCallback(() => {
-    const now = new Date();
-    const opts: { label: string; date: Date }[] = [];
-
-    const in20 = new Date(now.getTime() + 20 * 60 * 1000);
-    opts.push({ label: 'In 20 minutes', date: in20 });
-
-    const in1h = new Date(now.getTime() + 60 * 60 * 1000);
-    opts.push({ label: 'In 1 hour', date: in1h });
-
-    const in3h = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    opts.push({ label: 'In 3 hours', date: in3h });
-
-    const tomorrow9am = new Date(now);
-    tomorrow9am.setDate(tomorrow9am.getDate() + 1);
-    tomorrow9am.setHours(9, 0, 0, 0);
-    opts.push({ label: 'Tomorrow at 9:00 AM', date: tomorrow9am });
-
-    return opts;
-  }, []);
 
   const handleSchedule = useCallback(
     async (scheduledAt: Date) => {
@@ -411,8 +368,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
           setLinkText(selectedText);
           setLinkUrl('');
           setShowLinkModal(true);
-          // Focus the URL input after modal renders
-          setTimeout(() => linkUrlInputRef.current?.focus(), 50);
         }
       }
       return;
@@ -434,33 +389,24 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     quill.focus();
   };
 
+  const handleCustomSchedule = () => {
+    setShowScheduleMenu(false);
+    setShowScheduleModal(true);
+  };
+
   const hasContent = canSend || pendingFiles.length > 0;
 
   return (
     <div className="relative px-5 pb-6 pt-4 bg-white">
-      <div className="slawk-editor rounded-[8px] border border-[rgba(29,28,29,0.13)]">
-        {/* Formatting Toolbar — at the top inside the input box */}
-        <div
-          data-testid="formatting-toolbar"
-          className="flex items-center gap-0.5 border-b border-[rgba(29,28,29,0.13)] px-1 py-1"
-        >
-          {formatButtons.map((button) => (
-            <button
-              key={button.label}
-              onClick={() => applyFormat(button.format, button.value)}
-              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
-              title={button.label}
-            >
-              <button.icon className="h-[18px] w-[18px]" />
-            </button>
-          ))}
-        </div>
+      <div className="slawk-editor rounded-[8px] border border-slack-border-light">
+        {/* Formatting Toolbar */}
+        <FormatToolbar onApplyFormat={applyFormat} />
 
         {/* File preview area */}
         {pendingFiles.length > 0 && (
           <div
             data-testid="file-preview"
-            className="flex flex-wrap gap-2 px-3 py-2 border-b border-[rgba(29,28,29,0.13)]"
+            className="flex flex-wrap gap-2 px-3 py-2 border-b border-slack-border-light"
           >
             {pendingFiles.map((file) => (
               <div
@@ -476,7 +422,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
                 ) : (
                   <FileIcon className="h-5 w-5 text-gray-500" />
                 )}
-                <span className="max-w-[120px] truncate text-[13px] text-[#1D1C1D]">
+                <span className="max-w-[120px] truncate text-[13px] text-slack-primary">
                   {file.originalName}
                 </span>
                 <button
@@ -510,11 +456,11 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
                 key={user.id}
                 onClick={() => insertMention(user)}
                 className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[#1264A3] hover:text-white',
-                  index === mentionSelectedIndex ? 'bg-[#1264A3] text-white' : 'text-[#1D1C1D]',
+                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slack-link hover:text-white',
+                  index === mentionSelectedIndex ? 'bg-slack-link text-white' : 'text-slack-primary',
                 )}
               >
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-[#611f69] text-white text-xs font-medium flex-shrink-0">
+                <div className="flex h-6 w-6 items-center justify-center rounded bg-slack-purple text-white text-xs font-medium flex-shrink-0">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="truncate font-medium">{user.name}</span>
@@ -545,28 +491,31 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         {/* Bottom Toolbar */}
         <div className="flex items-center justify-between px-[6px] py-1">
           <div className="flex items-center">
-            <button
+            <Button
               data-testid="attach-file-button"
+              variant="toolbar"
+              size="icon-sm"
               onClick={() => fileInputRef.current?.click()}
-              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
               title="Attach file"
             >
               <Plus className="h-[18px] w-[18px]" />
-            </button>
-            <button
+            </Button>
+            <Button
               ref={emojiButtonRef}
+              variant="toolbar"
+              size="icon-sm"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
             >
               <Smile className="h-[18px] w-[18px]" />
-            </button>
-            <button
+            </Button>
+            <Button
               data-testid="mention-button"
+              variant="toolbar"
+              size="icon-sm"
               onClick={handleMentionButtonClick}
-              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
             >
               <AtSign className="h-[18px] w-[18px]" />
-            </button>
+            </Button>
           </div>
 
           {/* Send button group with schedule dropdown */}
@@ -578,7 +527,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               className={cn(
                 'flex h-7 items-center justify-center rounded-l px-2 transition-colors',
                 hasContent
-                  ? 'bg-[#007a5a] text-white hover:bg-[#005e46]'
+                  ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
                   : 'text-gray-400',
               )}
             >
@@ -592,7 +541,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               className={cn(
                 'flex h-7 w-5 items-center justify-center rounded-r border-l transition-colors',
                 hasContent
-                  ? 'bg-[#007a5a] text-white hover:bg-[#005e46] border-[#005e46]'
+                  ? 'bg-slack-btn text-white hover:bg-slack-btn-hover border-slack-btn-hover'
                   : 'text-gray-300 border-gray-300',
               )}
               title="Schedule message"
@@ -602,52 +551,11 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
             {/* Schedule dropdown menu */}
             {showScheduleMenu && (
-              <div
-                data-testid="schedule-menu"
-                className="absolute bottom-full right-0 mb-1 w-56 rounded-lg border border-gray-200 bg-white shadow-lg z-50 overflow-hidden"
-              >
-                <div className="px-3 py-2 text-[11px] font-semibold text-[#616061] uppercase tracking-wider border-b border-gray-100">
-                  Schedule message
-                </div>
-                {getPresetOptions().map((opt) => (
-                  <button
-                    key={opt.label}
-                    onClick={() => handleSchedule(opt.date)}
-                    disabled={isScheduling}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[#1D1C1D] hover:bg-[#F8F8F8] transition-colors"
-                  >
-                    <Clock className="h-3.5 w-3.5 text-[#616061] flex-shrink-0" />
-                    <div>
-                      <div className="font-medium">{opt.label}</div>
-                      <div className="text-[11px] text-[#616061]">
-                        {opt.date.toLocaleString(undefined, {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-                <div className="border-t border-gray-100">
-                  <button
-                    onClick={() => {
-                      setShowScheduleMenu(false);
-                      setShowScheduleModal(true);
-                      // Default to 1 hour from now
-                      const d = new Date(Date.now() + 60 * 60 * 1000);
-                      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-                      setCustomScheduleAt(local.toISOString().slice(0, 16));
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[#1D1C1D] hover:bg-[#F8F8F8] transition-colors"
-                  >
-                    <Calendar className="h-3.5 w-3.5 text-[#616061] flex-shrink-0" />
-                    <span className="font-medium">Custom time...</span>
-                  </button>
-                </div>
-              </div>
+              <ScheduleMenu
+                onSchedule={handleSchedule}
+                onCustom={handleCustomSchedule}
+                isScheduling={isScheduling}
+              />
             )}
           </div>
         </div>
@@ -662,11 +570,21 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         for new line
       </p>
 
+      {/* Send error banner */}
+      {sendError && (
+        <div className="mt-2 flex items-center justify-between rounded-md bg-red-50 border border-red-200 px-3 py-2 text-[13px] text-red-700">
+          <span>{sendError}</span>
+          <button onClick={clearSendError} className="ml-2 text-red-500 hover:text-red-700">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Schedule confirmation banner */}
       {scheduleConfirm && (
         <div
           data-testid="schedule-confirm"
-          className="mt-2 flex items-center gap-2 rounded-md bg-[#E3F4EC] px-3 py-2 text-[13px] text-[#007a5a] font-medium"
+          className="mt-2 flex items-center gap-2 rounded-md bg-slack-success px-3 py-2 text-[13px] text-slack-btn font-medium"
         >
           <CheckCircle className="h-4 w-4 flex-shrink-0" />
           {scheduleConfirm}
@@ -675,172 +593,23 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
       {/* Custom schedule modal */}
       {showScheduleModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowScheduleModal(false);
-          }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative z-10 w-[380px] rounded-xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[rgba(29,28,29,0.13)] px-5 py-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-[#1264A3]" />
-                <h2 className="text-[17px] font-bold text-[#1D1C1D]">Schedule message</h2>
-              </div>
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="px-5 py-4 flex flex-col gap-3">
-              <label className="text-[13px] font-semibold text-[#1D1C1D]">Date and time</label>
-              <input
-                data-testid="custom-schedule-input"
-                type="datetime-local"
-                value={customScheduleAt}
-                onChange={(e) => setCustomScheduleAt(e.target.value)}
-                min={new Date(Date.now() + 60 * 1000).toISOString().slice(0, 16)}
-                className="h-9 w-full rounded-md border border-[rgba(29,28,29,0.3)] px-3 text-[14px] text-[#1D1C1D] outline-none focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3]"
-              />
-            </div>
-            <div className="flex items-center justify-end gap-2 border-t border-[rgba(29,28,29,0.13)] px-5 py-3">
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="rounded-md border border-[rgba(29,28,29,0.3)] bg-white px-4 py-1.5 text-[14px] font-medium text-[#1D1C1D] hover:bg-[#F8F8F8] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={!customScheduleAt || isScheduling}
-                onClick={() => {
-                  if (!customScheduleAt) return;
-                  handleSchedule(new Date(customScheduleAt));
-                }}
-                className={cn(
-                  'rounded-md px-4 py-1.5 text-[14px] font-medium text-white transition-colors',
-                  customScheduleAt && !isScheduling
-                    ? 'bg-[#007a5a] hover:bg-[#005e46]'
-                    : 'bg-gray-300 cursor-not-allowed',
-                )}
-              >
-                {isScheduling ? 'Scheduling...' : 'Schedule'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ScheduleModal
+          onSchedule={handleSchedule}
+          onClose={() => setShowScheduleModal(false)}
+          isScheduling={isScheduling}
+        />
       )}
 
       {/* Link Modal */}
       {showLinkModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowLinkModal(false);
-              setLinkUrl('');
-              setLinkText('');
-            }
-          }}
-        >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40" />
-
-          {/* Modal panel */}
-          <div className="relative z-10 w-[440px] rounded-xl bg-white shadow-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[rgba(29,28,29,0.13)] px-5 py-4">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-5 w-5 text-[#1264A3]" />
-                <h2 className="text-[17px] font-bold text-[#1D1C1D]">Add link</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowLinkModal(false);
-                  setLinkUrl('');
-                  setLinkText('');
-                }}
-                className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="px-5 py-4 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#1D1C1D]">URL</label>
-                <input
-                  ref={linkUrlInputRef}
-                  data-testid="link-url-input"
-                  type="url"
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleLinkSave();
-                    if (e.key === 'Escape') {
-                      setShowLinkModal(false);
-                      setLinkUrl('');
-                      setLinkText('');
-                    }
-                  }}
-                  placeholder="https://example.com"
-                  className="h-9 w-full rounded-md border border-[rgba(29,28,29,0.3)] px-3 text-[14px] text-[#1D1C1D] placeholder-[#616061] outline-none focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3]"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#1D1C1D]">
-                  Display text{' '}
-                  <span className="font-normal text-[#616061]">(optional)</span>
-                </label>
-                <input
-                  data-testid="link-text-input"
-                  type="text"
-                  value={linkText}
-                  onChange={(e) => setLinkText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleLinkSave();
-                    if (e.key === 'Escape') {
-                      setShowLinkModal(false);
-                      setLinkUrl('');
-                      setLinkText('');
-                    }
-                  }}
-                  placeholder="Link text"
-                  className="h-9 w-full rounded-md border border-[rgba(29,28,29,0.3)] px-3 text-[14px] text-[#1D1C1D] placeholder-[#616061] outline-none focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3]"
-                />
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-2 border-t border-[rgba(29,28,29,0.13)] px-5 py-3">
-              <button
-                onClick={() => {
-                  setShowLinkModal(false);
-                  setLinkUrl('');
-                  setLinkText('');
-                }}
-                className="rounded-md border border-[rgba(29,28,29,0.3)] bg-white px-4 py-1.5 text-[14px] font-medium text-[#1D1C1D] hover:bg-[#F8F8F8] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLinkSave}
-                disabled={!linkUrl.trim()}
-                className={cn(
-                  'rounded-md px-4 py-1.5 text-[14px] font-medium text-white transition-colors',
-                  linkUrl.trim()
-                    ? 'bg-[#007a5a] hover:bg-[#005e46]'
-                    : 'bg-gray-300 cursor-not-allowed',
-                )}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <LinkModal
+          linkUrl={linkUrl}
+          linkText={linkText}
+          onLinkUrlChange={setLinkUrl}
+          onLinkTextChange={setLinkText}
+          onSave={handleLinkSave}
+          onClose={() => setShowLinkModal(false)}
+        />
       )}
     </div>
   );

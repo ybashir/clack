@@ -3,38 +3,70 @@
 /* Import Lato font - Slack uses Slack-Lato which is based on Lato */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
 
-/* Custom CSS Variables for Slack theme - Exact Slack Production Colors */
-:root {
-  /* Slack Official Colors */
-  --slack-aubergine: #3F0E40;        /* Sidebar background */
-  --slack-active-item: #1164A3;      /* Active/hover items */
-  --slack-hover-bg: rgba(88, 66, 124, 1); /* Sidebar hover */
-  --slack-text-primary: #1D1C1D;     /* Main text */
-  --slack-text-secondary: #616061;   /* Timestamps, meta */
-  --slack-link-blue: #1264A3;        /* Links, threads */
-  --slack-border: #E0E0E0;           /* Borders */
-  --slack-hover-message: #F8F8F8;    /* Message hover */
-  --slack-white-text: #FFFFFF;       /* Sidebar text */
-  --slack-white-text-muted: rgba(255, 255, 255, 0.7); /* Inactive channels */
+/* ──────────────────────────────────────────────────────────
+   Slack Design Tokens — single source of truth for all colors.
+   These generate Tailwind utilities: text-slack-primary,
+   bg-slack-hover, border-slack-border, etc.
+   ────────────────────────────────────────────────────────── */
+@theme {
+  /* Text */
+  --color-slack-primary: #1D1C1D;
+  --color-slack-secondary: #616061;
+
+  /* Links */
+  --color-slack-link: #1264A3;
+  --color-slack-link-hover: #0d4f8b;
+
+  /* Surface / Background */
+  --color-slack-hover: #F8F8F8;
+  --color-slack-active-tab: #F0F0F0;
+  --color-slack-pinned: #FEF9ED;
+  --color-slack-success: #E3F4EC;
+  --color-slack-highlight: #E8F5FA;
+  --color-slack-code-bg: rgba(29, 28, 29, 0.08);
+
+  /* Borders */
+  --color-slack-border: #E0E0E0;
+  --color-slack-border-light: rgba(29, 28, 29, 0.13);
+  --color-slack-border-dark: rgba(29, 28, 29, 0.3);
 
   /* Buttons */
-  --slack-btn-primary: #007a5a;
-  --slack-btn-primary-hover: #005e46;
+  --color-slack-btn: #007a5a;
+  --color-slack-btn-hover: #005e46;
 
+  /* Sidebar */
+  --color-slack-aubergine: #3F0E40;
+  --color-slack-sidebar: #4A154B;
+  --color-slack-sidebar-dark: #39063A;
+  --color-slack-purple: #611f69;
+  --color-slack-sidebar-hover: #58427C;
+
+  /* Status / Indicators */
+  --color-slack-badge: #CD2553;
+  --color-slack-pin-indicator: #E8912D;
+  --color-slack-code-inline: #E01E5A;
+
+  /* Mentions */
+  --color-slack-mention: rgba(29, 155, 209, 0.1);
+  --color-slack-mention-hover: rgba(29, 155, 209, 0.2);
+}
+
+/* Non-color design tokens */
+:root {
   /* Font Sizes */
-  --font-workspace: 18px;     /* Workspace name */
-  --font-channel: 18px;       /* Channel header */
-  --font-message: 15px;       /* Message content */
-  --font-name: 15px;          /* Sender name */
-  --font-timestamp: 12px;     /* Time */
-  --font-reaction: 12px;      /* Reaction text */
-  --font-thread: 13px;        /* Thread indicator */
-  --font-channel-item: 15px;  /* Sidebar channels */
+  --font-workspace: 18px;
+  --font-channel: 18px;
+  --font-message: 15px;
+  --font-name: 15px;
+  --font-timestamp: 12px;
+  --font-reaction: 12px;
+  --font-thread: 13px;
+  --font-channel-item: 15px;
 
   /* Font Weights */
-  --weight-black: 900;        /* Channel names, user names */
-  --weight-bold: 700;         /* Emphasis */
-  --weight-normal: 400;       /* Regular text */
+  --weight-black: 900;
+  --weight-bold: 700;
+  --weight-normal: 400;
 
   /* Z-Index Layers */
   --z-sidebar: 10;
@@ -43,7 +75,7 @@
   --z-modal: 100;
 }
 
-/* Base styles - Tailwind v4 handles resets via preflight */
+/* Base styles */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -58,7 +90,7 @@ body {
   font-size: 15px;
   line-height: 1.46668;
   letter-spacing: -0.01em;
-  color: #1D1C1D;
+  color: var(--color-slack-primary);
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -93,14 +125,14 @@ body {
   padding: 8px 12px;
   font-size: 15px;
   line-height: 22px;
-  color: #1D1C1D;
+  color: var(--color-slack-primary);
   min-height: 38px;
   max-height: 200px;
   overflow-y: auto;
 }
 
 .slawk-editor .ql-editor.ql-blank::before {
-  color: #616061;
+  color: var(--color-slack-secondary);
   font-style: normal;
   left: 12px;
   right: 12px;
@@ -120,35 +152,35 @@ body {
 }
 
 .slawk-editor .ql-editor blockquote {
-  border-left: 4px solid #E0E0E0;
+  border-left: 4px solid var(--color-slack-border);
   padding-left: 12px;
   margin: 4px 0;
 }
 
 .slawk-editor .ql-editor pre.ql-syntax,
 .slawk-editor .ql-editor .ql-code-block-container {
-  background: #F8F8F8;
-  border: 1px solid #E0E0E0;
+  background: var(--color-slack-hover);
+  border: 1px solid var(--color-slack-border);
   border-radius: 4px;
   padding: 8px 12px;
   font-family: Monaco, Menlo, Consolas, monospace;
   font-size: 13px;
-  color: #1D1C1D;
+  color: var(--color-slack-primary);
   margin: 4px 0;
 }
 
 .slawk-editor .ql-editor code {
-  background: #F8F8F8;
-  border: 1px solid #E0E0E0;
+  background: var(--color-slack-hover);
+  border: 1px solid var(--color-slack-border);
   border-radius: 3px;
   padding: 1px 4px;
   font-family: Monaco, Menlo, Consolas, monospace;
   font-size: 13px;
-  color: #E01E5A;
+  color: var(--color-slack-code-inline);
 }
 
 .slawk-editor .ql-editor a {
-  color: #1264A3;
+  color: var(--color-slack-link);
   text-decoration: none;
 }
 

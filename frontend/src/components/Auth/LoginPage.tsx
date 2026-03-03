@@ -28,12 +28,12 @@ export function LoginPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#611f69] text-2xl font-bold text-white">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slack-purple text-2xl font-bold text-white">
             S
           </div>
-          <span className="text-3xl font-bold text-[#1d1c1d]">slawk</span>
+          <span className="text-3xl font-bold text-slack-primary">slawk</span>
         </div>
-        <h1 className="text-4xl font-bold text-[#1d1c1d]">Sign in to Slawk</h1>
+        <h1 className="text-4xl font-bold text-slack-primary">Sign in to Slawk</h1>
         <p className="mt-2 text-gray-600">
           We suggest using the <strong>email address you use at work.</strong>
         </p>
@@ -110,7 +110,7 @@ export function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="h-11 w-full bg-[#611f69] hover:bg-[#4a154b] text-white font-medium"
+            className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
           >
             {isLoading ? 'Signing in...' : 'Sign in with Email'}
           </Button>
@@ -118,7 +118,7 @@ export function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           New to Slawk?{' '}
-          <Link to="/register" className="text-[#1264a3] hover:underline">
+          <Link to="/register" className="text-slack-link hover:underline">
             Create an account
           </Link>
         </p>

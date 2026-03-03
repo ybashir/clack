@@ -1,0 +1,157 @@
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import type { Channel } from '@/lib/types';
+
+interface AddChannelDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onCreateChannel: (name: string) => Promise<void>;
+  browseChannels: Channel[];
+  onJoinChannel: (channelId: number) => Promise<void>;
+  onBrowse: () => void;
+}
+
+export function AddChannelDialog({
+  open,
+  onClose,
+  onCreateChannel,
+  browseChannels,
+  onJoinChannel,
+  onBrowse,
+}: AddChannelDialogProps) {
+  const [addChannelMode, setAddChannelMode] = useState<'create' | 'browse'>('create');
+  const [newChannelName, setNewChannelName] = useState('');
+  const [createChannelError, setCreateChannelError] = useState('');
+
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setAddChannelMode('create');
+      setNewChannelName('');
+      setCreateChannelError('');
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const handleClose = () => {
+    setNewChannelName('');
+    setCreateChannelError('');
+    onClose();
+  };
+
+  const handleBrowse = () => {
+    setAddChannelMode('browse');
+    onBrowse();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-[520px] rounded-lg bg-white shadow-xl">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setAddChannelMode('create')}
+            className={cn(
+              'flex-1 px-4 py-3 text-[14px] font-medium transition-colors',
+              addChannelMode === 'create'
+                ? 'border-b-2 border-slack-link text-slack-link'
+                : 'text-gray-500 hover:text-gray-700'
+            )}
+          >
+            Create a channel
+          </button>
+          <button
+            onClick={handleBrowse}
+            className={cn(
+              'flex-1 px-4 py-3 text-[14px] font-medium transition-colors',
+              addChannelMode === 'browse'
+                ? 'border-b-2 border-slack-link text-slack-link'
+                : 'text-gray-500 hover:text-gray-700'
+            )}
+          >
+            Browse channels
+          </button>
+        </div>
+
+        <div className="p-6">
+          {addChannelMode === 'create' ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const name = newChannelName.trim();
+                if (!name) return;
+                try {
+                  await onCreateChannel(name);
+                  setNewChannelName('');
+                  setCreateChannelError('');
+                } catch {
+                  setCreateChannelError('Channel name already exists');
+                }
+              }}
+            >
+              <label className="block text-[14px] font-medium text-slack-primary mb-1">
+                Channel name
+              </label>
+              <input
+                type="text"
+                value={newChannelName}
+                onChange={(e) => {
+                  setNewChannelName(e.target.value);
+                  if (createChannelError) setCreateChannelError('');
+                }}
+                placeholder="e.g. plan-budget"
+                autoFocus
+                className="w-full rounded border border-gray-300 px-3 py-2 text-[15px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
+              />
+              {createChannelError && (
+                <p data-testid="channel-error" className="mt-1 text-[13px] text-red-600">
+                  {createChannelError}
+                </p>
+              )}
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="ghost" type="button" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={!newChannelName.trim()}>
+                  Create
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div>
+              {browseChannels.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No channels available to join</p>
+              ) : (
+                <div className="max-h-[300px] overflow-y-auto space-y-1">
+                  {browseChannels.map((ch) => (
+                    <div
+                      key={ch.id}
+                      data-channel-name={ch.name}
+                      className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-400">#</span>
+                        <span className="text-[15px] text-slack-primary">{ch.name}</span>
+                        <span className="text-[12px] text-gray-500">{ch.memberCount} members</span>
+                      </div>
+                      <Button size="sm" onClick={() => onJoinChannel(ch.id)}>
+                        Join
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4 flex justify-end">
+                <Button variant="ghost" onClick={handleClose}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

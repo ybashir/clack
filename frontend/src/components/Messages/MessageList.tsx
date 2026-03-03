@@ -99,11 +99,11 @@ export function MessageList({ channelId, onOpenThread }: MessageListProps) {
           <div key={message.id}>
             {showDateSeparator && (
               <div className="relative my-[10px] flex items-center">
-                <div className="flex-1 border-t border-[rgba(29,28,29,0.13)]" />
-                <button className="flex-shrink-0 rounded-full border border-[rgba(29,28,29,0.13)] bg-white px-3 py-[2px] text-[13px] font-semibold text-[#1D1C1D] hover:bg-[#F8F8F8] transition-colors">
+                <div className="flex-1 border-t border-slack-border-light" />
+                <button className="flex-shrink-0 rounded-full border border-slack-border-light bg-white px-3 py-[2px] text-[13px] font-semibold text-slack-primary hover:bg-slack-hover transition-colors">
                   {formatDateSeparator(message.createdAt)}
                 </button>
-                <div className="flex-1 border-t border-[rgba(29,28,29,0.13)]" />
+                <div className="flex-1 border-t border-slack-border-light" />
               </div>
             )}
             <Message

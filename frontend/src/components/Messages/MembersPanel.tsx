@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { getChannelMembers, type ChannelMember } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
+import { Button } from '@/components/ui/button';
 
 interface MembersPanelProps {
   channelId: number;
@@ -12,6 +13,7 @@ interface MembersPanelProps {
 export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   const [members, setMembers] = useState<ChannelMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,9 +21,14 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
     getChannelMembers(channelId)
       .then((data) => {
-        if (!cancelled) setMembers(data);
+        if (!cancelled) {
+          setMembers(data);
+          setLoadError(null);
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setLoadError('Failed to load members.');
+      })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
@@ -65,26 +72,25 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   return (
     <div
       data-testid="members-panel"
-      className="flex w-[260px] flex-col border-l border-[#E0E0E0] bg-white"
+      className="flex w-[260px] flex-col border-l border-slack-border bg-white"
     >
-      <div className="flex h-[49px] items-center justify-between border-b border-[#E0E0E0] px-4">
-        <h3 className="text-[15px] font-bold text-[#1D1C1D]">Members</h3>
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-        >
-          <X className="h-4 w-4 text-[#616061]" />
-        </button>
+      <div className="flex h-[49px] items-center justify-between border-b border-slack-border px-4">
+        <h3 className="text-[15px] font-bold text-slack-primary">Members</h3>
+        <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <X className="h-4 w-4 text-slack-secondary" />
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">
         {isLoading ? (
           <div className="text-center text-sm text-gray-500 py-4">Loading...</div>
+        ) : loadError ? (
+          <div className="text-center text-sm text-red-600 py-4">{loadError}</div>
         ) : (
           <>
             {onlineMembers.length > 0 && (
               <div data-testid="online-members" className="mb-4">
-                <h4 className="mb-2 text-[12px] font-medium text-[#616061] uppercase tracking-wide">
+                <h4 className="mb-2 text-[12px] font-medium text-slack-secondary uppercase tracking-wide">
                   Online — {onlineMembers.length}
                 </h4>
                 {onlineMembers.map((m) => (
@@ -95,7 +101,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
             {offlineMembers.length > 0 && (
               <div data-testid="offline-members">
-                <h4 className="mb-2 text-[12px] font-medium text-[#616061] uppercase tracking-wide">
+                <h4 className="mb-2 text-[12px] font-medium text-slack-secondary uppercase tracking-wide">
                   Offline — {offlineMembers.length}
                 </h4>
                 {offlineMembers.map((m) => (
@@ -112,7 +118,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
 function MemberRow({ member }: { member: ChannelMember }) {
   return (
-    <div className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-[#F8F8F8]">
+    <div className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-slack-hover">
       <Avatar
         src={member.user.avatar}
         alt={member.user.name}
@@ -120,7 +126,7 @@ function MemberRow({ member }: { member: ChannelMember }) {
         size="sm"
         status={member.user.isOnline ? 'online' : 'offline'}
       />
-      <span className="text-[14px] text-[#1D1C1D] truncate">{member.user.name}</span>
+      <span className="text-[14px] text-slack-primary truncate">{member.user.name}</span>
     </div>
   );
 }

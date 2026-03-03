@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { getThread, replyToMessage, type ApiMessage } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { renderMessageContent } from '@/lib/renderMessageContent';
+import { Button } from '@/components/ui/button';
 
 interface ThreadPanelProps {
   messageId: number;
@@ -95,17 +96,14 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
   return (
     <div
       data-testid="thread-panel"
-      className="flex w-[380px] flex-col border-l border-[#E0E0E0] bg-white"
+      className="flex w-[380px] flex-col border-l border-slack-border bg-white"
     >
       {/* Header */}
-      <div className="flex h-[49px] items-center justify-between border-b border-[#E0E0E0] px-4">
-        <h3 className="text-[15px] font-bold text-[#1D1C1D]">Thread</h3>
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-        >
-          <X className="h-4 w-4 text-[#616061]" />
-        </button>
+      <div className="flex h-[49px] items-center justify-between border-b border-slack-border px-4">
+        <h3 className="text-[15px] font-bold text-slack-primary">Thread</h3>
+        <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <X className="h-4 w-4 text-slack-secondary" />
+        </Button>
       </div>
 
       {/* Thread messages */}
@@ -118,7 +116,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
           <>
             {/* Parent message */}
             {parentMessage && (
-              <div className="mb-4 pb-3 border-b border-[#E0E0E0]">
+              <div className="mb-4 pb-3 border-b border-slack-border">
                 <div className="flex items-start gap-2">
                   <Avatar
                     src={parentMessage.user.avatar ?? undefined}
@@ -129,20 +127,20 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-[15px] font-bold text-[#1D1C1D]">
+                      <span className="text-[15px] font-bold text-slack-primary">
                         {parentMessage.user.name}
                       </span>
-                      <span className="text-[12px] text-[#616061]">
+                      <span className="text-[12px] text-slack-secondary">
                         {format(parentMessage.createdAt, 'h:mm a')}
                       </span>
                     </div>
-                    <p className="text-[15px] text-[#1D1C1D] leading-[22px] whitespace-pre-wrap break-words">
+                    <p className="text-[15px] text-slack-primary leading-[22px] whitespace-pre-wrap break-words">
                       {renderMessageContent(parentMessage.content)}
                     </p>
                   </div>
                 </div>
                 {replies.length > 0 && (
-                  <div className="mt-2 text-[12px] text-[#616061]">
+                  <div className="mt-2 text-[12px] text-slack-secondary">
                     {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
                   </div>
                 )}
@@ -162,14 +160,14 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-[14px] font-bold text-[#1D1C1D]">
+                      <span className="text-[14px] font-bold text-slack-primary">
                         {reply.user.name}
                       </span>
-                      <span className="text-[11px] text-[#616061]">
+                      <span className="text-[11px] text-slack-secondary">
                         {format(reply.createdAt, 'h:mm a')}
                       </span>
                     </div>
-                    <p className="text-[14px] text-[#1D1C1D] leading-[20px] whitespace-pre-wrap break-words">
+                    <p className="text-[14px] text-slack-primary leading-[20px] whitespace-pre-wrap break-words">
                       {renderMessageContent(reply.content)}
                     </p>
                   </div>
@@ -182,11 +180,11 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
       </div>
 
       {/* Reply input */}
-      <div className="border-t border-[#E0E0E0] px-4 py-3">
+      <div className="border-t border-slack-border px-4 py-3">
         {replyError && (
           <p data-testid="thread-reply-error" className="mb-2 text-xs text-red-600">{replyError}</p>
         )}
-        <div className="flex items-center gap-2 rounded-lg border border-[rgba(29,28,29,0.13)] px-3 py-2 focus-within:border-[#1264A3]">
+        <div className="flex items-center gap-2 rounded-lg border border-slack-border-light px-3 py-2 focus-within:border-slack-link">
           <input
             data-testid="thread-reply-input"
             type="text"
@@ -194,7 +192,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
             onChange={(e) => { setReplyText(e.target.value); setReplyError(null); }}
             onKeyDown={handleKeyDown}
             placeholder="Reply..."
-            className="flex-1 text-[14px] text-[#1D1C1D] outline-none placeholder:text-[#616061]"
+            className="flex-1 text-[14px] text-slack-primary outline-none placeholder:text-slack-secondary"
           />
           <button
             onClick={handleSendReply}
@@ -202,7 +200,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded transition-colors',
               replyText.trim()
-                ? 'bg-[#007a5a] text-white hover:bg-[#005e46]'
+                ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
                 : 'text-gray-400'
             )}
           >

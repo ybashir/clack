@@ -17,13 +17,13 @@ function renderInline(content: string, keyOffset: number = 0): React.ReactNode[]
     } else if (m[3]) {
       nodes.push(<em key={key++} className="leading-[22px]">{m[4]}</em>);
     } else if (m[5]) {
-      nodes.push(<code key={key++} className="rounded-[3px] bg-[rgba(29,28,29,0.08)] px-1 py-0.5 font-mono text-[0.875em]">{m[6]}</code>);
+      nodes.push(<code key={key++} className="rounded-[3px] bg-slack-code-bg px-1 py-0.5 font-mono text-[0.875em]">{m[6]}</code>);
     } else if (m[7]) {
       nodes.push(<s key={key++}>{m[8]}</s>);
     } else if (m[9]) {
-      nodes.push(<a key={key++} href={m[10]} target="_blank" rel="noopener noreferrer" className="text-[#1264A3] underline hover:text-[#0d4f8b]">{m[9]}</a>);
+      nodes.push(<a key={key++} href={m[10]} target="_blank" rel="noopener noreferrer" className="text-slack-link underline hover:text-slack-link-hover">{m[9]}</a>);
     } else if (m[11]) {
-      nodes.push(<span key={key++} className="mention-highlight rounded bg-[#1d9bd11a] px-[2px] text-[#1264A3] font-medium cursor-pointer hover:bg-[#1d9bd133]">{m[11]}</span>);
+      nodes.push(<span key={key++} className="mention-highlight rounded bg-slack-mention px-[2px] text-slack-link font-medium cursor-pointer hover:bg-slack-mention-hover">{m[11]}</span>);
     }
     last = m.index + m[0].length;
   }
@@ -54,7 +54,7 @@ export function renderMessageContent(content: string): React.ReactNode {
     // Render the code block
     const codeContent = m[1].replace(/^\n/, '').replace(/\n$/, '');
     nodes.push(
-      <pre key={key++} className="my-1 rounded bg-[rgba(29,28,29,0.08)] px-3 py-2 font-mono text-[0.875em] overflow-x-auto whitespace-pre-wrap">
+      <pre key={key++} className="my-1 rounded bg-slack-code-bg px-3 py-2 font-mono text-[0.875em] overflow-x-auto whitespace-pre-wrap">
         <code>{codeContent}</code>
       </pre>
     );
@@ -91,7 +91,7 @@ function renderLines(text: string, keyOffset: number): React.ReactNode[] {
       }
       const quoteContent = quoteLines.join('\n');
       nodes.push(
-        <blockquote key={key++} className="border-l-4 border-[rgba(29,28,29,0.3)] pl-3 my-0.5 text-[#616061] italic">
+        <blockquote key={key++} className="border-l-4 border-slack-border-dark pl-3 my-0.5 text-slack-secondary italic">
           {renderInline(quoteContent, key * 100)}
         </blockquote>
       );

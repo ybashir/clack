@@ -5,6 +5,7 @@ import { getPinnedMessages, type ApiMessage } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
+import { Button } from '@/components/ui/button';
 
 interface PinsPanelProps {
   channelId: number;
@@ -48,18 +49,15 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
   }, [channelId]);
 
   return (
-    <div data-testid="pins-panel" className="flex w-[300px] flex-col border-l border-[#E0E0E0] bg-white">
-      <div className="flex h-[49px] items-center justify-between border-b border-[#E0E0E0] px-4">
+    <div data-testid="pins-panel" className="flex w-[300px] flex-col border-l border-slack-border bg-white">
+      <div className="flex h-[49px] items-center justify-between border-b border-slack-border px-4">
         <div className="flex items-center gap-1.5">
-          <Pin className="h-4 w-4 text-[#616061]" />
-          <span className="text-[15px] font-bold text-[#1D1C1D]">Pinned messages</span>
+          <Pin className="h-4 w-4 text-slack-secondary" />
+          <span className="text-[15px] font-bold text-slack-primary">Pinned messages</span>
         </div>
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#F8F8F8]"
-        >
-          <X className="h-4 w-4 text-[#616061]" />
-        </button>
+        <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <X className="h-4 w-4 text-slack-secondary" />
+        </Button>
       </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
@@ -76,12 +74,12 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
                   fallback={pin.user.name}
                   size="sm"
                 />
-                <span className="text-[13px] font-bold text-[#1D1C1D]">{pin.user.name}</span>
-                <span className="text-[11px] text-[#616061]">
+                <span className="text-[13px] font-bold text-slack-primary">{pin.user.name}</span>
+                <span className="text-[11px] text-slack-secondary">
                   {format(new Date(pin.createdAt), 'MMM d, h:mm a')}
                 </span>
               </div>
-              <p className="mt-1 text-[14px] text-[#1D1C1D] leading-[20px]">{renderMessageContent(pin.content)}</p>
+              <p className="mt-1 text-[14px] text-slack-primary leading-[20px]">{renderMessageContent(pin.content)}</p>
             </div>
           ))
         )}

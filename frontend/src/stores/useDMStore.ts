@@ -1,0 +1,114 @@
+import { create } from 'zustand';
+import { getConversation, sendDM, editDM, deleteDM, type ApiDirectMessage } from '@/lib/api';
+
+export interface DMMessage {
+  id: number;
+  content: string;
+  fromUserId: number;
+  fromUser: { id: number; name: string; avatar?: string | null };
+  createdAt: Date;
+  editedAt?: Date | null;
+}
+
+function transformDM(dm: ApiDirectMessage): DMMessage {
+  return {
+    id: dm.id,
+    content: dm.content,
+    fromUserId: dm.fromUserId,
+    fromUser: dm.fromUser,
+    createdAt: new Date(dm.createdAt),
+    editedAt: (dm as any).editedAt ? new Date((dm as any).editedAt) : null,
+  };
+}
+
+interface DMState {
+  messages: Record<number, DMMessage[]>;
+  isLoading: boolean;
+  loadError: string | null;
+  isSending: boolean;
+
+  fetchConversation: (userId: number) => Promise<void>;
+  sendMessage: (userId: number, content: string) => Promise<void>;
+  editMessage: (messageId: number, content: string, userId: number) => Promise<void>;
+  deleteMessage: (messageId: number, userId: number) => Promise<void>;
+  clearConversation: (userId: number) => void;
+}
+
+export const useDMStore = create<DMState>((set, get) => ({
+  messages: {},
+  isLoading: false,
+  loadError: null,
+  isSending: false,
+
+  fetchConversation: async (userId: number) => {
+    set({ isLoading: true, loadError: null });
+    try {
+      const data = await getConversation(userId);
+      const msgs = data.messages.map(transformDM);
+      msgs.reverse(); // API returns DESC, we want ASC
+      set((state) => ({
+        messages: { ...state.messages, [userId]: msgs },
+        isLoading: false,
+        loadError: null,
+      }));
+    } catch {
+      set({ isLoading: false, loadError: 'Failed to load messages.' });
+    }
+  },
+
+  sendMessage: async (userId: number, content: string) => {
+    set({ isSending: true });
+    try {
+      const dm = await sendDM(userId, content);
+      const message = transformDM(dm);
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [userId]: [...(state.messages[userId] ?? []), message],
+        },
+        isSending: false,
+      }));
+    } catch (err) {
+      console.error('Failed to send DM:', err);
+      set({ isSending: false });
+    }
+  },
+
+  editMessage: async (messageId: number, content: string, userId: number) => {
+    try {
+      const updated = await editDM(messageId, content);
+      const message = transformDM(updated);
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [userId]: (state.messages[userId] ?? []).map((m) =>
+            m.id === messageId ? message : m,
+          ),
+        },
+      }));
+    } catch (err) {
+      console.error('Failed to edit DM:', err);
+    }
+  },
+
+  deleteMessage: async (messageId: number, userId: number) => {
+    try {
+      await deleteDM(messageId);
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [userId]: (state.messages[userId] ?? []).filter((m) => m.id !== messageId),
+        },
+      }));
+    } catch (err) {
+      console.error('Failed to delete DM:', err);
+    }
+  },
+
+  clearConversation: (userId: number) => {
+    set((state) => {
+      const { [userId]: _, ...rest } = state.messages;
+      return { messages: rest };
+    });
+  },
+}));
