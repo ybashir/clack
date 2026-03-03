@@ -109,7 +109,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
             className="mt-[5px]"
           />
         ) : (
-          <span className="hidden text-[12px] text-[#616061] group-hover:inline leading-[22px]">
+          <span className="hidden text-[12px] text-[#616061] group-hover:inline leading-[22px]" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>
             {format(message.createdAt, 'h:mm')}
           </span>
         )}
@@ -126,7 +126,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
             >
               {message.user.displayName || message.user.name}
             </button>
-            <span className="text-[12px] font-normal text-[#616061] ml-1">{formattedTime}</span>
+            <span className="text-[12px] font-normal text-[#616061] ml-1" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>{formattedTime}</span>
             {message.isEdited && (
               <span className="text-[12px] text-[#616061]">(edited)</span>
             )}
