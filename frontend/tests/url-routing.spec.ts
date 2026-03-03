@@ -7,16 +7,16 @@ test.describe('URL-based channel navigation', () => {
     await register(page, 'URL Tester', email, 'password123');
     await expect(page.getByTestId('sidebar')).toBeVisible();
 
-    // Click the #engineering channel (join it first via API if needed)
-    // First join all channels
+    // Join the #engineering channel via API
     await page.evaluate(async () => {
       const token = localStorage.getItem('token');
       const res = await fetch('/channels', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const channels = await res.json();
-      for (const ch of channels) {
-        await fetch(`/channels/${ch.id}/join`, {
+      const engineering = channels.find((ch: { name: string }) => ch.name === 'engineering');
+      if (engineering) {
+        await fetch(`/channels/${engineering.id}/join`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         });
@@ -51,15 +51,16 @@ test.describe('URL-based channel navigation', () => {
     await register(page, 'Refresh Tester', email, 'password123');
     await expect(page.getByTestId('sidebar')).toBeVisible();
 
-    // Join all channels so #engineering is available
+    // Join the #engineering channel so it's available in the sidebar
     await page.evaluate(async () => {
       const token = localStorage.getItem('token');
       const res = await fetch('/channels', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const channels = await res.json();
-      for (const ch of channels) {
-        await fetch(`/channels/${ch.id}/join`, {
+      const engineering = channels.find((ch: { name: string }) => ch.name === 'engineering');
+      if (engineering) {
+        await fetch(`/channels/${engineering.id}/join`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         });
