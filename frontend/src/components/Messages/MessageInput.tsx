@@ -9,11 +9,11 @@ import {
   ListOrdered,
   List,
   Code,
+  CodeSquare,
   Quote,
   Plus,
   AtSign,
   Smile,
-  Mic,
   SendHorizontal,
   X,
   FileIcon,
@@ -35,7 +35,8 @@ const formatButtons = [
   { icon: Link, label: 'Link', format: 'link' },
   { icon: ListOrdered, label: 'Ordered List', format: 'list', value: 'ordered' },
   { icon: List, label: 'Bullet List', format: 'list', value: 'bullet' },
-  { icon: Code, label: 'Code', format: 'code-block' },
+  { icon: Code, label: 'Code', format: 'code' },
+  { icon: CodeSquare, label: 'Code Block', format: 'code-block' },
   { icon: Quote, label: 'Quote', format: 'blockquote' },
 ];
 
@@ -44,7 +45,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const quillRef = useRef<Quill | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [canSend, setCanSend] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<ApiFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -100,6 +100,9 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               result += '> ' + line;
             }
           }
+        } else if (attrs['code']) {
+          // Inline code: wrap in backticks
+          result += '`' + text + '`';
         } else {
           result += text;
         }
@@ -185,9 +188,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
       }
       setShowMentionDropdown(false);
     });
-
-    quill.root.addEventListener('focus', () => setIsFocused(true));
-    quill.root.addEventListener('blur', () => setIsFocused(false));
 
     quillRef.current = quill;
   }, [channelName]);
@@ -313,12 +313,24 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
   return (
     <div className="relative px-5 pb-6 pt-4 bg-white">
-      <div
-        className={cn(
-          'slawk-editor rounded-[8px] border transition-all',
-          isFocused ? 'border-[#1264A3] border-2' : 'border-[rgba(29,28,29,0.13)]'
-        )}
-      >
+      <div className="slawk-editor rounded-[8px] border border-[rgba(29,28,29,0.13)]">
+        {/* Formatting Toolbar — at the top inside the input box */}
+        <div
+          data-testid="formatting-toolbar"
+          className="flex items-center gap-0.5 border-b border-[rgba(29,28,29,0.13)] px-1 py-1"
+        >
+          {formatButtons.map((button) => (
+            <button
+              key={button.label}
+              onClick={() => applyFormat(button.format, button.value)}
+              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
+              title={button.label}
+            >
+              <button.icon className="h-[18px] w-[18px]" />
+            </button>
+          ))}
+        </div>
+
         {/* File preview area */}
         {pendingFiles.length > 0 && (
           <div data-testid="file-preview" className="flex flex-wrap gap-2 px-3 py-2 border-b border-[rgba(29,28,29,0.13)]">
@@ -357,23 +369,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
         {/* Quill Editor */}
         <div ref={editorRef} />
-
-        {/* Formatting Toolbar */}
-        <div
-          data-testid="formatting-toolbar"
-          className="flex items-center gap-0.5 border-t border-[rgba(29,28,29,0.13)] px-1 py-1"
-        >
-          {formatButtons.map((button) => (
-            <button
-              key={button.label}
-              onClick={() => applyFormat(button.format, button.value)}
-              className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
-              title={button.label}
-            >
-              <button.icon className="h-[18px] w-[18px]" />
-            </button>
-          ))}
-        </div>
 
         {/* Mention Dropdown */}
         {showMentionDropdown && mentionUsers.length > 0 && (
@@ -443,9 +438,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]"
             >
               <AtSign className="h-[18px] w-[18px]" />
-            </button>
-            <button className="flex h-7 w-7 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8] hover:text-[#1D1C1D]">
-              <Mic className="h-[18px] w-[18px]" />
             </button>
           </div>
 
