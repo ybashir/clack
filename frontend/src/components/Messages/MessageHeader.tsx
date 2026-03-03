@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Hash, Star, ChevronDown, Users, Bell, Pin, Search, MoreVertical, MessageSquare, FileText, LogOut } from 'lucide-react';
+import { Hash, Star, ChevronDown, Users, Bell, Pin, Search, MoreVertical, FileText, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { searchMessages, type SearchResult } from '@/lib/api';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -15,7 +15,6 @@ interface MessageHeaderProps {
 }
 
 const headerTabs = [
-  { id: 'messages', label: 'Messages', icon: MessageSquare },
   { id: 'files', label: 'Files', icon: FileText },
   { id: 'pins', label: 'Pins', icon: Pin },
 ];
@@ -24,7 +23,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
   const toggleStar = useChannelStore((s) => s.toggleStar);
   const leaveChannel = useChannelStore((s) => s.leaveChannel);
   const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
-  const [activeTab, setActiveTab] = useState('messages');
+  const [activeTab, setActiveTab] = useState('files');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -225,9 +224,6 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             <span>{tab.label}</span>
           </button>
         ))}
-        <button className="flex h-5 w-5 items-center justify-center rounded text-[#616061] hover:bg-[#F8F8F8]">
-          <span className="text-sm leading-none">+</span>
-        </button>
       </div>
     </header>
   );

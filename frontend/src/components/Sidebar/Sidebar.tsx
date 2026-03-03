@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Home,
   MessageSquare,
   FileText,
   ChevronDown,
@@ -21,7 +20,6 @@ import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
 
 const navItems = [
-  { icon: Home, label: 'Home', id: 'home' },
   { icon: MessageSquare, label: 'DMs', id: 'dms' },
   { icon: FileText, label: 'Files', id: 'files' },
 ];
@@ -34,7 +32,7 @@ export function Sidebar() {
   const { openProfile } = useProfileStore();
   const [channelsExpanded, setChannelsExpanded] = useState(true);
   const [dmsExpanded, setDmsExpanded] = useState(true);
-  const [activeNav, setActiveNav] = useState('home');
+  const [activeNav, setActiveNav] = useState('dms');
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
