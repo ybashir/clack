@@ -32,17 +32,17 @@ Pick by highest severity first: `priority:critical` > `priority:high` > `priorit
 
 ### 3. Write Test (TDD)
 
-- Write Playwright test that reproduces the bug
+- Write a Playwright test that reproduces the bug — put it alongside the existing test files (check where they live with `ls frontend/tests/` or similar)
 - Test should FAIL initially
-- Commit: `test: add test for #<number>`
 - If it is not possible to reproduce this bug with Playwright, skip this step
 
 ### 4. Fix
 
 - Implement the fix
-- Run Playwright tests → must pass. If not, look at what is wrong with the test or the fix
-- Run all other tests (frontend and backend) → must pass. If not, fix what broke
-- If you are stuck in a loop, comment on the issue with the work you've done and where you got stuck
+- Run Playwright tests: `cd frontend && npx playwright test`
+- Run backend tests: `cd backend && npm test`
+- All tests must pass. If not, fix what broke
+- If you are stuck in a loop, add the `blocked` label to the issue, comment with the work you've done and where you got stuck, and leave the issue open. Then pick the next issue.
 
 ### 5. Visual Verification
 
@@ -79,7 +79,7 @@ EOF
 
 ### 6. Finish
 
-- Commit and push to main: `fix: <short description> #<number>`
+- Commit test + fix together and push to main: `fix: <short description> #<number>`
 - Close the issue:
 ```bash
 gh issue close <number> --repo ncvgl/slawk
