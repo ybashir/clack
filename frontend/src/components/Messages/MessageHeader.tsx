@@ -27,15 +27,18 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
   const toggleStar = useChannelStore((s) => s.toggleStar);
   const leaveChannel = useChannelStore((s) => s.leaveChannel);
   const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
+  const channels = useChannelStore((s) => s.channels);
   const [activeTab, setActiveTab] = useState('files');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [previewMembers, setPreviewMembers] = useState<ChannelMember[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   // Close search results when clicking outside
   useEffect(() => {
@@ -62,6 +65,19 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
       return () => document.removeEventListener('mousedown', handleClick);
     }
   }, [showMenu]);
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }
+  }, [showNotifications]);
 
   // Fetch up to 3 member avatars for preview in the header
   useEffect(() => {
@@ -180,9 +196,43 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             <span>{channel.memberCount}</span>
           </button>
           <div className="h-4 w-px bg-slack-border" />
-          <Button variant="toolbar" size="icon-xs">
-            <Bell className="h-4 w-4 text-slack-secondary" />
-          </Button>
+          <div className="relative" ref={notifRef}>
+            <Button
+              variant="toolbar"
+              size="icon-xs"
+              data-testid="notification-bell"
+              title="Notifications"
+              onClick={() => setShowNotifications((v) => !v)}
+            >
+              <Bell className={cn('h-4 w-4', showNotifications ? 'text-slack-link' : 'text-slack-secondary')} />
+            </Button>
+            {showNotifications && (
+              <div data-testid="notifications-panel" className="absolute right-0 top-7 z-50 w-[300px] max-h-[360px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
+                <div className="px-3 py-2 border-b border-slack-border">
+                  <h3 className="text-[13px] font-bold text-slack-primary">Activity</h3>
+                </div>
+                {(() => {
+                  const unread = channels.filter((ch) => ch.unreadCount > 0 && ch.id !== channel.id);
+                  if (unread.length === 0) {
+                    return <p className="px-3 py-6 text-center text-[13px] text-slack-hint">No new notifications</p>;
+                  }
+                  return unread.map((ch) => (
+                    <button
+                      key={ch.id}
+                      onClick={() => { setActiveChannel(ch.id); setShowNotifications(false); }}
+                      className="w-full text-left px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-slack-primary">#{ch.name}</span>
+                        <span className="text-[12px] bg-slack-badge text-white rounded-full px-1.5 min-w-[20px] text-center">{ch.unreadCount}</span>
+                      </div>
+                      <p className="text-[12px] text-slack-hint mt-0.5">{ch.unreadCount} unread message{ch.unreadCount !== 1 ? 's' : ''}</p>
+                    </button>
+                  ));
+                })()}
+              </div>
+            )}
+          </div>
           <div className="h-4 w-px bg-slack-border" />
           <div className="relative" ref={searchRef}>
             <Search className="absolute left-2 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-slack-secondary" />
