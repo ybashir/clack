@@ -5,7 +5,7 @@ import { z } from 'zod';
 import prisma from '../db.js';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production'); })() : 'your-secret-key');
 
 const registerSchema = z.object({
   email: z.string().email().max(255),

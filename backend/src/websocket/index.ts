@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 import { JwtPayload } from '../types.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production'); })() : 'your-secret-key');
 
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
@@ -55,7 +55,7 @@ async function getSharedUsers(userId: number): Promise<number[]> {
 export function initializeWebSocket(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: '*',
+      origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : '*'),
       methods: ['GET', 'POST'],
     },
   });

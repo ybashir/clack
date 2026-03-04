@@ -20,7 +20,8 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-app.use(cors());
+const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : '*');
+app.use(cors({ origin: corsOrigin as string | boolean }));
 app.use(express.json());
 
 // Serve uploaded files
