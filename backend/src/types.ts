@@ -10,4 +10,5 @@ export interface AuthRequest extends Request {
   channelId?: number;
   message?: any;
   file?: any;
+  dm?: any;
 }

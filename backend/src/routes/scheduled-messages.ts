@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { checkChannelMembership } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 
 const router = Router();
@@ -31,11 +32,8 @@ router.post('/schedule', authMiddleware, async (req: AuthRequest, res: Response)
     }
 
     // Check channel membership
-    const membership = await prisma.channelMember.findUnique({
-      where: { userId_channelId: { userId, channelId } },
-    });
-
-    if (!membership) {
+    const isMember = await checkChannelMembership(userId, channelId);
+    if (!isMember) {
       res.status(403).json({ error: 'You must be a member of the channel' });
       return;
     }
@@ -88,6 +86,11 @@ router.delete('/scheduled/:id', authMiddleware, async (req: AuthRequest, res: Re
   try {
     const userId = req.user!.userId;
     const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid message ID' });
+      return;
+    }
 
     const scheduled = await prisma.scheduledMessage.findUnique({
       where: { id },

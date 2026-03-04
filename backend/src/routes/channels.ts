@@ -5,6 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireChannelMembership } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { isUserOnline } from '../websocket/index.js';
+import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
 
 const router = Router();
 
@@ -132,6 +133,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = parseInt(req.params.id);
+    if (isNaN(channelId)) {
+      res.status(400).json({ error: 'Invalid channel ID' });
+      return;
+    }
     const userId = req.user!.userId;
 
     const channel = await prisma.channel.findUnique({
@@ -175,6 +180,10 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = parseInt(req.params.id);
+    if (isNaN(channelId)) {
+      res.status(400).json({ error: 'Invalid channel ID' });
+      return;
+    }
     const userId = req.user!.userId;
 
     const channel = await prisma.channel.findUnique({
@@ -259,7 +268,7 @@ router.get('/:id/members', authMiddleware, requireChannelMembership, async (req:
       where: { channelId },
       include: {
         user: {
-          select: { id: true, name: true, email: true, avatar: true, status: true, lastSeen: true, createdAt: true },
+          select: USER_SELECT_FULL,
         },
       },
       orderBy: { joinedAt: 'asc' },
@@ -349,12 +358,7 @@ router.get('/:id/pins', authMiddleware, requireChannelMembership, async (req: Au
 
     const pins = await prisma.message.findMany({
       where: { channelId, isPinned: true, deletedAt: null },
-      include: {
-        user: { select: { id: true, name: true, email: true, avatar: true } },
-        reactions: { include: { user: { select: { id: true, name: true } } } },
-        files: { select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true } },
-        _count: { select: { replies: true } },
-      },
+      include: MESSAGE_INCLUDE_FULL,
       orderBy: { pinnedAt: 'desc' },
     });
 

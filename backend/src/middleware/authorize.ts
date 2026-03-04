@@ -137,6 +137,41 @@ export async function requireFileAccess(
   next();
 }
 
+/**
+ * Requires the authenticated user to own the direct message
+ * specified by req.params.id. Checks existence, soft-delete,
+ * and fromUserId ownership. Attaches req.dm on success.
+ */
+export async function requireDmOwnership(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const dmId = parseInt(req.params.id);
+  if (isNaN(dmId)) {
+    res.status(400).json({ error: 'Invalid message ID' });
+    return;
+  }
+
+  const dm = await prisma.directMessage.findUnique({
+    where: { id: dmId },
+  });
+
+  if (!dm || dm.deletedAt !== null) {
+    res.status(404).json({ error: 'Message not found' });
+    return;
+  }
+
+  const userId = req.user!.userId;
+  if (dm.fromUserId !== userId) {
+    res.status(403).json({ error: 'You can only modify your own messages' });
+    return;
+  }
+
+  req.dm = dm;
+  next();
+}
+
 // ── WebSocket Helper ────────────────────────────────────────────────
 
 export async function checkChannelMembership(

@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 import { JwtPayload } from '../types.js';
+import { JWT_SECRET } from '../config.js';
 import {
   checkChannelMembership,
   wsMessageSendSchema,
@@ -12,8 +13,7 @@ import {
   wsChannelIdSchema,
   wsUserIdSchema,
 } from '../middleware/authorize.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production'); })() : 'your-secret-key');
+import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, DM_INCLUDE_USERS } from '../db/selects.js';
 
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
@@ -193,14 +193,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
             channelId: data.channelId,
             threadId: data.threadId,
           },
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-            files: {
-              select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true },
-            },
-          },
+          include: MESSAGE_INCLUDE_WITH_FILES,
         });
 
         // Attach files to the message
@@ -214,14 +207,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         // Fetch final message with files
         const finalMessage = await prisma.message.findUnique({
           where: { id: message.id },
-          include: {
-            user: {
-              select: { id: true, name: true, email: true, avatar: true },
-            },
-            files: {
-              select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true },
-            },
-          },
+          include: MESSAGE_INCLUDE_WITH_FILES,
         });
 
         // Always emit to the sender so they see their own message immediately,
@@ -269,12 +255,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
         const updatedMessage = await prisma.message.update({
           where: { id: data.messageId },
-          data: { content: data.content },
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
+          data: { content: data.content, editedAt: new Date() },
+          include: { user: { select: USER_SELECT_BASIC } },
         });
 
         io.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
@@ -441,14 +423,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
             fromUserId: socket.user.userId,
             toUserId: data.toUserId,
           },
-          include: {
-            fromUser: {
-              select: { id: true, name: true, email: true, avatar: true },
-            },
-            toUser: {
-              select: { id: true, name: true, email: true, avatar: true },
-            },
-          },
+          include: DM_INCLUDE_USERS,
         });
 
         // Emit to both users' personal rooms

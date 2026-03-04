@@ -2,8 +2,11 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { requireDmOwnership } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { isUserOnline } from '../websocket/index.js';
+import { USER_SELECT_BASIC, DM_INCLUDE_USERS } from '../db/selects.js';
+import { parsePagination, paginateResults } from '../utils/pagination.js';
 
 const router = Router();
 
@@ -39,14 +42,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         fromUserId,
         toUserId,
       },
-      include: {
-        fromUser: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        toUser: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
+      include: DM_INCLUDE_USERS,
     });
 
     res.status(201).json(dm);
@@ -167,8 +163,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
     }
 
     // Get messages between the two users
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-    const cursor = req.query.cursor ? parseInt(req.query.cursor as string) : undefined;
+    const { limit, cursor } = parsePagination(req);
 
     const messages = await prisma.directMessage.findMany({
       where: {
@@ -178,14 +173,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
         ],
         deletedAt: null,
       },
-      include: {
-        fromUser: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        toUser: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
+      include: DM_INCLUDE_USERS,
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor && {
@@ -194,9 +182,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
       }),
     });
 
-    const hasMore = messages.length > limit;
-    const resultMessages = hasMore ? messages.slice(0, -1) : messages;
-    const nextCursor = hasMore ? resultMessages[resultMessages.length - 1]?.id : undefined;
+    const { results: resultMessages, nextCursor, hasMore } = paginateResults(messages, limit);
 
     // Mark messages from the other user as read
     await prisma.directMessage.updateMany({
@@ -224,39 +210,18 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
 });
 
 // PATCH /dms/messages/:id - Edit a direct message
-router.patch('/messages/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: AuthRequest, res: Response) => {
   try {
-    const dmId = parseInt(req.params.id);
-    const userId = req.user!.userId;
-
-    if (isNaN(dmId)) {
-      res.status(400).json({ error: 'Invalid message ID' });
-      return;
-    }
+    const dmId = req.dm.id;
 
     const contentSchema = z.object({ content: z.string().min(1).max(4000) });
     const { content } = contentSchema.parse(req.body);
-
-    const dm = await prisma.directMessage.findUnique({
-      where: { id: dmId },
-    });
-
-    if (!dm || dm.deletedAt !== null) {
-      res.status(404).json({ error: 'Message not found' });
-      return;
-    }
-
-    if (dm.fromUserId !== userId) {
-      res.status(403).json({ error: 'You can only edit your own messages' });
-      return;
-    }
 
     const updated = await prisma.directMessage.update({
       where: { id: dmId },
       data: { content, editedAt: new Date() },
       include: {
-        fromUser: { select: { id: true, name: true, email: true, avatar: true } },
-        toUser: { select: { id: true, name: true, email: true, avatar: true } },
+        ...DM_INCLUDE_USERS,
       },
     });
 
@@ -272,29 +237,9 @@ router.patch('/messages/:id', authMiddleware, async (req: AuthRequest, res: Resp
 });
 
 // DELETE /dms/messages/:id - Delete a direct message (soft delete)
-router.delete('/messages/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: AuthRequest, res: Response) => {
   try {
-    const dmId = parseInt(req.params.id);
-    const userId = req.user!.userId;
-
-    if (isNaN(dmId)) {
-      res.status(400).json({ error: 'Invalid message ID' });
-      return;
-    }
-
-    const dm = await prisma.directMessage.findUnique({
-      where: { id: dmId },
-    });
-
-    if (!dm || dm.deletedAt !== null) {
-      res.status(404).json({ error: 'Message not found' });
-      return;
-    }
-
-    if (dm.fromUserId !== userId) {
-      res.status(403).json({ error: 'You can only delete your own messages' });
-      return;
-    }
+    const dmId = req.dm.id;
 
     await prisma.directMessage.update({
       where: { id: dmId },

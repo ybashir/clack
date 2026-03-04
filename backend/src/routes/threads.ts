@@ -5,6 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireMessageAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
+import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
 
 const router = Router();
 
@@ -37,11 +38,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
         channelId: parentMessage.channelId,
         threadId: parentId,
       },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
+      include: { user: { select: USER_SELECT_BASIC } },
     });
 
     res.status(201).json(reply);
@@ -63,11 +60,7 @@ router.get('/:id/thread', authMiddleware, requireMessageAccess, async (req: Auth
     // Re-fetch parent with user details for the response
     const parentMessage = await prisma.message.findUnique({
       where: { id: parentId },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
+      include: { user: { select: USER_SELECT_BASIC } },
     });
 
     if (!parentMessage) {
@@ -77,11 +70,7 @@ router.get('/:id/thread', authMiddleware, requireMessageAccess, async (req: Auth
 
     const replies = await prisma.message.findMany({
       where: { threadId: parentId, deletedAt: null },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
+      include: { user: { select: USER_SELECT_BASIC } },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -112,16 +101,8 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
       where: { id: messageId },
       data: { content, editedAt: new Date() },
       include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: { id: true, name: true },
-            },
-          },
-        },
+        user: { select: USER_SELECT_BASIC },
+        reactions: { include: { user: { select: { id: true, name: true } } } },
       },
     });
 
@@ -169,12 +150,7 @@ router.post('/:id/pin', authMiddleware, requireMessageAccess, async (req: AuthRe
     const updated = await prisma.message.update({
       where: { id: messageId },
       data: { isPinned: true, pinnedBy: userId, pinnedAt: new Date() },
-      include: {
-        user: { select: { id: true, name: true, email: true, avatar: true } },
-        reactions: { include: { user: { select: { id: true, name: true } } } },
-        files: { select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true } },
-        _count: { select: { replies: true } },
-      },
+      include: MESSAGE_INCLUDE_FULL,
     });
 
     // Broadcast the updated message to all users in the channel
@@ -200,12 +176,7 @@ router.delete('/:id/pin', authMiddleware, requireMessageAccess, async (req: Auth
     const updated = await prisma.message.update({
       where: { id: messageId },
       data: { isPinned: false, pinnedBy: null, pinnedAt: null },
-      include: {
-        user: { select: { id: true, name: true, email: true, avatar: true } },
-        reactions: { include: { user: { select: { id: true, name: true } } } },
-        files: { select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true } },
-        _count: { select: { replies: true } },
-      },
+      include: MESSAGE_INCLUDE_FULL,
     });
 
     // Broadcast the updated message to all users in the channel

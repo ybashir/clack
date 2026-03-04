@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
+import { ZodError } from 'zod';
 
 export function errorHandler(
   err: Error,
@@ -7,6 +8,12 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ): void {
+  // Handle Zod validation errors
+  if (err instanceof ZodError) {
+    res.status(400).json({ error: err.issues });
+    return;
+  }
+
   // Handle multer errors
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {

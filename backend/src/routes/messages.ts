@@ -4,6 +4,8 @@ import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireChannelMembership } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
+import { USER_SELECT_BASIC, FILE_SELECT, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
+import { parsePagination, paginateResults } from '../utils/pagination.js';
 
 const router = Router();
 
@@ -64,14 +66,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
         channelId,
         threadId,
       },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        files: {
-          select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true },
-        },
-      },
+      include: MESSAGE_INCLUDE_WITH_FILES,
     });
 
     // Attach files to the message
@@ -84,14 +79,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
       // Fetch updated message with files
       const updatedMessage = await prisma.message.findUnique({
         where: { id: message.id },
-        include: {
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-          files: {
-            select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true },
-          },
-        },
+        include: MESSAGE_INCLUDE_WITH_FILES,
       });
 
       res.status(201).json(updatedMessage);
@@ -113,8 +101,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
 router.get('/:id/messages', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = req.channelId!;
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-    const cursor = req.query.cursor ? parseInt(req.query.cursor as string) : undefined;
+    const { limit, cursor } = parsePagination(req);
 
     const messages = await prisma.message.findMany({
       where: {
@@ -123,22 +110,7 @@ router.get('/:id/messages', authMiddleware, requireChannelMembership, async (req
         deletedAt: null, // Exclude deleted messages
       },
       include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        files: {
-          select: { id: true, filename: true, originalName: true, mimetype: true, size: true, url: true },
-        },
-        _count: {
-          select: { replies: true },
-        },
+        ...MESSAGE_INCLUDE_FULL,
         replies: {
           select: {
             user: {
@@ -157,9 +129,7 @@ router.get('/:id/messages', authMiddleware, requireChannelMembership, async (req
       }),
     });
 
-    const hasMore = messages.length > limit;
-    const resultMessages = hasMore ? messages.slice(0, -1) : messages;
-    const nextCursor = hasMore ? resultMessages[resultMessages.length - 1]?.id : undefined;
+    const { results: resultMessages, nextCursor, hasMore } = paginateResults(messages, limit);
 
     // Extract unique thread participants from replies
     const enrichedMessages = resultMessages.map((msg) => {
