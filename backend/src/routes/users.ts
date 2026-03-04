@@ -9,7 +9,10 @@ const router = Router();
 
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  avatar: z.string().url().optional().nullable(),
+  avatar: z.string().url().refine(
+    (url) => url.startsWith('http://') || url.startsWith('https://'),
+    { message: 'Avatar URL must use HTTP or HTTPS protocol' }
+  ).optional().nullable(),
   status: z.enum(['online', 'away', 'busy', 'offline']).optional(),
   bio: z.string().max(500).optional().nullable(),
 });
