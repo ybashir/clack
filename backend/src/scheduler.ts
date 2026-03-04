@@ -26,6 +26,28 @@ export function startScheduler(): NodeJS.Timeout {
 
       for (const scheduled of due) {
         try {
+          // Verify user is still a member of the channel
+          const membership = await prisma.channelMember.findUnique({
+            where: {
+              userId_channelId: {
+                userId: scheduled.userId,
+                channelId: scheduled.channelId,
+              },
+            },
+          });
+
+          if (!membership) {
+            // User is no longer a member — cancel the scheduled message
+            await prisma.scheduledMessage.update({
+              where: { id: scheduled.id },
+              data: { sent: true },
+            });
+            console.log(
+              `Scheduler: cancelled scheduled message ${scheduled.id} — user ${scheduled.userId} is no longer a member of channel ${scheduled.channelId}`
+            );
+            continue;
+          }
+
           // Create the actual message
           const message = await prisma.message.create({
             data: {
