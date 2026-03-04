@@ -88,6 +88,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
     let result = '';
     let inCodeBlock = false;
     let codeBlockLines: string[] = [];
+    let pendingText = '';
 
     const flushCodeBlock = () => {
       result += '```\n' + codeBlockLines.join('\n') + '\n```';
@@ -101,18 +102,17 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
       const text = op.insert;
 
       if (attrs['code-block']) {
-        const lines = text.split('\n');
         if (!inCodeBlock) inCodeBlock = true;
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          if (i === lines.length - 1 && line === '') {
-            flushCodeBlock();
-          } else {
-            codeBlockLines.push(line);
-          }
-        }
+        codeBlockLines.push(pendingText);
+        pendingText = '';
       } else {
+        if (pendingText) {
+          if (inCodeBlock) flushCodeBlock();
+          result += pendingText;
+          pendingText = '';
+        }
         if (inCodeBlock) flushCodeBlock();
+
         if (attrs['blockquote']) {
           const lines = text.split('\n');
           for (let i = 0; i < lines.length; i++) {
@@ -126,11 +126,19 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
         } else if (attrs['code']) {
           result += '`' + text + '`';
         } else {
-          result += text;
+          if (text.endsWith('\n') || text === '\n') {
+            result += text;
+          } else {
+            pendingText = text;
+          }
         }
       }
     }
 
+    if (pendingText) {
+      if (inCodeBlock) flushCodeBlock();
+      result += pendingText;
+    }
     if (inCodeBlock) flushCodeBlock();
     return result.trim();
   }, []);

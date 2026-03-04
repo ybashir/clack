@@ -63,6 +63,10 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     let result = '';
     let inCodeBlock = false;
     let codeBlockLines: string[] = [];
+    // Buffer for text that may belong to a code-block line.
+    // In Quill's delta, code-block lines are split: the text content is in one op
+    // (without code-block attr) and the trailing \n is in the next op (with code-block attr).
+    let pendingText = '';
 
     const flushCodeBlock = () => {
       result += '```\n' + codeBlockLines.join('\n') + '\n```';
@@ -76,22 +80,20 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
       const text = op.insert;
 
       if (attrs['code-block']) {
-        // Quill emits code-block lines ending with '\n'
-        const lines = text.split('\n');
+        // This op is a code-block newline. The pendingText (from previous op) is the line content.
         if (!inCodeBlock) inCodeBlock = true;
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          // Last segment after final '\n' may be empty — signals end of block
-          if (i === lines.length - 1 && line === '') {
-            flushCodeBlock();
-          } else {
-            codeBlockLines.push(line);
-          }
-        }
+        codeBlockLines.push(pendingText);
+        pendingText = '';
       } else {
+        // Flush any pending text as normal content (it wasn't followed by code-block)
+        if (pendingText) {
+          if (inCodeBlock) flushCodeBlock();
+          result += pendingText;
+          pendingText = '';
+        }
         if (inCodeBlock) flushCodeBlock();
+
         if (attrs['blockquote']) {
-          // Prefix each line with '> '
           const lines = text.split('\n');
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
@@ -102,14 +104,24 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
             }
           }
         } else if (attrs['code']) {
-          // Inline code: wrap in backticks
           result += '`' + text + '`';
         } else {
-          result += text;
+          // Check if text ends with \n — the last segment could be a code-block line
+          if (text.endsWith('\n') || text === '\n') {
+            result += text;
+          } else {
+            // Buffer text that might be followed by a code-block newline
+            pendingText = text;
+          }
         }
       }
     }
 
+    // Flush remaining state
+    if (pendingText) {
+      if (inCodeBlock) flushCodeBlock();
+      result += pendingText;
+    }
     if (inCodeBlock) flushCodeBlock();
 
     return result.trim();
