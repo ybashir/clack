@@ -76,9 +76,16 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
     };
   }, [channel.id]);
 
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+
   const handleLeaveChannel = async () => {
     setShowMenu(false);
-    await leaveChannel(channel.id);
+    setLeaveError(null);
+    try {
+      await leaveChannel(channel.id);
+    } catch {
+      setLeaveError('Cannot leave channel — you are the last member.');
+    }
   };
 
   const handleSearch = async () => {
@@ -242,6 +249,14 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
           </div>
         </div>
       </div>
+
+      {/* Leave channel error banner */}
+      {leaveError && (
+        <div data-testid="leave-error" className="flex items-center justify-between bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700">
+          <span>{leaveError}</span>
+          <button onClick={() => setLeaveError(null)} className="ml-2 text-red-500 hover:text-red-700 font-medium">Dismiss</button>
+        </div>
+      )}
 
       {/* Tabs Row */}
       <div className="flex items-center gap-0.5 px-4 pb-[6px]">
