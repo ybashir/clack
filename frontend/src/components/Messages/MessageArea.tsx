@@ -5,6 +5,7 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { MessageHeader } from './MessageHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
+
 import { MembersPanel } from './MembersPanel';
 import { ThreadPanel } from './ThreadPanel';
 import { DMConversation } from './DMConversation';
@@ -17,6 +18,7 @@ export function MessageArea() {
   const { activeChannelId, activeDMId, getActiveChannel, getActiveDM } = useChannelStore();
   const activeChannel = getActiveChannel();
   const activeDM = getActiveDM();
+  const { sendMessage, sendError, clearSendError } = useMessageStore();
   const [showMembers, setShowMembers] = useState(false);
   const [showPins, setShowPins] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
@@ -100,7 +102,13 @@ export function MessageArea() {
           }}
         />
         <MessageList channelId={activeChannelId!} onOpenThread={handleOpenThread} />
-        <MessageInput channelId={activeChannelId!} channelName={activeChannel.name} />
+        <MessageInput
+          placeholder={`Message #${activeChannel.name}`}
+          onSend={(content, fileIds) => sendMessage(activeChannelId!, content, fileIds)}
+          sendError={sendError}
+          clearSendError={clearSendError}
+          channelId={activeChannelId!}
+        />
       </div>
       {showMembers && (
         <MembersPanel

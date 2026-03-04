@@ -13,9 +13,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useMessageStore } from '@/stores/useMessageStore';
 import { EmojiPicker } from '@/components/ui/emoji-picker';
 import { uploadFile, getUsers, scheduleMessage, type ApiFile, type AuthUser } from '@/lib/api';
+import { serializeDelta } from '@/lib/serializeDelta';
 import { LinkModal } from './LinkModal';
 import { ScheduleModal } from './ScheduleModal';
 import { ScheduleMenu } from './ScheduleMenu';
@@ -24,11 +24,16 @@ import { FilePreview } from './FilePreview';
 import { MentionDropdown } from './MentionDropdown';
 
 interface MessageInputProps {
-  channelId: number;
-  channelName: string;
+  placeholder: string;
+  onSend: (content: string, fileIds?: number[]) => Promise<void>;
+  sendError: string | null;
+  clearSendError: () => void;
+  channelId?: number;
+  testIdPrefix?: string;
 }
 
-export function MessageInput({ channelId, channelName }: MessageInputProps) {
+export function MessageInput({ placeholder, onSend, sendError, clearSendError, channelId, testIdPrefix }: MessageInputProps) {
+  const prefix = testIdPrefix ? `${testIdPrefix}-` : '';
   const editorRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,77 +62,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const scheduleMenuRef = useRef<HTMLDivElement>(null);
 
-  const { sendMessage, sendError, clearSendError } = useMessageStore();
-
-  const serializeDelta = useCallback((quill: Quill): string => {
-    const delta = quill.getContents();
-    let result = '';
-    let inCodeBlock = false;
-    let codeBlockLines: string[] = [];
-    // Buffer for text that may belong to a code-block line.
-    // In Quill's delta, code-block lines are split: the text content is in one op
-    // (without code-block attr) and the trailing \n is in the next op (with code-block attr).
-    let pendingText = '';
-
-    const flushCodeBlock = () => {
-      result += '```\n' + codeBlockLines.join('\n') + '\n```';
-      codeBlockLines = [];
-      inCodeBlock = false;
-    };
-
-    for (const op of delta.ops) {
-      if (typeof op.insert !== 'string') continue;
-      const attrs = op.attributes || {};
-      const text = op.insert;
-
-      if (attrs['code-block']) {
-        // This op is a code-block newline. The pendingText (from previous op) is the line content.
-        if (!inCodeBlock) inCodeBlock = true;
-        codeBlockLines.push(pendingText);
-        pendingText = '';
-      } else {
-        // Flush any pending text as normal content (it wasn't followed by code-block)
-        if (pendingText) {
-          if (inCodeBlock) flushCodeBlock();
-          result += pendingText;
-          pendingText = '';
-        }
-        if (inCodeBlock) flushCodeBlock();
-
-        if (attrs['blockquote']) {
-          const lines = text.split('\n');
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            if (i < lines.length - 1) {
-              result += '> ' + line + '\n';
-            } else if (line !== '') {
-              result += '> ' + line;
-            }
-          }
-        } else if (attrs['code']) {
-          result += '`' + text + '`';
-        } else {
-          // Check if text ends with \n — the last segment could be a code-block line
-          if (text.endsWith('\n') || text === '\n') {
-            result += text;
-          } else {
-            // Buffer text that might be followed by a code-block newline
-            pendingText = text;
-          }
-        }
-      }
-    }
-
-    // Flush remaining state
-    if (pendingText) {
-      if (inCodeBlock) flushCodeBlock();
-      result += pendingText;
-    }
-    if (inCodeBlock) flushCodeBlock();
-
-    return result.trim();
-  }, []);
-
   const handleSend = useCallback(async () => {
     const quill = quillRef.current;
     if (!quill) return;
@@ -138,13 +72,13 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
     quill.setText('');
     setPendingFiles([]);
     setCanSend(false);
-    await sendMessage(channelId, content, fileIds.length > 0 ? fileIds : undefined);
-  }, [channelId, sendMessage, pendingFiles, serializeDelta]);
+    await onSend(content, fileIds.length > 0 ? fileIds : undefined);
+  }, [onSend, pendingFiles]);
 
   const handleSchedule = useCallback(
     async (scheduledAt: Date) => {
       const quill = quillRef.current;
-      if (!quill) return;
+      if (!quill || !channelId) return;
       const text = serializeDelta(quill);
       if (!text) return;
 
@@ -174,7 +108,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         setIsScheduling(false);
       }
     },
-    [channelId, serializeDelta],
+    [channelId],
   );
 
   // Close schedule menu on outside click
@@ -225,7 +159,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
           },
         },
       },
-      placeholder: `Message #${channelName}`,
+      placeholder,
     });
 
     quill.on('text-change', () => {
@@ -251,14 +185,19 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
       setShowMentionDropdown(false);
     });
 
+    // Set test ID on the editable element for Playwright compatibility
+    if (testIdPrefix) {
+      quill.root.setAttribute('data-testid', `${testIdPrefix}-message-input`);
+    }
+
     quillRef.current = quill;
-  }, [channelName]);
+  }, [placeholder, testIdPrefix]);
 
   useEffect(() => {
     if (quillRef.current) {
-      quillRef.current.root.dataset.placeholder = `Message #${channelName}`;
+      quillRef.current.root.dataset.placeholder = placeholder;
     }
-  }, [channelName]);
+  }, [placeholder]);
 
   const handleEmojiSelect = useCallback((emoji: { native: string }) => {
     const quill = quillRef.current;
@@ -466,7 +405,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
         <div className="flex items-center justify-between px-[6px] py-1">
           <div className="flex items-center">
             <Button
-              data-testid="attach-file-button"
+              data-testid={`${prefix}attach-file-button`}
               variant="toolbar"
               size="icon-sm"
               onClick={() => fileInputRef.current?.click()}
@@ -483,7 +422,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               <Smile className="h-[18px] w-[18px]" />
             </Button>
             <Button
-              data-testid="mention-button"
+              data-testid={`${prefix}mention-button`}
               variant="toolbar"
               size="icon-sm"
               onClick={handleMentionButtonClick}
@@ -491,7 +430,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
               <AtSign className="h-[18px] w-[18px]" />
             </Button>
             <Button
-              data-testid="mic-button"
+              data-testid={`${prefix}mic-button`}
               variant="toolbar"
               size="icon-sm"
               title="Record voice clip"
@@ -503,7 +442,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
           {/* Send button group with schedule dropdown */}
           <div className="flex items-center relative" ref={scheduleMenuRef}>
             <button
-              data-testid="send-button"
+              data-testid={`${prefix}send-button`}
               onClick={handleSend}
               disabled={!hasContent}
               className={cn(
@@ -517,7 +456,7 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
             </button>
             {/* Schedule dropdown arrow */}
             <button
-              data-testid="schedule-button"
+              data-testid={`${prefix}schedule-button`}
               onClick={() => hasContent && setShowScheduleMenu((v) => !v)}
               disabled={!hasContent}
               className={cn(
