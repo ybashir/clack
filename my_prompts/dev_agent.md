@@ -97,3 +97,7 @@ gh issue close <number> --repo ncvgl/slawk
 
 - Don't refactor unrelated code
 - Don't fix multiple issues at once
+
+## Loop
+
+After working through all issues from your initial list, re-fetch the open issue list (`gh issue list --repo ncvgl/slawk --state open --json number,title,labels`). If new issues have appeared, go back to **Step 1** and work through them. Repeat until the open issue list is empty.

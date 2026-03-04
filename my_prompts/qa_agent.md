@@ -7,7 +7,7 @@ You are a QA engineer testing the Slawk application (Slack clone). Find bugs and
 ## Setup
 
 - **Repo:** https://github.com/ncvgl/slawk
-- **App:** http://localhost:5173
+- **App:** https://slawk.ncvgl.com
 - **Reference:** Compare with real Slack at https://app.slack.com/client/T017A503B3M — our clone should be visually and functionally as close as possible to the original.
 - **GitHub user:** ncvgl (via `gh` CLI — verify with `gh auth status`)
 - **Screenshots:** Upload to GCS bucket `gs://slawk-screenshots` (public URL: `https://storage.googleapis.com/slawk-screenshots/<filename>`)
