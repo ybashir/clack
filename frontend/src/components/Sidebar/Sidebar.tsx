@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   MessageSquare,
   FileText,
@@ -19,7 +19,6 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
-import { FilesPanel } from '@/components/Messages/FilesPanel';
 import { AddChannelDialog } from './AddChannelDialog';
 import { AddTeammatesDialog } from './AddTeammatesDialog';
 import type { Channel } from '@/lib/types';
@@ -32,13 +31,14 @@ const navItems = [
 
 export function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { channels, directMessages, activeChannelId, activeDMId, startDM, createChannel, joinChannel, fetchChannels } =
     useChannelStore();
   const { user, logout } = useAuthStore();
   const { openProfile } = useProfileStore();
   const [channelsExpanded, setChannelsExpanded] = useState(true);
   const [dmsExpanded, setDmsExpanded] = useState(true);
-  const [activeNav, setActiveNav] = useState('dms');
+  const activeNav = location.pathname === '/files' ? 'files' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
   const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
@@ -112,9 +112,13 @@ export function Sidebar() {
             data-testid={`nav-item-${item.id}`}
             onClick={() => {
               if (item.id === 'files') {
-                setActiveNav(activeNav === 'files' ? 'dms' : 'files');
-              } else {
-                setActiveNav(item.id);
+                if (activeNav === 'files') {
+                  // Navigate back to the first member channel
+                  const firstChannel = channels.find((ch) => ch.isMember);
+                  if (firstChannel) navigate(`/c/${firstChannel.id}`);
+                } else {
+                  navigate('/files');
+                }
               }
             }}
             className={cn(
@@ -299,21 +303,6 @@ export function Sidebar() {
         onJoinChannel={handleJoinChannel}
         onBrowse={handleBrowseChannels}
       />
-
-      {/* Files Panel - shown when Files nav item is active */}
-      {activeNav === 'files' && (
-        <div className="fixed inset-0 z-40 flex" onClick={() => setActiveNav('dms')}>
-          <div
-            className="absolute left-[330px] top-0 h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FilesPanel
-              title="All files"
-              onClose={() => setActiveNav('dms')}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Add Teammates Dialog */}
       <AddTeammatesDialog

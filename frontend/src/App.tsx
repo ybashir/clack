@@ -57,6 +57,17 @@ function RouteSync() {
 }
 
 /**
+ * Clears active channel/DM when navigating to /files so MessageArea
+ * knows to render the full-page files view.
+ */
+function FileRouteSync() {
+  useEffect(() => {
+    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
+  }, []);
+  return null;
+}
+
+/**
  * Redirects / to /channels/:id for the first available member channel.
  */
 function DefaultRedirect() {
@@ -206,6 +217,7 @@ function App() {
           <Route index element={<DefaultRedirect />} />
           <Route path="c/:channelId" element={<RouteSync />} />
           <Route path="d/:userId" element={<RouteSync />} />
+          <Route path="files" element={<FileRouteSync />} />
         </Route>
       </Routes>
     </BrowserRouter>

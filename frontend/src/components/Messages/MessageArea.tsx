@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { MessageHeader } from './MessageHeader';
@@ -9,8 +10,10 @@ import { ThreadPanel } from './ThreadPanel';
 import { DMConversation } from './DMConversation';
 import { PinsPanel } from './PinsPanel';
 import { FilesPanel } from './FilesPanel';
+import { FilesPage } from './FilesPage';
 
 export function MessageArea() {
+  const location = useLocation();
   const { activeChannelId, activeDMId, getActiveChannel, getActiveDM } = useChannelStore();
   const activeChannel = getActiveChannel();
   const activeDM = getActiveDM();
@@ -44,6 +47,11 @@ export function MessageArea() {
     );
     useMessageStore.setState({ messages: updated });
   }, []);
+
+  // Show full-page Files view when navigated to /files
+  if (location.pathname === '/files') {
+    return <FilesPage />;
+  }
 
   // Show DM conversation if a DM is active
   if (activeDMId && activeDM) {
