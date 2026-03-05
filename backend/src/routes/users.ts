@@ -145,7 +145,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       take: limit,
     });
 
-    res.json(users);
+    // Augment with real-time WebSocket presence
+    const augmented = users.map((u) => ({
+      ...u,
+      status: isUserOnline(u.id) ? 'online' : u.status,
+      isOnline: isUserOnline(u.id),
+    }));
+
+    res.json(augmented);
   } catch (error) {
     console.error('List users error:', error);
     res.status(500).json({ error: 'Failed to list users' });

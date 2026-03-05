@@ -9,7 +9,7 @@ const USERS = [
     email: 'alice@slawk.dev',
     password: 'password123',
     bio: 'Frontend lead • loves React + TypeScript • coffee → code',
-    status: 'online',
+    status: 'offline',
     avatar: '/ncavaglione.png',
   },
   {
@@ -17,7 +17,7 @@ const USERS = [
     email: 'bob@slawk.dev',
     password: 'password123',
     bio: 'Backend engineer • Rust & Go enthusiast • building the future one API at a time',
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
   },
   {
@@ -25,7 +25,7 @@ const USERS = [
     email: 'carol@slawk.dev',
     password: 'password123',
     bio: 'Product designer • she/her • obsessed with design systems and user delight',
-    status: 'away',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
   },
   {
@@ -41,7 +41,7 @@ const USERS = [
     email: 'eve@slawk.dev',
     password: 'password123',
     bio: 'QA lead — professional bug hunter 🐛 • accessibility advocate',
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
   },
   {
@@ -49,7 +49,7 @@ const USERS = [
     email: 'frank@slawk.dev',
     password: 'password123',
     bio: "Full-stack + open source contributor • co-creator of 3 npm packages you've definitely used",
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/men/12.jpg',
   },
   {
@@ -57,7 +57,7 @@ const USERS = [
     email: 'grace@slawk.dev',
     password: 'password123',
     bio: 'ML engineer • PhD in NLP • turning research papers into production code',
-    status: 'away',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/women/17.jpg',
   },
   {
@@ -65,7 +65,7 @@ const USERS = [
     email: 'hank@slawk.dev',
     password: 'password123',
     bio: 'CEO & co-founder @Slawk • prev eng @ Stripe & Figma • building AI tools for devs',
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/men/78.jpg',
   },
   {
@@ -73,7 +73,7 @@ const USERS = [
     email: 'iris@slawk.dev',
     password: 'password123',
     bio: 'AI research lead • context windows, reasoning, and all the good stuff in between',
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
   },
   {
@@ -81,7 +81,7 @@ const USERS = [
     email: 'jack@slawk.dev',
     password: 'password123',
     bio: 'Product manager • previously @ Linear, Notion • obsessed with developer experience',
-    status: 'online',
+    status: 'offline',
     avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
   },
 ];
