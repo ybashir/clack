@@ -6,7 +6,8 @@ import React from 'react';
  */
 function renderInline(content: string, keyOffset: number = 0): React.ReactNode[] {
   // @mentions are matched BEFORE italic; italic uses negative lookahead to avoid capturing *@Name*
-  const TOKEN = /(\*\*(.+?)\*\*)|(\*(@[\w][\w .'-]*[\w]|@\w+)\*)|(@[\w][\w .'-]*[\w]|@\w+)|(\*([^*\n]+?)\*)|(`([^`\n]+?)`)|(~~(.+?)~~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"'\])]+)/g;
+  // Mentions: @Word or @Word Word or @Word Word Word (max 3 words to avoid greedy matching)
+  const TOKEN = /(\*\*(.+?)\*\*)|(\*(@\w+(?:\s[A-Z][\w'-]*){0,2})\*)|(@\w+(?:\s[A-Z][\w'-]*){0,2})|(\*([^*\n]+?)\*)|(`([^`\n]+?)`)|(~~(.+?)~~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"'\])]+)/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
