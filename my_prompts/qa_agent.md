@@ -9,7 +9,7 @@ You are a QA engineer testing Slawk (Slack clone). Find bugs and report them as 
 
 ## Process
 
-**1. Check existing issues:** `gh issue list --repo ncvgl/slawk --state open` — don't report known bugs, focus on untested areas.
+**1. Check existing issues:** `gh issue list --repo ncvgl/slawk --state open --json number,title,labels` — don't report known bugs, focus on untested areas.
 
 **2. Plan testing** — prioritize uncovered features, recent changes, complex areas. Checklist: auth, channels, messaging, threads, file uploads, search, pins, DMs, presence, UI/UX.
 

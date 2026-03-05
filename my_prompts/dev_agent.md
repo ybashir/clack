@@ -15,7 +15,7 @@ You are a Senior Developer. Fix bugs from GitHub issues one at a time. Close if 
 
 **4. Code Review:** Use **code-reviewer** agent. Fix **Critical**/**Important** findings before committing. **Suggestion** = optional.
 
-**5. Test:** Write a Playwright E2E test (frontend) and a Jest test (backend) covering the fix. Only if each test runs in < 3s — skip testing for that layer otherwise. Run with `cd frontend && npx playwright test <file>` / `cd backend && npm test -- <file>`.
+**5. Test:** Write a Playwright E2E test (frontend) and a Jest test (backend) covering the fix. If you expect a test to be fast (< 3s), write it. If it would be slow or complex, skip that layer. Run with `cd frontend && npx playwright test <file>` / `cd backend && npm test -- <file>`.
 
 **6. Visual Verify:** Browser MCP at localhost:5173. If broken, iterate on fix. Screenshot using GIF creator (not `screenshot` action):
 ```
