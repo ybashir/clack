@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, MessageSquare } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getMyProfile, getUserProfile, updateMyProfile, type UserProfile } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useChannelStore } from '@/stores/useChannelStore';
 import { format } from 'date-fns';
 
 interface ProfileModalProps {
@@ -154,6 +155,22 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                     {format(new Date(profile.createdAt), 'MMMM d, yyyy')}
                   </p>
                 </div>
+
+                {/* Message button for other users */}
+                {!isOwnProfile && profile && (
+                  <Button
+                    data-testid="profile-message-btn"
+                    variant="outline"
+                    className="w-full mb-2"
+                    onClick={() => {
+                      useChannelStore.getState().startDM(profile.id, profile.name, profile.avatar ?? undefined);
+                      onClose();
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Message
+                  </Button>
+                )}
 
                 {/* Edit button for own profile */}
                 {isOwnProfile && (
