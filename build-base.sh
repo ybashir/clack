@@ -14,7 +14,14 @@ echo ""
 gcloud builds submit . \
   --project "${GCP_PROJECT_ID}" \
   --tag "${IMAGE}:latest" \
-  --dockerfile Dockerfile.base
+  --config /dev/stdin <<YAML
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.base', '-t', '${IMAGE}:latest', '.']
+images: ['${IMAGE}:latest']
+options:
+  logging: CLOUD_LOGGING_ONLY
+YAML
 
 echo ""
 echo "Base image built and pushed: ${IMAGE}:latest"
