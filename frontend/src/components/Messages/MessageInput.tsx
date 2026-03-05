@@ -5,7 +5,6 @@ import {
   Plus,
   AtSign,
   Smile,
-  Mic,
   SendHorizontal,
   X,
   ChevronDown,
@@ -464,14 +463,6 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
               onClick={handleMentionButtonClick}
             >
               <AtSign className="h-[18px] w-[18px]" />
-            </Button>
-            <Button
-              data-testid={`${prefix}mic-button`}
-              variant="toolbar"
-              size="icon-sm"
-              title="Record voice clip"
-            >
-              <Mic className="h-[18px] w-[18px]" />
             </Button>
           </div>
 
