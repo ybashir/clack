@@ -105,14 +105,20 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
     }
   };
 
-  const handleSearch = async () => {
-    const q = searchQuery.trim();
-    if (q.length < 2) return;
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearch = async (query?: string) => {
+    const q = (query ?? searchQuery).trim();
+    if (q.length < 2) {
+      setShowResults(false);
+      setSearchResults([]);
+      return;
+    }
     setIsSearching(true);
+    setShowResults(true);
     try {
       const data = await searchMessages(q);
       setSearchResults(data.results);
-      setShowResults(true);
     } catch {
       setSearchResults([]);
     } finally {
@@ -120,8 +126,30 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (value.trim().length < 2) {
+      setShowResults(false);
+      setSearchResults([]);
+      return;
+    }
+    searchTimerRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
+  };
+
+  // Clean up debounce timer
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
+
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       handleSearch();
     } else if (e.key === 'Escape') {
       setSearchQuery('');
@@ -241,7 +269,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
               type="text"
               placeholder="Search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               onKeyDown={handleSearchKeyDown}
               className="h-[26px] w-[140px] rounded-md border border-slack-border bg-white pl-7 pr-2 text-[13px] placeholder:text-slack-secondary focus:outline-none focus:border-slack-link focus:w-[240px] transition-all"
             />
