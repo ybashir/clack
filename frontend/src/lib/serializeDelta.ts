@@ -19,6 +19,7 @@ export function serializeDelta(quill: Quill): string {
     const text = op.insert;
 
     if (attrs['code-block']) {
+      // Quill emits code-block on the trailing \n — pendingText holds the line content
       if (!inCodeBlock) inCodeBlock = true;
       codeBlockLines.push(pendingText);
       pendingText = '';
@@ -43,10 +44,28 @@ export function serializeDelta(quill: Quill): string {
       } else if (attrs['code']) {
         result += '`' + text + '`';
       } else {
-        if (text.endsWith('\n') || text === '\n') {
-          result += text;
+        // Apply inline formatting
+        let formatted = text;
+
+        if (formatted !== '\n' && formatted.trim() !== '') {
+          if (attrs['bold']) {
+            formatted = '**' + formatted + '**';
+          }
+          if (attrs['italic']) {
+            formatted = '*' + formatted + '*';
+          }
+          if (attrs['strike']) {
+            formatted = '~~' + formatted + '~~';
+          }
+          if (attrs['link']) {
+            formatted = '[' + formatted + '](' + attrs['link'] + ')';
+          }
+        }
+
+        if (formatted.endsWith('\n') || formatted === '\n') {
+          result += formatted;
         } else {
-          pendingText = text;
+          pendingText = formatted;
         }
       }
     }
