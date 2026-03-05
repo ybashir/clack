@@ -40,6 +40,7 @@ interface ChannelState {
   updateDMStatus: (userId: number, status: DirectMessage['userStatus']) => void;
   updateMemberCount: (channelId: number, memberCount: number) => void;
   incrementUnread: (channelId: number) => void;
+  setUnreadCount: (channelId: number, count: number) => void;
   incrementDMUnread: (userId: number) => void;
   markChannelAsRead: (channelId: number) => void;
   markDMAsRead: (dmId: number) => void;
@@ -238,6 +239,14 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     set((state) => ({
       channels: state.channels.map((ch) =>
         ch.id === channelId ? { ...ch, unreadCount: ch.unreadCount + 1 } : ch,
+      ),
+    }));
+  },
+
+  setUnreadCount: (channelId: number, count: number) => {
+    set((state) => ({
+      channels: state.channels.map((ch) =>
+        ch.id === channelId ? { ...ch, unreadCount: count } : ch,
       ),
     }));
   },

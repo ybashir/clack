@@ -39,7 +39,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
   const toggleBookmark = useBookmarkStore((s) => s.toggle);
   const isBookmarked = useBookmarkStore((s) => s.bookmarkedIds.has(message.id));
   const { togglePin } = useMessageActions();
-  const incrementUnread = useChannelStore((s) => s.incrementUnread);
+  const setUnreadCount = useChannelStore((s) => s.setUnreadCount);
   const { isHovered, onMouseEnter, onMouseLeave } = useMessageHover();
   const {
     editingId, editContent, setEditContent, editInputRef,
@@ -320,7 +320,12 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
           className="absolute -top-4 right-5 mt-9 z-50"
           onMarkUnread={() => {
             setShowMoreMenu(false);
-            incrementUnread(message.channelId);
+            // Count this message and all subsequent messages as unread
+            const allMessages = useMessageStore.getState().messages;
+            const unreadCount = allMessages.filter(
+              (m) => m.channelId === message.channelId && m.id >= message.id
+            ).length;
+            setUnreadCount(message.channelId, unreadCount);
             markChannelUnread(message.channelId, message.id).catch(() => {});
           }}
           onPin={() => {
