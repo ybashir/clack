@@ -12,6 +12,7 @@ import { DMConversation } from './DMConversation';
 import { PinsPanel } from './PinsPanel';
 import { FilesPanel } from './FilesPanel';
 import { FilesPage } from './FilesPage';
+import { LaterPage } from './LaterPage';
 
 export function MessageArea() {
   const location = useLocation();
@@ -53,6 +54,11 @@ export function MessageArea() {
   // Show full-page Files view when navigated to /files
   if (location.pathname === '/files') {
     return <FilesPage />;
+  }
+
+  // Show saved/bookmarked messages view
+  if (location.pathname === '/later') {
+    return <LaterPage />;
   }
 
   // Show DM conversation if a DM is active

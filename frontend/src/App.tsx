@@ -67,6 +67,13 @@ function FileRouteSync() {
   return null;
 }
 
+function LaterRouteSync() {
+  useEffect(() => {
+    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
+  }, []);
+  return null;
+}
+
 /**
  * Redirects / to /channels/:id for the first available member channel.
  */
@@ -218,6 +225,7 @@ function App() {
           <Route path="c/:channelId" element={<RouteSync />} />
           <Route path="d/:userId" element={<RouteSync />} />
           <Route path="files" element={<FileRouteSync />} />
+          <Route path="later" element={<LaterRouteSync />} />
         </Route>
       </Routes>
     </BrowserRouter>

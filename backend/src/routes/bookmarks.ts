@@ -3,6 +3,7 @@ import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireMessageAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
+import { USER_SELECT_BASIC, FILE_SELECT } from '../db/selects.js';
 
 const router = Router();
 
@@ -65,11 +66,28 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId },
-      select: { messageId: true, createdAt: true },
+      include: {
+        message: {
+          include: {
+            user: { select: USER_SELECT_BASIC },
+            files: { select: FILE_SELECT },
+            channel: { select: { id: true, name: true } },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json(bookmarks);
+    // Filter out bookmarks where message was deleted
+    const result = bookmarks
+      .filter((b) => b.message && !b.message.deletedAt)
+      .map((b) => ({
+        messageId: b.messageId,
+        createdAt: b.createdAt,
+        message: b.message,
+      }));
+
+    res.json(result);
   } catch (error) {
     console.error('Get bookmarks error:', error);
     res.status(500).json({ error: 'Failed to get bookmarks' });

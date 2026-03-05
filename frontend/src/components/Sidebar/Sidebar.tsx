@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   MessageSquare,
   FileText,
+  Bookmark,
   ChevronDown,
   ChevronRight,
   Plus,
@@ -27,6 +28,7 @@ import type { AuthUser } from '@/lib/api';
 
 const navItems = [
   { icon: MessageSquare, label: 'DMs', id: 'dms' },
+  { icon: Bookmark, label: 'Later', id: 'later' },
   { icon: FileText, label: 'Files', id: 'files' },
 ];
 
@@ -39,7 +41,7 @@ export function Sidebar() {
   const { openProfile } = useProfileStore();
   const [channelsExpanded, setChannelsExpanded] = useState(true);
   const [dmsExpanded, setDmsExpanded] = useState(true);
-  const activeNav = location.pathname === '/files' ? 'files' : 'dms';
+  const activeNav = location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
   const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
@@ -143,11 +145,17 @@ export function Sidebar() {
             onClick={() => {
               if (item.id === 'files') {
                 if (activeNav === 'files') {
-                  // Navigate back to the first member channel
                   const firstChannel = channels.find((ch) => ch.isMember);
                   if (firstChannel) navigate(`/c/${firstChannel.id}`);
                 } else {
                   navigate('/files');
+                }
+              } else if (item.id === 'later') {
+                if (activeNav === 'later') {
+                  const firstChannel = channels.find((ch) => ch.isMember);
+                  if (firstChannel) navigate(`/c/${firstChannel.id}`);
+                } else {
+                  navigate('/later');
                 }
               }
             }}
