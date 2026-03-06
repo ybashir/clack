@@ -114,18 +114,23 @@ export function DMThreadPanel({ dmId, onClose, onReplyCountChange }: DMThreadPan
     try {
       const apiReply = await replyToDM(dmId, content);
       const reply = transformDM(apiReply);
-      setReplies((prev) => [...prev, reply]);
+      let newCount = 0;
+      setReplies((prev) => {
+        const next = [...prev, reply];
+        newCount = next.length;
+        return next;
+      });
       quill.setText('');
       setPendingFiles([]);
       setCanSend(false);
-      onReplyCountChange?.(dmId, replies.length + 1);
+      onReplyCountChange?.(dmId, newCount);
     } catch (err) {
       console.error('Failed to send DM reply:', err);
       setReplyError('Failed to send reply. Please try again.');
     } finally {
       setIsSending(false);
     }
-  }, [dmId, onReplyCountChange, replies.length, pendingFiles]);
+  }, [dmId, onReplyCountChange, pendingFiles]);
 
   const handleSendRef = useRef(handleSendReply);
   handleSendRef.current = handleSendReply;

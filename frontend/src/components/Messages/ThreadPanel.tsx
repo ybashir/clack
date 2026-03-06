@@ -112,18 +112,23 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
     try {
       const apiReply = await replyToMessage(messageId, content);
       const reply = transformMessage(apiReply);
-      setReplies((prev) => [...prev, reply]);
+      let newCount = 0;
+      setReplies((prev) => {
+        const next = [...prev, reply];
+        newCount = next.length;
+        return next;
+      });
       quill.setText('');
       setPendingFiles([]);
       setCanSend(false);
-      onReplyCountChange?.(messageId, replies.length + 1);
+      onReplyCountChange?.(messageId, newCount);
     } catch (err) {
       console.error('Failed to send reply:', err);
       setReplyError('Failed to send reply. Please try again.');
     } finally {
       setIsSending(false);
     }
-  }, [messageId, onReplyCountChange, replies.length, pendingFiles]);
+  }, [messageId, onReplyCountChange, pendingFiles]);
 
   const handleSendRef = useRef(handleSendReply);
   handleSendRef.current = handleSendReply;
