@@ -293,7 +293,8 @@ router.get('/:id/download', (req: AuthRequest, res: Response, next) => {
     res.setHeader('Content-Length', file.size);
     // Sanitize filename to prevent header injection
     const safeName = file.originalName.replace(/["\\\r\n]/g, '_');
-    res.setHeader('Content-Disposition', `inline; filename="${safeName}"`);
+    const disposition = req.query.dl === '1' ? 'attachment' : 'inline';
+    res.setHeader('Content-Disposition', `${disposition}; filename="${safeName}"`);
     fs.createReadStream(filePath).pipe(res);
   } catch (error) {
     console.error('Download file error:', error);

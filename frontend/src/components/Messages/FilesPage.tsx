@@ -84,7 +84,7 @@ export function FilesPage() {
                   </p>
                 </div>
                 <a
-                  href={getAuthFileUrl(file.url)}
+                  href={getAuthFileUrl(file.url, { download: true })}
                   download={file.originalName}
                   className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-border-light"
                   title="Download"

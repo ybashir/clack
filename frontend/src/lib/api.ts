@@ -37,17 +37,23 @@ if (localStorage.getItem('token')) refreshDownloadToken();
  * Appends a scoped download token to a file URL for use in <img> and <a> tags
  * that can't send Authorization headers.
  */
-export function getAuthFileUrl(url: string): string {
+export function getAuthFileUrl(url: string, { download = false }: { download?: boolean } = {}): string {
   if (!url) return url;
   // Only append token to our own download endpoints, not external URLs (GCS signed URLs)
   if (url.startsWith('/files/') && url.includes('/download')) {
+    let result = url;
+    if (download) {
+      const sep1 = result.includes('?') ? '&' : '?';
+      result = `${result}${sep1}dl=1`;
+    }
     const token = _downloadToken;
     if (token) {
-      const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}token=${token}`;
+      const sep2 = result.includes('?') ? '&' : '?';
+      return `${result}${sep2}token=${token}`;
     }
     // Trigger async refresh for next render
     refreshDownloadToken();
+    return result;
   }
   return url;
 }

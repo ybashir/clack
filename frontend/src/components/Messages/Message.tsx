@@ -215,7 +215,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
                       </span>
                       <a
                         data-testid="image-download"
-                        href={getAuthFileUrl(file.url)}
+                        href={getAuthFileUrl(file.url, { download: true })}
                         download={file.originalName}
                         className="ml-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                         onClick={(e) => e.stopPropagation()}
@@ -241,7 +241,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
                       </span>
                     </div>
                     <a
-                      href={getAuthFileUrl(file.url)}
+                      href={getAuthFileUrl(file.url, { download: true })}
                       download={file.originalName}
                       className="flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                       onClick={(e) => e.stopPropagation()}
