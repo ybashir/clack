@@ -150,6 +150,12 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
       theme: 'snow',
       modules: {
         toolbar: false,
+        clipboard: {
+          matchers: [
+            // Strip pasted images — we handle them as file uploads instead
+            ['img', (_node: HTMLElement, delta: any) => { delta.ops = []; return delta; }],
+          ],
+        },
         keyboard: {
           bindings: {
             enter: {
@@ -262,6 +268,47 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
     if (testIdPrefix) {
       quill.root.setAttribute('data-testid', `${testIdPrefix}-message-input`);
     }
+
+    // Handle image paste from clipboard — upload as file instead of inline base64
+    quill.root.addEventListener('paste', (e: ClipboardEvent) => {
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+
+      const imageFiles: File[] = [];
+      for (const item of Array.from(clipboardData.items)) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Remove any base64 images Quill may have inserted despite preventDefault
+        requestAnimationFrame(() => {
+          const imgs = quill.root.querySelectorAll('img[src^="data:"]');
+          imgs.forEach((img) => img.remove());
+        });
+
+        (async () => {
+          setIsUploading(true);
+          setUploadError(null);
+          try {
+            for (const file of imageFiles) {
+              const uploaded = await uploadFile(file);
+              setPendingFiles((prev) => [...prev, uploaded]);
+            }
+          } catch {
+            setUploadError('Failed to upload pasted image. Please try again.');
+            setTimeout(() => setUploadError(null), 4000);
+          } finally {
+            setIsUploading(false);
+          }
+        })();
+      }
+    });
 
     quillRef.current = quill;
   }, [placeholder, testIdPrefix]);

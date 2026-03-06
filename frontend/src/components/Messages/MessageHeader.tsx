@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Hash, Star, MoreVertical, LogOut } from 'lucide-react';
+import { Hash, Lock, Star, MoreVertical, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getChannelMembers, type ChannelMember } from '@/lib/api';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -82,7 +82,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
             data-testid="channel-name-button"
             className="flex items-center gap-1 px-1.5 py-0.5"
           >
-            <Hash className="h-[16px] w-[16px] text-slack-secondary" />
+            {channel.isPrivate ? <Lock className="h-[16px] w-[16px] text-slack-secondary" /> : <Hash className="h-[16px] w-[16px] text-slack-secondary" />}
             <span className="text-[18px] font-black text-slack-primary">{channel.name}</span>
           </div>
           <Button

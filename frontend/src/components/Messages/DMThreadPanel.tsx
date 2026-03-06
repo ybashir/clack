@@ -149,6 +149,11 @@ export function DMThreadPanel({ dmId, onClose, onReplyCountChange }: DMThreadPan
       theme: 'snow',
       modules: {
         toolbar: false,
+        clipboard: {
+          matchers: [
+            ['img', (_node: HTMLElement, delta: any) => { delta.ops = []; return delta; }],
+          ],
+        },
         keyboard: {
           bindings: {
             enter: {
@@ -226,6 +231,34 @@ export function DMThreadPanel({ dmId, onClose, onReplyCountChange }: DMThreadPan
         }
       }
       setShowMentionDropdown(false);
+    });
+
+    // Handle image paste from clipboard — upload as file instead of inline base64
+    quill.root.addEventListener('paste', (e: ClipboardEvent) => {
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+      const imageFiles: File[] = [];
+      for (const item of Array.from(clipboardData.items)) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        requestAnimationFrame(() => {
+          quill.root.querySelectorAll('img[src^="data:"]').forEach((img) => img.remove());
+        });
+        (async () => {
+          try {
+            for (const file of imageFiles) {
+              const uploaded = await uploadFile(file);
+              setPendingFiles((prev) => [...prev, uploaded]);
+            }
+          } catch { /* ignore */ }
+        })();
+      }
     });
 
     quillRef.current = quill;
