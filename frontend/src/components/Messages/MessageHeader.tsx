@@ -29,7 +29,6 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
   const navigate = useNavigate();
   const toggleStar = useChannelStore((s) => s.toggleStar);
   const leaveChannel = useChannelStore((s) => s.leaveChannel);
-  const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
   const channels = useChannelStore((s) => s.channels);
   const [activeTab, setActiveTab] = useState('files');
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,7 +161,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
 
   const handleResultClick = (result: SearchResult) => {
     if (result.channel) {
-      setActiveChannel(result.channel.id, result.id);
+      navigate(`/c/${result.channel.id}`, { state: { scrollToMessageId: result.id } });
     } else if (result.participant) {
       navigate(`/d/${result.participant.id}`);
     }
@@ -250,7 +249,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
                   return unread.map((ch) => (
                     <button
                       key={ch.id}
-                      onClick={() => { setActiveChannel(ch.id); setShowNotifications(false); }}
+                      onClick={() => { navigate(`/c/${ch.id}`); setShowNotifications(false); }}
                       className="w-full text-left px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
                     >
                       <div className="flex items-center justify-between">
