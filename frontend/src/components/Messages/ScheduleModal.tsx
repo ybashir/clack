@@ -10,9 +10,9 @@ interface ScheduleModalProps {
 }
 
 export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleModalProps) {
-  // Default to 1 hour from now
+  // Default to 1 minute from now (user's local timezone)
   const [customScheduleAt, setCustomScheduleAt] = useState(() => {
-    const d = new Date(Date.now() + 60 * 60 * 1000);
+    const d = new Date(Date.now() + 60 * 1000);
     const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
   });
@@ -42,7 +42,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
             type="datetime-local"
             value={customScheduleAt}
             onChange={(e) => setCustomScheduleAt(e.target.value)}
-            min={new Date(Date.now() + 60 * 1000).toISOString().slice(0, 16)}
+            min={(() => { const d = new Date(Date.now() + 60 * 1000); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
             className="h-9 w-full rounded-md border border-slack-border-dark px-3 text-[14px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
           />
         </div>
