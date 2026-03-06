@@ -117,8 +117,14 @@ router.post('/', authMiddleware, upload.single('file'), async (req: AuthRequest,
         res.status(400).json({ error: 'File content does not match an allowed type' });
         return;
       }
-      // Override client-provided mimetype with detected one
-      file.mimetype = detectedType.mime;
+      // Override client-provided mimetype with detected one,
+      // but keep audio/webm when client claims audio in a WebM container
+      // (file-type detects all WebM as video/webm even for audio-only)
+      if (detectedType.mime === 'video/webm' && file.mimetype === 'audio/webm') {
+        // keep client's audio/webm
+      } else {
+        file.mimetype = detectedType.mime;
+      }
     } else if (!textTypes.has(file.mimetype)) {
       // No magic bytes detected and not a text type — reject
       fs.unlinkSync(file.path);

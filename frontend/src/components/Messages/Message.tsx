@@ -178,7 +178,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
                 data-testid="message-file"
                 className="rounded-lg border border-slack-border overflow-hidden"
               >
-                {file.mimetype.startsWith('audio/') ? (
+                {file.mimetype.startsWith('audio/') || (file.mimetype === 'video/webm' && file.originalName.startsWith('voice-message')) ? (
                   <div className="flex items-center gap-3 px-3 py-2.5 min-w-[280px]">
                     <Mic className="h-5 w-5 text-slack-link flex-shrink-0" />
                     <div className="flex-1 min-w-0">

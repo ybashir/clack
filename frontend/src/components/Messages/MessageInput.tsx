@@ -77,7 +77,7 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
     if (!quill) return;
     const text = serializeDelta(quill);
     if (!text && pendingFiles.length === 0) return;
-    const content = text || ' ';
+    const content = text || '';
     const fileIds = pendingFiles.map((f) => f.id);
     quill.setText('');
     setPendingFiles([]);

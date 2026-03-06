@@ -226,12 +226,18 @@ const contentSchema = z.string().min(1).max(4000)
   .refine(val => val.trim().length > 0, { message: 'Content cannot be empty' })
   .refine(val => !val.includes('\u0000'), { message: 'Content cannot contain null bytes' });
 
+const optionalContentSchema = z.string().max(4000)
+  .refine(val => !val.includes('\u0000'), { message: 'Content cannot contain null bytes' });
+
 export const wsMessageSendSchema = z.object({
   channelId: z.number().int().positive(),
-  content: contentSchema,
+  content: optionalContentSchema,
   threadId: z.number().int().positive().optional(),
   fileIds: z.array(z.number().int().positive()).optional(),
-});
+}).refine(
+  (data) => (data.content?.trim().length ?? 0) > 0 || (data.fileIds && data.fileIds.length > 0),
+  { message: 'Message must have content or file attachments' },
+);
 
 export const wsMessageEditSchema = z.object({
   messageId: z.number().int().positive(),
