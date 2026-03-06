@@ -12,7 +12,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
-import { EmojiPicker } from '@/components/ui/emoji-picker';
+import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useDMStore } from '@/stores/useDMStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -580,15 +580,14 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
 
                         {/* Emoji picker */}
                         {showEmojiPickerId === msg.id && (
-                          <div className="absolute -top-4 right-2 z-50 mt-9">
-                            <EmojiPicker
-                              onEmojiSelect={(_emoji) => {
-                                // Reactions on DMs not supported by backend yet
-                                setShowEmojiPickerId(null);
-                              }}
-                              onClickOutside={() => setShowEmojiPickerId(null)}
-                            />
-                          </div>
+                          <PortalEmojiPicker
+                            anchorClassName="absolute -top-4 right-2 mt-9"
+                            onEmojiSelect={(_emoji) => {
+                              // Reactions on DMs not supported by backend yet
+                              setShowEmojiPickerId(null);
+                            }}
+                            onClickOutside={() => setShowEmojiPickerId(null)}
+                          />
                         )}
                       </div>
                     </div>

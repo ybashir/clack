@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { FileIcon, Download, Pin, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
-import { EmojiPicker } from '@/components/ui/emoji-picker';
+import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { MessageReactions } from './MessageReactions';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -344,15 +344,14 @@ export function Message({ message, showAvatar, isCompact, onOpenThread }: Messag
 
       {/* Emoji Picker from hover toolbar */}
       {showEmojiPicker && (
-        <div className="absolute -top-4 right-5 mt-9 z-50">
-          <EmojiPicker
-            onEmojiSelect={(emoji) => {
-              addReaction(message.id, emoji.native);
-              setShowEmojiPicker(false);
-            }}
-            onClickOutside={() => setShowEmojiPicker(false)}
-          />
-        </div>
+        <PortalEmojiPicker
+          anchorClassName="absolute -top-4 right-5 mt-9"
+          onEmojiSelect={(emoji) => {
+            addReaction(message.id, emoji.native);
+            setShowEmojiPicker(false);
+          }}
+          onClickOutside={() => setShowEmojiPicker(false)}
+        />
       )}
 
       {/* Image Lightbox */}

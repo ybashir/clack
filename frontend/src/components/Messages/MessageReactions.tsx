@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { EmojiPicker } from '@/components/ui/emoji-picker';
+import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import type { Reaction } from '@/lib/types';
 import data from '@emoji-mart/data';
 
@@ -74,12 +74,11 @@ export function MessageReactions({ reactions, messageId }: MessageReactionsProps
         <Plus className="h-[12px] w-[12px]" />
       </button>
       {showPicker && (
-        <div className="absolute bottom-full left-0 mb-2 z-50">
-          <EmojiPicker
-            onEmojiSelect={handleEmojiSelect}
-            onClickOutside={() => setShowPicker(false)}
-          />
-        </div>
+        <PortalEmojiPicker
+          anchorClassName="absolute bottom-full left-0 mb-2"
+          onEmojiSelect={handleEmojiSelect}
+          onClickOutside={() => setShowPicker(false)}
+        />
       )}
     </div>
   );
