@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { EmojiPicker } from '@/components/ui/emoji-picker';
+import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { uploadFile, getUsers, scheduleMessage, type ApiFile, type AuthUser } from '@/lib/api';
 import { serializeDelta } from '@/lib/serializeDelta';
 import { LinkModal } from './LinkModal';
@@ -54,7 +54,6 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
   const [linkText, setLinkText] = useState('');
   const linkSavedRangeRef = useRef<{ index: number; length: number } | null>(null);
   const mentionDropdownRef = useRef<HTMLDivElement>(null);
-  const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   // Schedule message state
   const [showScheduleMenu, setShowScheduleMenu] = useState(false);
@@ -474,12 +473,11 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
 
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div className="absolute bottom-full left-0 mb-2 z-50">
-            <EmojiPicker
-              onEmojiSelect={handleEmojiSelect}
-              onClickOutside={() => setShowEmojiPicker(false)}
-            />
-          </div>
+          <PortalEmojiPicker
+            anchorClassName="absolute bottom-full left-0 mb-2"
+            onEmojiSelect={handleEmojiSelect}
+            onClickOutside={() => setShowEmojiPicker(false)}
+          />
         )}
 
         {/* Hidden file input */}
@@ -504,7 +502,6 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
               <Plus className="h-[18px] w-[18px]" />
             </Button>
             <Button
-              ref={emojiButtonRef}
               variant="toolbar"
               size="icon-sm"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
