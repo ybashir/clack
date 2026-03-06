@@ -31,7 +31,7 @@ interface ChannelState {
   fetchDirectMessages: () => Promise<void>;
   createChannel: (name: string, isPrivate?: boolean) => Promise<number>;
   joinChannel: (channelId: number) => Promise<void>;
-  leaveChannel: (channelId: number) => Promise<void>;
+  leaveChannel: (channelId: number) => Promise<number | null>;
   toggleStar: (channelId: number) => void;
   setActiveChannel: (channelId: number, scrollToMessageId?: number) => void;
   setActiveDM: (dmId: number) => void;
@@ -135,16 +135,17 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   leaveChannel: async (channelId: number) => {
     try {
       await api.leaveChannel(channelId);
+      let nextChannelId: number | null = null;
       set((state) => {
         const updated = state.channels.map((ch) =>
           ch.id === channelId ? { ...ch, isMember: false, memberCount: Math.max(0, ch.memberCount - 1) } : ch
         );
-        const nextChannel = updated.find((ch) => ch.isMember) ?? null;
-        return {
-          channels: updated,
-          activeChannelId: state.activeChannelId === channelId ? (nextChannel?.id ?? null) : state.activeChannelId,
-        };
+        if (state.activeChannelId === channelId) {
+          nextChannelId = updated.find((ch) => ch.isMember)?.id ?? null;
+        }
+        return { channels: updated };
       });
+      return nextChannelId;
     } catch (err) {
       console.error('Failed to leave channel:', err);
       throw err;

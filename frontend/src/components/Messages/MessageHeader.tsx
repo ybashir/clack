@@ -100,7 +100,12 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
     setShowMenu(false);
     setLeaveError(null);
     try {
-      await leaveChannel(channel.id);
+      const nextChannelId = await leaveChannel(channel.id);
+      if (nextChannelId) {
+        navigate(`/c/${nextChannelId}`);
+      } else {
+        navigate('/');
+      }
     } catch {
       setLeaveError('Cannot leave channel — you are the last member.');
     }
