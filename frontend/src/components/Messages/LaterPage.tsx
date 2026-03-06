@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bookmark, Hash } from 'lucide-react';
 import { format } from 'date-fns';
-import { getBookmarks, removeBookmark } from '@/lib/api';
+import { getBookmarks } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
@@ -42,12 +42,13 @@ export function LaterPage() {
   }, [fetchBookmarks]);
 
   const handleRemove = async (messageId: number) => {
+    // Optimistically remove from local list immediately
+    setBookmarks((prev) => prev.filter((b) => b.messageId !== messageId));
     try {
-      await removeBookmark(messageId);
-      toggle(messageId);
-      setBookmarks((prev) => prev.filter((b) => b.messageId !== messageId));
+      await toggle(messageId);
     } catch {
-      // ignore
+      // If toggle fails, refetch bookmarks to restore accurate state
+      fetchBookmarks();
     }
   };
 
