@@ -383,6 +383,27 @@ export function updateMyProfile(data: { name?: string; avatar?: string | null; s
   });
 }
 
+export async function uploadAvatar(file: Blob): Promise<UserProfile> {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const res = await fetch('/users/me/avatar', {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: 'Upload failed' }));
+    throw new ApiError(body.error || 'Upload failed', res.status);
+  }
+
+  return res.json();
+}
+
 export function getUserProfile(userId: number) {
   return request<UserProfile>(`/users/${userId}`);
 }

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { X, MessageSquare } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, MessageSquare, Camera } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { getMyProfile, getUserProfile, updateMyProfile, type UserProfile } from '@/lib/api';
+import { getMyProfile, getUserProfile, updateMyProfile, uploadAvatar, type UserProfile } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
+import { AvatarCropModal } from './AvatarCropModal';
 import { format } from 'date-fns';
 
 interface ProfileModalProps {
@@ -24,6 +25,9 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
   const [editBio, setEditBio] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -60,6 +64,43 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Validate client-side
+    if (!file.type.startsWith('image/')) {
+      setSaveError('Please select an image file.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setSaveError('Image must be under 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    // Reset the input so the same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleCropDone = async (croppedBlob: Blob) => {
+    setCropImageSrc(null);
+    setIsUploadingAvatar(true);
+    setSaveError(null);
+    try {
+      const updated = await uploadAvatar(croppedBlob);
+      setProfile(updated);
+      useAuthStore.getState().updateUser({ avatar: updated.avatar });
+      useMessageStore.getState().updateUserInMessages(updated.id, { avatar: updated.avatar ?? undefined });
+    } catch {
+      setSaveError('Failed to upload photo. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50" onClick={onClose}>
       <div
@@ -83,13 +124,31 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
           <div className="p-5">
             {/* Avatar and name */}
             <div className="flex items-center gap-4 mb-4">
-              <Avatar
-                src={profile.avatar}
-                alt={profile.name}
-                fallback={profile.name}
-                size="lg"
-                status={profile.status as any}
-              />
+              <div className="relative group">
+                <Avatar
+                  src={profile.avatar}
+                  alt={profile.name}
+                  fallback={profile.name}
+                  size="lg"
+                  status={profile.status as any}
+                />
+                {isOwnProfile && isEditing && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <Camera className="h-5 w-5 text-white" />
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+              </div>
               <div>
                 <p className="text-[18px] font-bold text-slack-primary">{profile.name}</p>
                 <p className="text-[13px] text-slack-hint">{profile.email}</p>
@@ -98,6 +157,15 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
 
             {isEditing ? (
               <div className="space-y-3">
+                {/* Upload photo button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                  className="text-[13px] text-slack-link hover:underline cursor-pointer"
+                >
+                  {isUploadingAvatar ? 'Uploading...' : 'Upload photo'}
+                </button>
+
                 <div>
                   <label className="text-[13px] font-medium text-slack-muted">Name</label>
                   <input
@@ -189,6 +257,15 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
           <div className="p-8 text-center text-sm text-slack-hint">Profile not found</div>
         )}
       </div>
+
+      {/* Avatar crop modal */}
+      {cropImageSrc && (
+        <AvatarCropModal
+          imageSrc={cropImageSrc}
+          onCrop={handleCropDone}
+          onClose={() => setCropImageSrc(null)}
+        />
+      )}
     </div>
   );
 }
