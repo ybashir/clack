@@ -100,15 +100,16 @@ export function Sidebar() {
   };
 
   const handleCreateChannel = async (name: string, isPrivate?: boolean) => {
-    await createChannel(name, isPrivate);
+    const channelId = await createChannel(name, isPrivate);
     setShowAddChannelDialog(false);
+    navigate(`/c/${channelId}`);
   };
 
   const handleJoinChannel = async (channelId: number) => {
     try {
       await joinChannel(channelId);
       setShowAddChannelDialog(false);
-      await fetchChannels();
+      navigate(`/c/${channelId}`);
     } catch {
       // error already logged in store
     }

@@ -29,7 +29,7 @@ interface ChannelState {
 
   fetchChannels: () => Promise<void>;
   fetchDirectMessages: () => Promise<void>;
-  createChannel: (name: string, isPrivate?: boolean) => Promise<void>;
+  createChannel: (name: string, isPrivate?: boolean) => Promise<number>;
   joinChannel: (channelId: number) => Promise<void>;
   leaveChannel: (channelId: number) => Promise<void>;
   toggleStar: (channelId: number) => void;
@@ -110,9 +110,8 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       };
       set((state) => ({
         channels: [...state.channels, channel],
-        activeChannelId: channel.id,
-        activeDMId: null,
       }));
+      return channel.id;
     } catch (err) {
       console.error('Failed to create channel:', err);
       throw err;
@@ -126,8 +125,6 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         channels: state.channels.map((ch) =>
           ch.id === channelId ? { ...ch, isMember: true, memberCount: ch.memberCount + 1 } : ch,
         ),
-        activeChannelId: channelId,
-        activeDMId: null,
       }));
     } catch (err) {
       console.error('Failed to join channel:', err);
