@@ -22,8 +22,9 @@ export function LoginPage() {
       const errorMap: Record<string, string> = {
         'Invalid credentials': 'Invalid email or password',
         'User not found': 'Invalid email or password',
+        'Invalid email address': 'Please enter a valid email address',
       };
-      setError(errorMap[raw] || 'Something went wrong. Please try again.');
+      setError(errorMap[raw] || raw || 'Something went wrong. Please try again.');
     }
   };
 

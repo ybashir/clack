@@ -45,7 +45,7 @@ export function RegisterPage() {
         'Email already exists': 'An account with this email already exists',
         'Email already in use': 'An account with this email already exists',
       };
-      setError(errorMap[raw] || 'Something went wrong. Please try again.');
+      setError(errorMap[raw] || raw || 'Something went wrong. Please try again.');
     }
   };
 

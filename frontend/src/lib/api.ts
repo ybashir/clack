@@ -114,7 +114,10 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-    throw new ApiError(body.error || 'Request failed', res.status);
+    const errorMsg = Array.isArray(body.error)
+      ? body.error.map((e: { message?: string }) => e.message || 'Validation error').join(', ')
+      : body.error || 'Request failed';
+    throw new ApiError(errorMsg, res.status);
   }
 
   return res.json();
