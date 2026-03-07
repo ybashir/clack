@@ -238,6 +238,16 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       include: DM_INCLUDE_USERS,
     });
 
+    // Broadcast to both users so the thread updates in real-time
+    const io = getIO();
+    if (io) {
+      const payload = { ...reply, threadId: parentId };
+      io.to(`user:${fromUserId}`).emit('dm:reply', payload);
+      if (fromUserId !== toUserId) {
+        io.to(`user:${toUserId}`).emit('dm:reply', payload);
+      }
+    }
+
     res.status(201).json(reply);
   } catch (error) {
     if (error instanceof z.ZodError) {

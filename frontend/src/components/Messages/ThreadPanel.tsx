@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { Avatar } from '@/components/ui/avatar';
-import { getThread, replyToMessage, getDMThread, replyToDM, getAuthFileUrl } from '@/lib/api';
+import { getThread, replyToMessage, getDMThread, replyToDM, getAuthFileUrl, type ApiDirectMessage } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { getSocket } from '@/lib/socket';
 import { serializeDelta } from '@/lib/serializeDelta';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { FormatToolbar } from './FormatToolbar';
@@ -83,6 +84,25 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     return () => {
       cancelled = true;
     };
+  }, [messageId, isDM]);
+
+  // Listen for real-time DM thread replies via WebSocket
+  useEffect(() => {
+    if (!isDM) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleDMReply = (reply: ApiDirectMessage & { threadId: number }) => {
+      if (reply.threadId !== messageId) return;
+      const normalized = normalizeMessage(reply);
+      setReplies((prev) => {
+        if (prev.some((r) => r.id === normalized.id)) return prev;
+        return [...prev, normalized];
+      });
+    };
+
+    socket.on('dm:reply', handleDMReply);
+    return () => { socket.off('dm:reply', handleDMReply); };
   }, [messageId, isDM]);
 
   useEffect(() => {

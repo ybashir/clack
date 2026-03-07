@@ -187,6 +187,15 @@ function AppShell() {
       useDMStore.getState().onDMDeleted(data, currentUser.id);
     };
 
+    const handleDMReply = (reply: import('@/lib/api').ApiDirectMessage & { threadId: number }) => {
+      const currentUser = useAuthStore.getState().user;
+      if (!currentUser || !reply.threadId) return;
+      // Skip for sender — their reply count is already updated via the REST response path
+      if (reply.fromUserId === currentUser.id) return;
+      const otherUserId = reply.fromUserId;
+      useDMStore.getState().incrementReplyCount(reply.threadId, otherUserId);
+    };
+
     const handlePresenceUpdate = (data: { userId: number; status: string }) => {
       const { updateDMStatus } = useChannelStore.getState();
       updateDMStatus(data.userId, data.status as import('@/lib/types').DirectMessage['userStatus']);
@@ -219,6 +228,7 @@ function AppShell() {
     socket.on('dm:new', handleNewDM);
     socket.on('dm:updated', handleDMUpdated);
     socket.on('dm:deleted', handleDMDeleted);
+    socket.on('dm:reply', handleDMReply);
     socket.on('presence:update', handlePresenceUpdate);
     socket.on('channel:member-added', handleMemberAdded);
     socket.on('channel:member-left', handleMemberLeft);
@@ -238,6 +248,7 @@ function AppShell() {
       socket.off('dm:new', handleNewDM);
       socket.off('dm:updated', handleDMUpdated);
       socket.off('dm:deleted', handleDMDeleted);
+      socket.off('dm:reply', handleDMReply);
       socket.off('presence:update', handlePresenceUpdate);
       socket.off('channel:member-added', handleMemberAdded);
       socket.off('channel:member-left', handleMemberLeft);

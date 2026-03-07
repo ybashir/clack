@@ -41,6 +41,7 @@ interface DMState {
   onDMUpdated: (dm: ApiDirectMessage, currentUserId: number) => void;
   onDMDeleted: (data: { dmId: number; fromUserId: number; toUserId: number }, currentUserId: number) => void;
   updateReplyCount: (messageId: number, userId: number, count: number) => void;
+  incrementReplyCount: (messageId: number, userId: number) => void;
   clearConversation: (userId: number) => void;
   clearSendError: () => void;
 }
@@ -130,6 +131,17 @@ export const useDMStore = create<DMState>((set, get) => ({
         ...state.messages,
         [userId]: (state.messages[userId] ?? []).map((m) =>
           m.id === messageId ? { ...m, replyCount: count } : m,
+        ),
+      },
+    }));
+  },
+
+  incrementReplyCount: (messageId: number, userId: number) => {
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [userId]: (state.messages[userId] ?? []).map((m) =>
+          m.id === messageId ? { ...m, replyCount: m.replyCount + 1 } : m,
         ),
       },
     }));
