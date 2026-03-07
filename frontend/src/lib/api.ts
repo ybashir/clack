@@ -271,10 +271,10 @@ export function getThread(messageId: number) {
   );
 }
 
-export function replyToMessage(messageId: number, content: string) {
+export function replyToMessage(messageId: number, content: string, fileIds?: number[]) {
   return request<ApiMessage>(`/messages/${messageId}/reply`, {
     method: 'POST',
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, ...(fileIds?.length ? { fileIds } : {}) }),
   });
 }
 

@@ -5,12 +5,13 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireMessageAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
-import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
+import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
 
 const router = Router();
 
 const replySchema = z.object({
   content: z.string().min(1).max(4000),
+  fileIds: z.array(z.number()).optional(),
 });
 
 const editMessageSchema = z.object({
@@ -22,7 +23,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
   try {
     const parentId = parseInt(req.params.id);
     const userId = req.user!.userId;
-    const { content } = replySchema.parse(req.body);
+    const { content, fileIds } = replySchema.parse(req.body);
     const parentMessage = req.message;
 
     // Prevent nested threads - cannot reply to a reply
@@ -31,14 +32,30 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
       return;
     }
 
-    const reply = await prisma.message.create({
-      data: {
-        content,
-        userId,
-        channelId: parentMessage.channelId,
-        threadId: parentId,
-      },
-      include: { user: { select: USER_SELECT_BASIC } },
+    const reply = await prisma.$transaction(async (tx) => {
+      const msg = await tx.message.create({
+        data: {
+          content,
+          userId,
+          channelId: parentMessage.channelId,
+          threadId: parentId,
+        },
+      });
+
+      if (fileIds && fileIds.length > 0) {
+        const updated = await tx.file.updateMany({
+          where: { id: { in: fileIds }, userId, messageId: null },
+          data: { messageId: msg.id },
+        });
+        if (updated.count !== fileIds.length) {
+          throw new Error('Invalid file IDs or files already attached');
+        }
+      }
+
+      return tx.message.findUnique({
+        where: { id: msg.id },
+        include: MESSAGE_INCLUDE_WITH_FILES,
+      });
     });
 
     res.status(201).json(reply);
@@ -60,7 +77,7 @@ router.get('/:id/thread', authMiddleware, requireMessageAccess, async (req: Auth
     // Re-fetch parent with user details for the response
     const parentMessage = await prisma.message.findUnique({
       where: { id: parentId },
-      include: { user: { select: USER_SELECT_BASIC } },
+      include: MESSAGE_INCLUDE_WITH_FILES,
     });
 
     if (!parentMessage) {
@@ -70,7 +87,7 @@ router.get('/:id/thread', authMiddleware, requireMessageAccess, async (req: Auth
 
     const replies = await prisma.message.findMany({
       where: { threadId: parentId, deletedAt: null },
-      include: { user: { select: USER_SELECT_BASIC } },
+      include: MESSAGE_INCLUDE_WITH_FILES,
       orderBy: { createdAt: 'asc' },
     });
 

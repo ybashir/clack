@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { Avatar } from '@/components/ui/avatar';
-import { getThread, replyToMessage, uploadFile, getUsers, type ApiMessage, type ApiFile, type AuthUser } from '@/lib/api';
+import { getThread, replyToMessage, uploadFile, getUsers, getAuthFileUrl, type ApiMessage, type ApiFile, type AuthUser } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { serializeDelta } from '@/lib/serializeDelta';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -28,6 +28,7 @@ interface ThreadMessage {
   userId: number;
   user: { id: number; name: string; email: string; avatar?: string | null };
   createdAt: Date;
+  files?: { id: number; filename: string; originalName: string; mimetype: string; size: number; url: string }[];
 }
 
 export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPanelProps) {
@@ -71,6 +72,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
     userId: msg.userId,
     user: msg.user,
     createdAt: new Date(msg.createdAt),
+    files: msg.files,
   });
 
   useEffect(() => {
@@ -110,7 +112,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
     setIsSending(true);
     setReplyError(null);
     try {
-      const apiReply = await replyToMessage(messageId, content);
+      const fileIds = pendingFiles.map((f) => f.id);
+      const apiReply = await replyToMessage(messageId, content, fileIds.length > 0 ? fileIds : undefined);
       const reply = transformMessage(apiReply);
       let newCount = 0;
       setReplies((prev) => {
@@ -451,6 +454,30 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
                     <div className="text-[15px] text-slack-primary leading-[22px] whitespace-pre-wrap break-words">
                       {renderMessageContent(parentMessage.content)}
                     </div>
+                    {parentMessage.files && parentMessage.files.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {parentMessage.files.map((file) => (
+                          <div key={file.id} className="rounded-lg border border-slack-border overflow-hidden">
+                            {file.mimetype.startsWith('image/') ? (
+                              <img
+                                src={getAuthFileUrl(file.url)}
+                                alt={file.originalName}
+                                className="max-w-[200px] max-h-[150px] object-cover"
+                              />
+                            ) : (
+                              <a
+                                href={getAuthFileUrl(file.url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block px-3 py-2 text-[13px] text-slack-link hover:underline"
+                              >
+                                {file.originalName}
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {replies.length > 0 && (
@@ -484,6 +511,30 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange }: ThreadPa
                     <div className="text-[14px] text-slack-primary leading-[20px] whitespace-pre-wrap break-words">
                       {renderMessageContent(reply.content)}
                     </div>
+                    {reply.files && reply.files.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {reply.files.map((file) => (
+                          <div key={file.id} className="rounded-lg border border-slack-border overflow-hidden">
+                            {file.mimetype.startsWith('image/') ? (
+                              <img
+                                src={getAuthFileUrl(file.url)}
+                                alt={file.originalName}
+                                className="max-w-[200px] max-h-[150px] object-cover"
+                              />
+                            ) : (
+                              <a
+                                href={getAuthFileUrl(file.url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block px-3 py-2 text-[13px] text-slack-link hover:underline"
+                              >
+                                {file.originalName}
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
