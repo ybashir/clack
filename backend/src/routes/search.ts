@@ -54,7 +54,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           where: messageWhere,
           include: {
             user: {
-              select: { id: true, name: true, email: true, avatar: true },
+              select: { id: true, name: true, avatar: true },
             },
             channel: {
               select: { id: true, name: true },
@@ -83,10 +83,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         },
         include: {
           fromUser: {
-            select: { id: true, name: true, email: true, avatar: true },
+            select: { id: true, name: true, avatar: true },
           },
           toUser: {
-            select: { id: true, name: true, email: true, avatar: true },
+            select: { id: true, name: true, avatar: true },
           },
         },
         orderBy: { createdAt: 'desc' },

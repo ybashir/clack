@@ -52,7 +52,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         members: {
           include: {
             user: {
-              select: { id: true, name: true, email: true },
+              select: { id: true, name: true, avatar: true },
             },
           },
         },
@@ -153,7 +153,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
         members: {
           include: {
             user: {
-              select: { id: true, name: true, email: true },
+              select: { id: true, name: true, avatar: true },
             },
           },
         },
@@ -507,7 +507,7 @@ router.get('/:id/files', authMiddleware, requirePublicChannelReadAccess, async (
         message: { channelId, deletedAt: null },
       },
       include: {
-        user: { select: { id: true, name: true, email: true, avatar: true } },
+        user: { select: { id: true, name: true, avatar: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

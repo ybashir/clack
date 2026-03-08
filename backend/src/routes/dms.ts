@@ -145,7 +145,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
     // Check if the other user exists
     const otherUser = await prisma.user.findUnique({
       where: { id: otherUserId },
-      select: { id: true, name: true, email: true, avatar: true, status: true },
+      select: { id: true, name: true, avatar: true, status: true },
     });
 
     if (!otherUser) {

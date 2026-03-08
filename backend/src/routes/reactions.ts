@@ -46,7 +46,7 @@ router.post('/:id/reactions', authMiddleware, requireMessageAccess, async (req: 
       },
       include: {
         user: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, avatar: true },
         },
       },
     });
@@ -133,7 +133,7 @@ router.get('/:id/reactions', authMiddleware, requireMessageAccess, async (req: A
       where: { messageId },
       include: {
         user: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, avatar: true },
         },
       },
       orderBy: { createdAt: 'asc' },

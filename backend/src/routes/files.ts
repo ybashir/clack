@@ -247,7 +247,7 @@ router.post('/', authMiddleware, uploadLimiter, upload.single('file'), async (re
       },
       include: {
         user: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, avatar: true },
         },
       },
     });
@@ -479,7 +479,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       where: { userId },
       include: {
         user: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, avatar: true },
         },
       },
       orderBy: { createdAt: 'desc' },
