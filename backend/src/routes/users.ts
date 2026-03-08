@@ -41,9 +41,15 @@ const avatarUpload = multer({
 
 const router = Router();
 
+// Strip HTML tags for defense-in-depth (React escapes output, but sanitize at API layer)
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '');
+}
+
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100)
     .refine(val => !val.includes('\u0000'), { message: 'Name cannot contain null bytes' })
+    .transform(stripHtml)
     .optional(),
   avatar: z.string().max(500).refine(
     (url) => url.startsWith('https://') || url.startsWith('/users/me/avatar/'),
@@ -52,6 +58,7 @@ const updateProfileSchema = z.object({
   status: z.enum(['online', 'away', 'busy', 'offline']).optional(),
   bio: z.string().max(500)
     .refine(val => !val.includes('\u0000'), { message: 'Bio cannot contain null bytes' })
+    .transform(stripHtml)
     .optional().nullable(),
 });
 

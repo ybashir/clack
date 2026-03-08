@@ -10,11 +10,17 @@ import { logError } from '../utils/logger.js';
 
 const router = Router();
 
+// Strip HTML tags for defense-in-depth
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '');
+}
+
 const registerSchema = z.object({
   email: z.string().email().max(255),
   password: z.string().min(6).max(72),
   name: z.string().min(1).max(100)
-    .refine(val => !val.includes('\u0000'), { message: 'Name cannot contain null bytes' }),
+    .refine(val => !val.includes('\u0000'), { message: 'Name cannot contain null bytes' })
+    .transform(stripHtml),
   inviteCode: z.string().max(64).optional(),
 });
 
