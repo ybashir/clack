@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { SendHorizontal, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Avatar } from '@/components/ui/avatar';
-import { getThread, replyToMessage, getDMThread, replyToDM, getAuthFileUrl, deleteMessage, type ApiDirectMessage } from '@/lib/api';
+import { getThread, replyToMessage, getDMThread, replyToDM, getAuthFileUrl, deleteMessage, deleteDM, type ApiDirectMessage } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { cn } from '@/lib/utils';
 import { getSocket } from '@/lib/socket';
@@ -267,7 +267,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                         <button
                           onClick={async () => {
                             try {
-                              await deleteMessage(reply.id);
+                              await (isDM ? deleteDM(reply.id) : deleteMessage(reply.id));
                               setReplies((prev) => prev.filter((r) => r.id !== reply.id));
                             } catch { /* ignore */ }
                           }}
