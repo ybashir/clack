@@ -23,23 +23,23 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 
     // Validate tokenVersion against DB to support server-side revocation
-    if (decoded.tokenVersion !== undefined) {
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { tokenVersion: true, role: true, deactivatedAt: true },
-      });
-      if (!user || user.tokenVersion !== decoded.tokenVersion) {
-        res.status(401).json({ error: 'Token revoked' });
-        return;
-      }
-      if (user.deactivatedAt) {
-        res.status(401).json({ error: 'Account deactivated' });
-        return;
-      }
-      req.user = { ...decoded, role: user.role };
-    } else {
-      req.user = decoded;
+    if (decoded.tokenVersion === undefined) {
+      res.status(401).json({ error: 'Token expired' });
+      return;
     }
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { tokenVersion: true, role: true, deactivatedAt: true },
+    });
+    if (!user || user.tokenVersion !== decoded.tokenVersion) {
+      res.status(401).json({ error: 'Token revoked' });
+      return;
+    }
+    if (user.deactivatedAt) {
+      res.status(401).json({ error: 'Account deactivated' });
+      return;
+    }
+    req.user = { ...decoded, role: user.role };
 
     next();
   } catch (error) {

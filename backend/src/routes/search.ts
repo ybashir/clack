@@ -8,7 +8,7 @@ import { logError } from '../utils/logger.js';
 const router = Router();
 
 const searchQuerySchema = z.object({
-  q: z.string().min(2).max(200),
+  q: z.string().min(2).max(200).or(z.array(z.string()).transform(a => a[0])).pipe(z.string().min(2).max(200)),
   type: z.enum(['messages', 'dms', 'all']).optional().default('all'),
   channelId: z.coerce.number().int().positive().optional(),
 });
