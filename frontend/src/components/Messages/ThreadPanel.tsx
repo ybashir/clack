@@ -121,6 +121,16 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     repliesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [replies]);
 
+  // Notify parent of reply count changes (works for both REST and WebSocket additions/deletions)
+  const onReplyCountChangeRef = useRef(onReplyCountChange);
+  onReplyCountChangeRef.current = onReplyCountChange;
+  const hasLoadedReplies = useRef(false);
+  useEffect(() => {
+    if (!hasLoadedReplies.current && replies.length === 0) return;
+    hasLoadedReplies.current = true;
+    onReplyCountChangeRef.current?.(messageId, replies.length);
+  }, [replies.length, messageId]);
+
   const handleSendReply = useCallback(async () => {
     const quill = editor.quillRef.current;
     if (!quill) return;
@@ -139,21 +149,18 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         apiReply = await replyToMessage(messageId, content, fileIds.length > 0 ? fileIds : undefined);
       }
       const reply = normalizeMessage(apiReply);
-      let newCount = 0;
       setReplies((prev) => {
-        const next = [...prev, reply];
-        newCount = next.length;
-        return next;
+        if (prev.some((r) => r.id === reply.id)) return prev;
+        return [...prev, reply];
       });
       editor.clearEditor();
-      onReplyCountChange?.(messageId, newCount);
     } catch (err) {
       console.error('Failed to send reply:', err);
       setReplyError('Failed to send reply. Please try again.');
     } finally {
       setIsSending(false);
     }
-  }, [messageId, onReplyCountChange, editor, isDM]);
+  }, [messageId, editor, isDM]);
 
   handleSendRef.current = handleSendReply;
 
@@ -262,7 +269,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                             try {
                               await deleteMessage(reply.id);
                               setReplies((prev) => prev.filter((r) => r.id !== reply.id));
-                              onReplyCountChange?.(messageId, replies.length - 1);
                             } catch { /* ignore */ }
                           }}
                           className="ml-auto opacity-0 group-hover:opacity-100 text-slack-secondary hover:text-slack-error transition-opacity"
