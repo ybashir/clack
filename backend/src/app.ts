@@ -85,7 +85,9 @@ if (process.env.NODE_ENV === 'production') {
   const spaRoutes = ['/files', '/admin', '/dms'];
   const frontendDist = path.join(process.cwd(), 'public');
   app.use(spaRoutes, (req, res, next) => {
-    if (req.method === 'GET' && req.accepts('html') && !req.path.includes('.')) {
+    // Skip API calls: they carry Authorization or explicitly request JSON
+    const isApiCall = req.headers.authorization || req.headers.accept === 'application/json';
+    if (!isApiCall && req.method === 'GET' && req.accepts('html') && !req.path.includes('.')) {
       // Only for top-level navigation (no sub-paths like /files/:id/download)
       if (req.originalUrl === req.baseUrl || req.originalUrl === req.baseUrl + '/') {
         res.setHeader('Cache-Control', 'no-cache');
