@@ -95,6 +95,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
       methods: ['GET', 'POST'],
     },
     cookie: {
+      name: 'io',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',

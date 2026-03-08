@@ -79,7 +79,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Use transaction to atomically validate invite + create user + increment useCount
     const user = await prisma.$transaction(async (tx) => {
-      let assignedRole: 'ADMIN' | 'MEMBER' | 'GUEST' = 'MEMBER';
+      let assignedRole: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST' = 'MEMBER';
 
       if (inviteCode) {
         // Re-validate inside transaction to prevent TOCTOU race
