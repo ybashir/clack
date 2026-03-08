@@ -218,7 +218,8 @@ function AppShell() {
       // Skip for sender — their reply count is already updated via the REST response path
       if (reply.fromUserId === currentUser.id) return;
       const otherUserId = reply.fromUserId;
-      useDMStore.getState().incrementReplyCount(reply.threadId, otherUserId);
+      const participant = { id: reply.fromUser.id, name: reply.fromUser.name, avatar: reply.fromUser.avatar ?? null };
+      useDMStore.getState().incrementReplyCount(reply.threadId, otherUserId, participant);
     };
 
     const handleDMReactionAdded = (data: { dmId: number; reaction: { emoji: string; userId: number; user: { name: string } } }) => {

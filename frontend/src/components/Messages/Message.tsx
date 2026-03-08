@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { MessageReactions } from './MessageReactions';
+import { ThreadIndicator } from './ThreadIndicator';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
@@ -286,44 +287,14 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
           />
         )}
 
-        {/* Thread indicator - 13px, Slack blue, with mini avatars */}
+        {/* Thread indicator */}
         {message.threadCount > 0 && (
-          <button
+          <ThreadIndicator
+            replyCount={message.threadCount}
+            author={{ id: message.user.id, name: message.user.name, avatar: message.user.avatar }}
+            participants={message.threadParticipants}
             onClick={() => onOpenThread?.(message.id)}
-            className="mt-[6px] flex items-center gap-2 rounded px-1 py-0.5 text-[13px] text-slack-link hover:bg-slack-highlight -ml-1"
-          >
-            {/* Mini avatar stack */}
-            <div data-testid="thread-avatars" className="flex -space-x-1">
-              {(() => {
-                // Collect unique participants: message author + thread participants
-                const seen = new Set<number>();
-                const participants: { id: number; name: string; avatar: string | null }[] = [];
-                // Add message author first
-                seen.add(message.user.id);
-                participants.push({ id: message.user.id, name: message.user.name, avatar: message.user.avatar });
-                // Add thread participants (reply authors)
-                for (const p of message.threadParticipants ?? []) {
-                  if (!seen.has(p.id)) {
-                    seen.add(p.id);
-                    participants.push(p);
-                  }
-                }
-                return participants.slice(0, 3).map((p) => (
-                  <Avatar
-                    key={p.id}
-                    src={p.avatar ?? undefined}
-                    alt={p.name}
-                    fallback={p.name}
-                    size="sm"
-                    className="border border-white"
-                  />
-                ));
-              })()}
-            </div>
-            <span className="font-normal">
-              {message.threadCount} {message.threadCount === 1 ? 'reply' : 'replies'}
-            </span>
-          </button>
+          />
         )}
       </div>
 

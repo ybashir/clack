@@ -473,6 +473,7 @@ export interface ApiDirectMessage {
   toUser: { id: number; name: string; email: string; avatar?: string | null };
   reactions?: ApiDMReaction[];
   _count?: { replies: number };
+  threadParticipants?: { id: number; name: string; avatar: string | null }[];
 }
 
 export function getDirectMessages() {

@@ -4,7 +4,6 @@ import {
   Pin,
   FileText,
   Star,
-  MessageSquare,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -18,6 +17,7 @@ import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { MessageToolbar } from './MessageToolbar';
 import { MessageActionsMenu } from './MessageActionsMenu';
 import { MessageReactions } from './MessageReactions';
+import { ThreadIndicator } from './ThreadIndicator';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { MessageInput } from './MessageInput';
 import { ThreadPanel } from './ThreadPanel';
@@ -322,14 +322,13 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             />
                           )}
                           {msg.replyCount > 0 && (
-                            <button
-                              data-testid={`dm-thread-count-${msg.id}`}
+                            <ThreadIndicator
+                              testId={`dm-thread-count-${msg.id}`}
+                              replyCount={msg.replyCount}
+                              author={{ id: msg.fromUserId, name: msg.fromUser.name, avatar: msg.fromUser.avatar ?? null }}
+                              participants={msg.threadParticipants}
                               onClick={() => handleOpenThread(msg.id)}
-                              className="mt-1 flex items-center gap-1 text-[12px] text-slack-link hover:underline"
-                            >
-                              <MessageSquare className="h-3.5 w-3.5" />
-                              <span>{msg.replyCount} {msg.replyCount === 1 ? 'reply' : 'replies'}</span>
-                            </button>
+                            />
                           )}
                         </div>
 

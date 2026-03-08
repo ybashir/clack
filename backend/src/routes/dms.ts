@@ -168,6 +168,13 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
       include: {
         ...DM_INCLUDE_USERS,
         _count: { select: { replies: true } },
+        replies: {
+          select: {
+            fromUser: { select: { id: true, name: true, avatar: true } },
+          },
+          distinct: ['fromUserId'],
+          take: 5,
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
@@ -178,6 +185,15 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
     });
 
     const { results: resultMessages, nextCursor, hasMore } = paginateResults(messages, limit);
+
+    // Extract unique thread participants from replies
+    const enrichedMessages = resultMessages.map((msg) => {
+      const { replies, ...rest } = msg;
+      const threadParticipants = replies
+        ? replies.map((r: { fromUser: { id: number; name: string; avatar: string | null } }) => r.fromUser)
+        : [];
+      return { ...rest, threadParticipants };
+    });
 
     // Mark messages from the other user as read
     await prisma.directMessage.updateMany({
@@ -194,7 +210,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
 
     res.json({
       user: otherUser,
-      messages: resultMessages,
+      messages: enrichedMessages,
       nextCursor,
       hasMore,
     });

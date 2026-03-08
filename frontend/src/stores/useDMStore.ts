@@ -12,6 +12,7 @@ export interface DMMessage {
   editedAt?: Date | null;
   threadId?: number | null;
   replyCount: number;
+  threadParticipants: { id: number; name: string; avatar: string | null }[];
   reactions: Reaction[];
 }
 
@@ -41,6 +42,7 @@ function transformDM(dm: ApiDirectMessage): DMMessage {
     editedAt: dm.editedAt ? new Date(dm.editedAt) : null,
     threadId: dm.threadId ?? null,
     replyCount: dm._count?.replies ?? 0,
+    threadParticipants: dm.threadParticipants ?? [],
     reactions: groupReactions(dm.reactions),
   };
 }
@@ -65,7 +67,7 @@ interface DMState {
   onReactionAdded: (data: { dmId: number; reaction: { emoji: string; userId: number; user: { name: string } } }) => void;
   onReactionRemoved: (data: { dmId: number; emoji: string; userId: number }) => void;
   updateReplyCount: (messageId: number, userId: number, count: number) => void;
-  incrementReplyCount: (messageId: number, userId: number) => void;
+  incrementReplyCount: (messageId: number, userId: number, participant?: { id: number; name: string; avatar: string | null }) => void;
   clearConversation: (userId: number) => void;
   clearSendError: () => void;
 }
@@ -284,13 +286,17 @@ export const useDMStore = create<DMState>((set, get) => ({
     }
   },
 
-  incrementReplyCount: (messageId: number, userId: number) => {
+  incrementReplyCount: (messageId: number, userId: number, participant?: { id: number; name: string; avatar: string | null }) => {
     set((state) => ({
       messages: {
         ...state.messages,
-        [userId]: (state.messages[userId] ?? []).map((m) =>
-          m.id === messageId ? { ...m, replyCount: m.replyCount + 1 } : m,
-        ),
+        [userId]: (state.messages[userId] ?? []).map((m) => {
+          if (m.id !== messageId) return m;
+          const updatedParticipants = participant && !m.threadParticipants.some((p) => p.id === participant.id)
+            ? [...m.threadParticipants, participant]
+            : m.threadParticipants;
+          return { ...m, replyCount: m.replyCount + 1, threadParticipants: updatedParticipants };
+        }),
       },
     }));
   },
