@@ -25,11 +25,20 @@ const statusColors = {
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt, fallback, size = 'md', status, ...props }, ref) => {
     const [imageError, setImageError] = React.useState(false);
+    const imgRef = React.useRef<HTMLImageElement>(null);
 
     // Reset error state when src changes
     React.useEffect(() => {
       setImageError(false);
     }, [src]);
+
+    // Catch cached broken images (complete=true but naturalWidth=0)
+    React.useEffect(() => {
+      const img = imgRef.current;
+      if (img && img.complete && img.naturalWidth === 0) {
+        setImageError(true);
+      }
+    });
 
     const initials = fallback
       ? fallback
@@ -52,10 +61,14 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         >
           {src && !imageError ? (
             <img
+              ref={imgRef}
               src={src}
               alt={alt || 'Avatar'}
               className="aspect-square h-full w-full object-cover"
               onError={() => setImageError(true)}
+              onLoad={(e) => {
+                if ((e.target as HTMLImageElement).naturalWidth === 0) setImageError(true);
+              }}
             />
           ) : (
             <span className="flex h-full w-full items-center justify-center bg-slack-aubergine text-white font-medium">
