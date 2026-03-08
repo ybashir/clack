@@ -35,7 +35,16 @@ export default defineConfig({
         },
       },
       '/users': { target: 'http://localhost:3000', changeOrigin: true },
-      '/dms': { target: 'http://localhost:3000', changeOrigin: true },
+      '/dms': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        // Skip proxy for HTML page navigations so the SPA handles /dms in the browser
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
       '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
       '/admin': {
         target: 'http://localhost:3000',
