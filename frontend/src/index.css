@@ -244,8 +244,6 @@ body {
   }
 }
 
-/* iOS safe area handling */
-#root {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
+/* iOS safe area — handled per-element (sidebar, headers) to avoid
+   conflicting with h-screen / h-dvh on the layout root. */
 

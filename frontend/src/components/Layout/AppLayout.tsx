@@ -34,7 +34,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white">
+    <div className="flex h-dvh w-screen overflow-hidden bg-white">
       {/* Mobile sidebar overlay backdrop */}
       {sidebarOpen && (
         <div

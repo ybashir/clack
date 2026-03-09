@@ -141,7 +141,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full">
       {/* Nav Rail - 70px wide, darker purple */}
-      <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-2 gap-0">
+      <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
         <button className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden hover:rounded-xl transition-all">
           <img src="/favicon-192.png" alt="Slawk" className="h-full w-full object-cover" />
@@ -254,7 +254,7 @@ export function Sidebar() {
       {/* Channel Sidebar - lighter/warmer purple with overlay effect */}
       <div data-testid="sidebar" className="flex w-[260px] flex-col bg-slack-sidebar text-white/70">
         {/* Workspace Header - 44px height, 6px 16px padding */}
-        <div className="flex h-[44px] items-center justify-between border-b border-white/10 px-4 py-[6px]">
+        <div className="flex h-[44px] items-center justify-between border-b border-white/10 px-4 py-[6px] mt-[env(safe-area-inset-top)]">
           <span className="text-[18px] font-bold text-white">Slawk</span>
           <button onClick={handleOpenAddTeammates} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
             <SquarePen className="h-4 w-4" />
