@@ -323,6 +323,9 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             setShowMoreMenuId(null);
                           }, 150);
                         }}
+                        onTouchStart={() => {
+                          setHoveredMessageId((prev) => prev === msg.id ? null : msg.id);
+                        }}
                       >
                         <div className="mr-2 w-9 flex-shrink-0">
                           {showAvatar ? (

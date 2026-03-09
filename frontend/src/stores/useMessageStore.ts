@@ -181,8 +181,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       // If this is a reply, update the parent message's threadCount and threadParticipants
       if (msg.threadId) {
         const currentUserId = getUserId();
-        // Skip for own replies — already updated via onReplyCountChange
-        if (msg.userId === currentUserId) return;
+        const isOwnReply = msg.userId === currentUserId;
         set((state) => ({
           messages: state.messages.map((m) => {
             if (m.id !== msg.threadId) return m;
@@ -190,7 +189,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
             const alreadyParticipant = m.threadParticipants?.some((p) => p.id === participant.id);
             return {
               ...m,
-              threadCount: m.threadCount + 1,
+              // Only increment count for other users' replies — own count is updated via onReplyCountChange
+              threadCount: isOwnReply ? m.threadCount : m.threadCount + 1,
               threadParticipants: alreadyParticipant
                 ? m.threadParticipants
                 : [...(m.threadParticipants ?? []), participant],

@@ -43,7 +43,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
   const isBookmarked = useBookmarkStore((s) => s.bookmarkedIds.has(message.id));
   const { togglePin } = useMessageActions();
   const setUnreadCount = useChannelStore((s) => s.setUnreadCount);
-  const { isHovered, onMouseEnter, onMouseLeave } = useMessageHover();
+  const { isHovered, setIsHovered, onMouseEnter, onMouseLeave, onTouchStart } = useMessageHover();
   const {
     editingId, editContent, setEditContent, editInputRef,
     startEdit, cancelEdit, saveEdit, handleEditKeyDown,
@@ -81,6 +81,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={() => onMouseLeave(() => setShowMoreMenu(false))}
+      onTouchStart={onTouchStart}
     >
       {/* Fixed 36px left gutter column with 8px gap to content */}
       <div className="w-9 flex-shrink-0 mr-2">

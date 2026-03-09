@@ -173,7 +173,7 @@ export function ScheduledMessagesTab() {
                 </div>
 
                 {/* Hover actions */}
-                <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex-shrink-0 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => openEdit(msg)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"

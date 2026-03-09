@@ -279,7 +279,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                               setReplies((prev) => prev.filter((r) => r.id !== reply.id));
                             } catch { /* ignore */ }
                           }}
-                          className="ml-auto opacity-0 group-hover:opacity-100 text-slack-secondary hover:text-slack-error transition-opacity"
+                          className="ml-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 text-slack-secondary hover:text-slack-error transition-opacity"
                           title="Delete reply"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
