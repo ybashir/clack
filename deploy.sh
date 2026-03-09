@@ -2,14 +2,19 @@
 set -euo pipefail
 
 # ── Configuration ────────────────────────────────────────────────────
-# Set these environment variables before running:
-#   GCP_PROJECT_ID   - your GCP project ID
-#   DATABASE_URL     - Cloud SQL connection string
-#   JWT_SECRET       - secret for JWT signing
-#   GCS_BUCKET_NAME  - GCS bucket for file uploads
+# Set these environment variables before running, or export them in your shell.
+# To look up current production values:
+#   gcloud run services describe slawk --project ncvgl-gcp --region us-central1 \
+#     --format='yaml(spec.template.spec.containers[0].env)'
+#
+# Required env vars:
+#   GCP_PROJECT_ID   - GCP project ID (default: ncvgl-gcp)
+#   DATABASE_URL     - Cloud SQL connection string (get from Cloud Run)
+#   JWT_SECRET       - JWT signing secret (get from Cloud Run)
+#   GCS_BUCKET_NAME  - GCS bucket for file uploads (default: slawk-uploads-<project>)
 #   RUN_SEED         - "true" for first deploy, "false" after
 
-GCP_PROJECT_ID="${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-ncvgl-gcp}"
 REGION="${REGION:-us-central1}"
 SERVICE_NAME="${SERVICE_NAME:-slawk}"
 CLOUD_SQL_INSTANCE="${CLOUD_SQL_INSTANCE:-${GCP_PROJECT_ID}:${REGION}:slawk-db}"
