@@ -39,6 +39,7 @@ export function useQuillEditor({
   const [linkText, setLinkText] = useState('');
   const linkSavedRangeRef = useRef<{ index: number; length: number } | null>(null);
   const mentionDropdownRef = useRef<HTMLDivElement>(null);
+  const lastSelectionRef = useRef<{ index: number; length: number }>({ index: 0, length: 0 });
 
   const { isRecording, duration: recordingDuration, startRecording, stopRecording, cancelRecording } = useVoiceRecorder({
     onRecorded: (file) => setPendingFiles((prev) => [...prev, file]),
@@ -111,12 +112,41 @@ export function useQuillEditor({
             },
             arrowDown: {
               key: 'ArrowDown',
-              handler: () => {
+              handler: (range: any) => {
                 if (mentionActiveRef.current) {
                   setMentionSelectedIndex((prev) =>
                     prev < mentionUsersRef.current.length - 1 ? prev + 1 : 0
                   );
                   return false;
+                }
+                // Escape code block at end of document
+                const q = quillRef.current;
+                if (q && range.index >= q.getLength() - 1 && range.length === 0) {
+                  const fmt = q.getFormat(range.index);
+                  if (fmt['code-block']) {
+                    const len = q.getLength();
+                    q.insertText(len - 1, '\n');
+                    q.formatLine(len, 1, 'code-block', false);
+                    q.setSelection(len);
+                    return false;
+                  }
+                }
+                return true;
+              },
+            },
+            escapeCodeBlockRight: {
+              key: 'ArrowRight',
+              handler: (range: any) => {
+                const q = quillRef.current;
+                if (q && range.index >= q.getLength() - 1 && range.length === 0) {
+                  const fmt = q.getFormat(range.index);
+                  if (fmt['code-block']) {
+                    const len = q.getLength();
+                    q.insertText(len - 1, '\n');
+                    q.formatLine(len, 1, 'code-block', false);
+                    q.setSelection(len);
+                    return false;
+                  }
                 }
                 return true;
               },
@@ -125,6 +155,10 @@ export function useQuillEditor({
         },
       },
       placeholder,
+    });
+
+    quill.on('selection-change', (range: any) => {
+      if (range) lastSelectionRef.current = range;
     });
 
     quill.on('text-change', (_delta: any, _oldDelta: any, source: string) => {
@@ -229,11 +263,10 @@ export function useQuillEditor({
   const handleEmojiSelect = useCallback((emoji: { native: string }) => {
     const quill = quillRef.current;
     if (!quill) return;
-    const range = quill.getSelection(true);
+    const range = quill.getSelection() ?? lastSelectionRef.current;
+    quill.focus();
     quill.insertText(range.index, emoji.native);
     quill.setSelection(range.index + emoji.native.length);
-    setShowEmojiPicker(false);
-    quill.focus();
   }, []);
 
   // Fetch users for mention autocomplete
