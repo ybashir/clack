@@ -5,7 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireMessageAccess, requirePublicMessageReadAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
-import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
+import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES, THREAD_REPLY_INCLUDE } from '../db/selects.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 
@@ -58,7 +58,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
 
       return tx.message.findUnique({
         where: { id: msg.id },
-        include: MESSAGE_INCLUDE_WITH_FILES,
+        include: THREAD_REPLY_INCLUDE,
       });
     });
 
@@ -87,7 +87,7 @@ router.get('/:id/thread', authMiddleware, requirePublicMessageReadAccess, async 
     // Re-fetch parent with user details for the response
     const parentMessage = await prisma.message.findUnique({
       where: { id: parentId },
-      include: MESSAGE_INCLUDE_WITH_FILES,
+      include: THREAD_REPLY_INCLUDE,
     });
 
     if (!parentMessage) {
@@ -97,7 +97,7 @@ router.get('/:id/thread', authMiddleware, requirePublicMessageReadAccess, async 
 
     const replies = await prisma.message.findMany({
       where: { threadId: parentId, deletedAt: null },
-      include: MESSAGE_INCLUDE_WITH_FILES,
+      include: THREAD_REPLY_INCLUDE,
       orderBy: { createdAt: 'asc' },
     });
 

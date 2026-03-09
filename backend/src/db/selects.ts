@@ -34,6 +34,11 @@ export const MESSAGE_INCLUDE_WITH_FILES = {
   files: { select: FILE_SELECT },
 } as const;
 
+export const THREAD_REPLY_INCLUDE = {
+  ...MESSAGE_INCLUDE_WITH_FILES,
+  reactions: { include: { user: { select: { id: true, name: true } } } },
+} as const;
+
 export const DM_INCLUDE_USERS = {
   fromUser: { select: USER_SELECT_BASIC },
   toUser: { select: USER_SELECT_BASIC },

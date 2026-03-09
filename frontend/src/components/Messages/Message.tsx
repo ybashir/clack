@@ -28,9 +28,14 @@ interface MessageProps {
   isCompact: boolean;
   onOpenThread?: (messageId: number) => void;
   readOnly?: boolean;
+  variant?: 'default' | 'thread';
+  onEditMessage?: (id: number, content: string) => Promise<void>;
+  onDeleteMessage?: (id: number) => Promise<void>;
+  onAddReaction?: (id: number, emoji: string) => void;
+  onRemoveReaction?: (id: number, emoji: string) => void;
 }
 
-export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly }: MessageProps) {
+export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction }: MessageProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -44,11 +49,14 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
   const { togglePin } = useMessageActions();
   const setUnreadCount = useChannelStore((s) => s.setUnreadCount);
   const { isHovered, setIsHovered, onMouseEnter, onMouseLeave, onTouchStart } = useMessageHover();
+  const isThread = variant === 'thread';
+  const effectiveAddReaction = onAddReaction ?? addReaction;
+  const effectiveRemoveReaction = onRemoveReaction ?? removeReaction;
   const {
     editingId, editContent, setEditContent, editInputRef,
     startEdit, cancelEdit, saveEdit, handleEditKeyDown,
   } = useMessageEdit({
-    onSave: (id, content) => editMessage(id, content),
+    onSave: onEditMessage ?? ((id, content) => editMessage(id, content)),
   });
   const isOwner = currentUser?.id === message.userId;
   const isEditing = editingId === message.id;
@@ -67,7 +75,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
 
   const confirmDelete = async () => {
     setShowDeleteConfirm(false);
-    await deleteMessage(message.id);
+    await (onDeleteMessage ?? deleteMessage)(message.id);
   };
 
   const keepOpen = showEmojiPicker || showMoreMenu || isEditing;
@@ -283,8 +291,8 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
           <MessageReactions
             reactions={message.reactions}
             messageId={message.id}
-            onAddReaction={addReaction}
-            onRemoveReaction={removeReaction}
+            onAddReaction={effectiveAddReaction}
+            onRemoveReaction={effectiveRemoveReaction}
           />
         )}
 
@@ -304,9 +312,9 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
         <MessageToolbar
           className="absolute -top-4 right-5"
           onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          onThreadClick={() => onOpenThread?.(message.id)}
-          onBookmarkClick={() => toggleBookmark(message.id)}
-          isBookmarked={isBookmarked}
+          onThreadClick={!isThread ? () => onOpenThread?.(message.id) : undefined}
+          onBookmarkClick={!isThread ? () => toggleBookmark(message.id) : undefined}
+          isBookmarked={!isThread ? isBookmarked : undefined}
           onMoreClick={() => setShowMoreMenu(!showMoreMenu)}
         />
       )}
@@ -316,20 +324,19 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
         <MessageActionsMenu
           anchorClassName="absolute -top-4 right-5 mt-9"
           onClose={() => setShowMoreMenu(false)}
-          onMarkUnread={() => {
+          onMarkUnread={!isThread ? () => {
             setShowMoreMenu(false);
-            // Count this message and all subsequent messages as unread
             const allMessages = useMessageStore.getState().messages;
             const unreadCount = allMessages.filter(
               (m) => m.channelId === message.channelId && m.id >= message.id
             ).length;
             setUnreadCount(message.channelId, unreadCount);
             markChannelUnread(message.channelId, message.id).catch(() => {});
-          }}
-          onPin={() => {
+          } : undefined}
+          onPin={!isThread ? () => {
             setShowMoreMenu(false);
             togglePin(message.id, message.isPinned);
-          }}
+          } : undefined}
           isPinned={message.isPinned}
           showOwnerActions={isOwner}
           onEdit={handleEdit}
@@ -342,7 +349,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
         <PortalEmojiPicker
           anchorClassName="absolute -top-4 right-5 mt-9"
           onEmojiSelect={(emoji) => {
-            addReaction(message.id, emoji.native);
+            effectiveAddReaction(message.id, emoji.native);
             setShowEmojiPicker(false);
           }}
           onClickOutside={() => setShowEmojiPicker(false)}

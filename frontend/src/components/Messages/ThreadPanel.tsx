@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { SendHorizontal, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { Avatar } from '@/components/ui/avatar';
-import { getThread, replyToMessage, getDMThread, replyToDM, getAuthFileUrl, getFileUrl, deleteMessage, deleteDM, type ApiDirectMessage } from '@/lib/api';
+import { SendHorizontal } from 'lucide-react';
+import {
+  getThread, replyToMessage, getDMThread, replyToDM,
+  editMessage as apiEditMessage, deleteMessage as apiDeleteMessage,
+  editDM, deleteDM,
+  addReaction as apiAddReaction, removeReaction as apiRemoveReaction,
+  addDMReaction, removeDMReaction,
+  type ApiDirectMessage,
+} from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { cn } from '@/lib/utils';
 import { getSocket } from '@/lib/socket';
 import { serializeDelta } from '@/lib/serializeDelta';
-import { renderMessageContent } from '@/lib/renderMessageContent';
 import { FormatToolbar } from './FormatToolbar';
 import { FilePreview } from './FilePreview';
 import { MentionDropdown } from './MentionDropdown';
@@ -16,6 +20,8 @@ import { LinkModal } from './LinkModal';
 import { PanelHeader } from './PanelHeader';
 import { EditorToolbar } from './EditorToolbar';
 import { useQuillEditor } from '@/hooks/useQuillEditor';
+import { Message } from './Message';
+import type { Message as MessageType, Reaction } from '@/lib/types';
 
 interface ThreadPanelProps {
   messageId: number;
@@ -25,20 +31,53 @@ interface ThreadPanelProps {
   readOnly?: boolean;
 }
 
-interface ThreadMessage {
-  id: number;
-  content: string;
-  user: { id: number; name: string; avatar?: string | null };
-  createdAt: Date;
-  files?: { id: number; filename: string; originalName: string; mimetype: string; size: number; url: string }[];
+function normalizeToMessage(msg: any, isDM: boolean): MessageType {
+  const user = msg.user ?? msg.fromUser;
+  const reactionMap = new Map<string, Reaction>();
+  for (const r of msg.reactions ?? []) {
+    const userName = r.user?.name ?? '';
+    const existing = reactionMap.get(r.emoji);
+    if (existing) {
+      existing.count++;
+      existing.userIds.push(r.userId);
+      existing.userNames.push(userName);
+    } else {
+      reactionMap.set(r.emoji, {
+        emoji: r.emoji,
+        count: 1,
+        userIds: [r.userId],
+        userNames: [userName],
+      });
+    }
+  }
+  return {
+    id: msg.id,
+    content: msg.content,
+    userId: isDM ? msg.fromUserId : msg.userId,
+    user: { id: user.id, name: user.name, avatar: user.avatar },
+    channelId: msg.channelId ?? 0,
+    createdAt: new Date(msg.createdAt),
+    reactions: Array.from(reactionMap.values()),
+    files: (msg.files ?? []).map((f: any) => ({
+      id: f.id,
+      filename: f.filename,
+      originalName: f.originalName ?? f.filename,
+      mimetype: f.mimetype,
+      size: f.size,
+      url: f.url,
+    })),
+    threadCount: 0,
+    isEdited: !!msg.editedAt,
+    isPinned: false,
+  };
 }
 
 export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly }: ThreadPanelProps) {
   const isDM = variant === 'dm';
   const testPrefix = isDM ? 'dm-thread' : 'thread';
 
-  const [parentMessage, setParentMessage] = useState<ThreadMessage | null>(null);
-  const [replies, setReplies] = useState<ThreadMessage[]>([]);
+  const [parentMessage, setParentMessage] = useState<MessageType | null>(null);
+  const [replies, setReplies] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -53,16 +92,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     onTextChange: () => setReplyError(null),
   });
 
-  function normalizeMessage(msg: any): ThreadMessage {
-    return {
-      id: msg.id,
-      content: msg.content,
-      user: msg.user ?? msg.fromUser,
-      createdAt: new Date(msg.createdAt),
-      files: msg.files,
-    };
-  }
-
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
@@ -72,8 +101,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     fetchFn
       .then((data) => {
         if (cancelled) return;
-        setParentMessage(normalizeMessage(data.parent));
-        setReplies(data.replies.map(normalizeMessage));
+        setParentMessage(normalizeToMessage(data.parent, isDM));
+        setReplies(data.replies.map((r: any) => normalizeToMessage(r, isDM)));
       })
       .catch(() => {
         if (!cancelled) setLoadError('Failed to load thread. Please try again.');
@@ -82,9 +111,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         if (!cancelled) setIsLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [messageId, isDM]);
 
   // Listen for real-time thread replies via WebSocket
@@ -95,7 +122,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     if (isDM) {
       const handleDMReply = (reply: ApiDirectMessage & { threadId: number }) => {
         if (reply.threadId !== messageId) return;
-        const normalized = normalizeMessage(reply);
+        const normalized = normalizeToMessage(reply, true);
         setReplies((prev) => {
           if (prev.some((r) => r.id === normalized.id)) return prev;
           return [...prev, normalized];
@@ -106,7 +133,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     } else {
       const handleNewMessage = (msg: any) => {
         if (msg.threadId !== messageId) return;
-        const normalized = normalizeMessage(msg);
+        const normalized = normalizeToMessage(msg, false);
         setReplies((prev) => {
           if (prev.some((r) => r.id === normalized.id)) return prev;
           return [...prev, normalized];
@@ -129,7 +156,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     repliesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [replies]);
 
-  // Notify parent of reply count changes (works for both REST and WebSocket additions/deletions)
+  // Notify parent of reply count changes
   const onReplyCountChangeRef = useRef(onReplyCountChange);
   onReplyCountChangeRef.current = onReplyCountChange;
   const hasLoadedReplies = useRef(false);
@@ -138,6 +165,106 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     hasLoadedReplies.current = true;
     onReplyCountChangeRef.current?.(messageId, replies.length);
   }, [replies.length, messageId]);
+
+  // --- Callbacks for Message component ---
+
+  const handleEditMessage = useCallback(async (msgId: number, content: string) => {
+    if (isDM) {
+      const updated = await editDM(msgId, content);
+      const normalized = normalizeToMessage(updated, true);
+      if (parentMessage && msgId === parentMessage.id) {
+        setParentMessage(normalized);
+      } else {
+        setReplies((prev) => prev.map((r) => r.id === msgId ? normalized : r));
+      }
+    } else {
+      const updated = await apiEditMessage(msgId, content);
+      // Edit endpoint returns user + reactions but not files — preserve existing data
+      const updateMsg = (existing: MessageType): MessageType => ({
+        ...existing,
+        content: updated.content,
+        isEdited: !!updated.editedAt,
+      });
+      if (parentMessage && msgId === parentMessage.id) {
+        setParentMessage((prev) => prev ? updateMsg(prev) : prev);
+      } else {
+        setReplies((prev) => prev.map((r) => r.id === msgId ? updateMsg(r) : r));
+      }
+    }
+  }, [isDM, parentMessage]);
+
+  const handleDeleteMessage = useCallback(async (msgId: number) => {
+    if (isDM) {
+      await deleteDM(msgId);
+    } else {
+      await apiDeleteMessage(msgId);
+    }
+    if (parentMessage && msgId === parentMessage.id) {
+      onClose();
+    } else {
+      setReplies((prev) => prev.filter((r) => r.id !== msgId));
+    }
+  }, [isDM, parentMessage, onClose]);
+
+  const handleAddReaction = useCallback((msgId: number, emoji: string) => {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    const addToMsg = (msg: MessageType): MessageType => {
+      const existing = msg.reactions.find((r) => r.emoji === emoji);
+      if (existing) {
+        if (existing.userIds.includes(userId)) return msg;
+        return {
+          ...msg,
+          reactions: msg.reactions.map((r) =>
+            r.emoji === emoji
+              ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, 'You'] }
+              : r
+          ),
+        };
+      }
+      return {
+        ...msg,
+        reactions: [...msg.reactions, { emoji, count: 1, userIds: [userId], userNames: ['You'] }],
+      };
+    };
+
+    if (parentMessage && msgId === parentMessage.id) {
+      setParentMessage((prev) => prev ? addToMsg(prev) : prev);
+    } else {
+      setReplies((prev) => prev.map((r) => r.id === msgId ? addToMsg(r) : r));
+    }
+
+    (isDM ? addDMReaction(msgId, emoji) : apiAddReaction(msgId, emoji)).catch(() => {});
+  }, [isDM, parentMessage]);
+
+  const handleRemoveReaction = useCallback((msgId: number, emoji: string) => {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    const removeFromMsg = (msg: MessageType): MessageType => ({
+      ...msg,
+      reactions: msg.reactions
+        .map((r) => {
+          if (r.emoji !== emoji) return r;
+          const idx = r.userIds.indexOf(userId);
+          const newUserIds = r.userIds.filter((id) => id !== userId);
+          const newUserNames = r.userNames.filter((_, i) => i !== idx);
+          return { ...r, count: newUserIds.length, userIds: newUserIds, userNames: newUserNames };
+        })
+        .filter((r) => r.count > 0),
+    });
+
+    if (parentMessage && msgId === parentMessage.id) {
+      setParentMessage((prev) => prev ? removeFromMsg(prev) : prev);
+    } else {
+      setReplies((prev) => prev.map((r) => r.id === msgId ? removeFromMsg(r) : r));
+    }
+
+    (isDM ? removeDMReaction(msgId, emoji) : apiRemoveReaction(msgId, emoji)).catch(() => {});
+  }, [isDM, parentMessage]);
+
+  // --- Send reply ---
 
   const handleSendReply = useCallback(async () => {
     const quill = editor.quillRef.current;
@@ -156,7 +283,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         const fileIds = editor.pendingFiles.map((f) => f.id);
         apiReply = await replyToMessage(messageId, content, fileIds.length > 0 ? fileIds : undefined);
       }
-      const reply = normalizeMessage(apiReply);
+      const reply = normalizeToMessage(apiReply, isDM);
       setReplies((prev) => {
         if (prev.some((r) => r.id === reply.id)) return prev;
         return [...prev, reply];
@@ -174,34 +301,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
 
   const hasContent = editor.canSend || editor.pendingFiles.length > 0;
 
-  const renderFiles = (files?: ThreadMessage['files']) => {
-    if (!files || files.length === 0) return null;
-    return (
-      <div className="mt-1 flex flex-wrap gap-2">
-        {files.map((file) => (
-          <div key={file.id} className="rounded-lg border border-slack-border overflow-hidden">
-            {file.mimetype.startsWith('image/') ? (
-              <img
-                src={getFileUrl(file.id)}
-                alt={file.originalName}
-                className="max-w-[200px] max-h-[150px] object-cover"
-              />
-            ) : (
-              <a
-                href={getFileUrl(file.id)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block px-3 py-2 text-[13px] text-slack-link hover:underline"
-              >
-                {file.originalName}
-              </a>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div
       data-testid={`${testPrefix}-panel`}
@@ -210,7 +309,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       <PanelHeader title="Thread" onClose={onClose} />
 
       {/* Thread messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <div className="flex-1 overflow-y-auto py-3">
         {isLoading ? (
           <div className="text-center text-sm text-slack-hint py-4">Loading thread...</div>
         ) : loadError ? (
@@ -218,83 +317,40 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         ) : (
           <>
             {parentMessage && (
-              <div className="mb-4 pb-3 border-b border-slack-border">
-                <div className="flex items-start gap-2">
-                  <Avatar
-                    src={parentMessage.user.avatar ?? undefined}
-                    alt={parentMessage.user.name}
-                    fallback={parentMessage.user.name}
-                    size="md"
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-[15px] font-bold text-slack-primary">
-                        {parentMessage.user.name}
-                      </span>
-                      <span className="text-[12px] text-slack-secondary">
-                        {format(parentMessage.createdAt, 'h:mm a')}
-                      </span>
-                    </div>
-                    <div className="text-[15px] text-slack-primary leading-[22px] whitespace-pre-wrap break-words">
-                      {renderMessageContent(parentMessage.content)}
-                    </div>
-                    {renderFiles(parentMessage.files)}
-                  </div>
-                </div>
+              <div className="mb-2 pb-3 border-b border-slack-border">
+                <Message
+                  message={parentMessage}
+                  showAvatar={true}
+                  isCompact={false}
+                  variant="thread"
+                  readOnly={readOnly}
+                  onEditMessage={handleEditMessage}
+                  onDeleteMessage={handleDeleteMessage}
+                  onAddReaction={handleAddReaction}
+                  onRemoveReaction={handleRemoveReaction}
+                />
                 {replies.length > 0 && (
-                  <div className="mt-2 text-[12px] text-slack-secondary">
+                  <div className="mt-2 px-5 text-[12px] text-slack-secondary">
                     {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
                   </div>
                 )}
               </div>
             )}
 
-            {replies.map((reply) => {
-              const currentUser = useAuthStore.getState().user;
-              const isOwn = currentUser?.id === reply.user.id;
-              return (
-              <div key={reply.id} className="group mb-3">
-                <div className="flex items-start gap-2">
-                  <Avatar
-                    src={reply.user.avatar ?? undefined}
-                    alt={reply.user.name}
-                    fallback={reply.user.name}
-                    size="sm"
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-[14px] font-bold text-slack-primary">
-                        {reply.user.name}
-                      </span>
-                      <span className="text-[11px] text-slack-secondary">
-                        {format(reply.createdAt, 'h:mm a')}
-                      </span>
-                      {isOwn && !readOnly && (
-                        <button
-                          onClick={async () => {
-                            try {
-                              await (isDM ? deleteDM(reply.id) : deleteMessage(reply.id));
-                              setReplies((prev) => prev.filter((r) => r.id !== reply.id));
-                            } catch { /* ignore */ }
-                          }}
-                          className="ml-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 text-slack-secondary hover:text-slack-error transition-opacity"
-                          title="Delete reply"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="text-[14px] text-slack-primary leading-[20px] whitespace-pre-wrap break-words">
-                      {renderMessageContent(reply.content)}
-                    </div>
-                    {renderFiles(reply.files)}
-                  </div>
-                </div>
-              </div>
-            );
-            })}
+            {replies.map((reply) => (
+              <Message
+                key={reply.id}
+                message={reply}
+                showAvatar={true}
+                isCompact={false}
+                variant="thread"
+                readOnly={readOnly}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
+                onAddReaction={handleAddReaction}
+                onRemoveReaction={handleRemoveReaction}
+              />
+            ))}
             <div ref={repliesEndRef} />
           </>
         )}
