@@ -33,8 +33,8 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, crypto.randomUUID() + ext);
+    // No user-controlled extension — prevents SVG/HTML execution if uploads dir is ever served directly
+    cb(null, crypto.randomUUID());
   },
 });
 
