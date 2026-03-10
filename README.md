@@ -16,7 +16,7 @@
 
 ## [Day 12](https://www.linkedin.com/posts/nathancavaglione_day-1214-cloning-slack-with-claude-code-activity-7437209559691259905-qKE-?utm_source=share&utm_medium=member_desktop&rcm=ACoAABo_DiMBthZ8gqvy6PiOdSHUMuPt9XgMnfY)
 
-![Day 12](images/day_12.gif)
+<img src="images/day_12.gif" alt="Day 12" width="240">
 
 ## [Day 11](https://www.linkedin.com/posts/nathancavaglione_day-1114-cloning-slack-with-claude-code-activity-7436864574370369536-ph9P?utm_source=share&utm_medium=member_desktop&rcm=ACoAABo_DiMBthZ8gqvy6PiOdSHUMuPt9XgMnfY)
 
