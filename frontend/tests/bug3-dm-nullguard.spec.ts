@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail } from './helpers';
+import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 test.describe('Bug #3: fetchDirectMessages null-guard', () => {
   test('no TypeError when fetching DMs after real conversation exists', async ({ browser }) => {
@@ -7,14 +7,14 @@ test.describe('Bug #3: fetchDirectMessages null-guard', () => {
     const ctxA = await browser.newContext();
     const pageA = await ctxA.newPage();
     const emailA = uniqueEmail();
-    await register(pageA, 'Bug3-A', emailA, 'password123');
+    await register(pageA, 'Bug3-A', emailA, TEST_PASSWORD);
     await expect(pageA.locator('button').filter({ hasText: 'Add teammates' })).toBeVisible({ timeout: 10_000 });
 
     // User B registers
     const ctxB = await browser.newContext();
     const pageB = await ctxB.newPage();
     const emailB = uniqueEmail();
-    await register(pageB, 'Bug3-B', emailB, 'password123');
+    await register(pageB, 'Bug3-B', emailB, TEST_PASSWORD);
     await expect(pageB.locator('button').filter({ hasText: 'Add teammates' })).toBeVisible({ timeout: 10_000 });
 
     // User A starts a DM with User B

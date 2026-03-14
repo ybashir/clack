@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -23,7 +24,7 @@ describe('Scale & Performance Tests', () => {
             .post('/auth/register')
             .send({
               email: `user${i}@test.com`,
-              password: 'password123',
+              password: TEST_PASSWORD,
               name: `User ${i}`,
             })
         );
@@ -52,7 +53,7 @@ describe('Scale & Performance Tests', () => {
       // Create channel creator
       const creatorRes = await request(app).post('/auth/register').send({
         email: 'creator@test.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Creator',
       });
       creatorToken = creatorRes.body.token;
@@ -68,7 +69,7 @@ describe('Scale & Performance Tests', () => {
       for (let i = 1; i <= 20; i++) {
         const userRes = await request(app).post('/auth/register').send({
           email: `member${i}@test.com`,
-          password: 'password123',
+          password: TEST_PASSWORD,
           name: `Member ${i}`,
         });
         userTokens.push(userRes.body.token);
@@ -105,7 +106,7 @@ describe('Scale & Performance Tests', () => {
     beforeEach(async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'bulk-test@test.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Bulk Tester',
       });
       authToken = userRes.body.token;
@@ -196,7 +197,7 @@ describe('Scale & Performance Tests', () => {
     beforeEach(async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'perf-test@test.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Perf Tester',
       });
       authToken = userRes.body.token;

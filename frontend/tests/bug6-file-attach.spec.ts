@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel } from './helpers';
+import { register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 test.describe('Bug #6: File attachment included in sent message', () => {
   test('attaching a file and sending creates a message with the file', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'FileAttach User', email, 'password123');
+    await register(page, 'FileAttach User', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await expect(page.locator('.ql-editor')).toBeVisible({ timeout: 10_000 });

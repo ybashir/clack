@@ -1,9 +1,14 @@
 import { type Page, expect } from '@playwright/test';
 
+if (!process.env.SEED_PASSWORD) {
+  throw new Error('Missing SEED_PASSWORD in environment. Check your .env file.');
+}
+export const TEST_PASSWORD = process.env.SEED_PASSWORD;
+
 /** Default test credentials */
 export const TEST_USER = {
   email: 'test@example.com',
-  password: 'password123',
+  password: TEST_PASSWORD,
   name: 'Test User',
 };
 

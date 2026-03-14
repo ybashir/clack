@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import path from 'path';
 import fs from 'fs';
@@ -10,7 +11,7 @@ describe('Messages', () => {
 
   const testUser = {
     email: 'message-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Message Test User',
   };
 
@@ -52,7 +53,7 @@ describe('Messages', () => {
       // Create another user
       const user2Res = await request(app).post('/auth/register').send({
         email: 'user2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 
@@ -231,7 +232,7 @@ describe('Messages', () => {
       // Create another user with their own channel and message
       const user2Res = await request(app).post('/auth/register').send({
         email: 'user2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 
@@ -343,7 +344,7 @@ describe('Messages', () => {
     beforeEach(async () => {
       const user2Res = await request(app).post('/auth/register').send({
         email: 'searchdm@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Search DM User',
       });
       user2Token = user2Res.body.token;
@@ -486,7 +487,7 @@ describe('Messages', () => {
       // Create user 2
       const user2Res = await request(app).post('/auth/register').send({
         email: 'fileowner@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'File Owner Test',
       });
 

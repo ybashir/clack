@@ -1,8 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
-import { login, register, uniqueEmail } from './helpers';
+import { login, register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 async function loginAsAdmin(page: Page) {
-  await login(page, 'alice@slawk.dev', 'password123');
+  await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
   // Wait for channels to fully load in the sidebar (indicates app is stable)
   await expect(
@@ -83,7 +83,7 @@ test.describe('Admin Panel - Admin Access', () => {
 test.describe('Admin Panel - Non-Admin Access', () => {
   test('non-admin user does not see Shield icon', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Regular User', email, 'password123');
+    await register(page, 'Regular User', email, TEST_PASSWORD);
 
     // Wait for sidebar to be fully loaded
     await expect(
@@ -99,7 +99,7 @@ test.describe('Admin Panel - Non-Admin Access', () => {
 
   test('non-admin cannot access /admin directly', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Regular User', email, 'password123');
+    await register(page, 'Regular User', email, TEST_PASSWORD);
 
     await page.goto('/admin');
     // Should redirect away from /admin

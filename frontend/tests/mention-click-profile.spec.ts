@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, sendMessage, waitForMessage, waitForChannelReady } from './helpers';
+import { login, clickChannel, sendMessage, waitForMessage, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Mention click opens profile', () => {
   test('clicking an @mention of a real user opens their profile popup', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

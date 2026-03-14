@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, clickChannel } from './helpers';
+import { register, uniqueEmail, sendMessage, clickChannel , TEST_PASSWORD } from './helpers';
 
 test.describe('Markdown rendering in thread panel, pins, and search', () => {
   test('thread panel renders bold, italic, and code markdown as HTML elements', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'MarkdownUser', email, 'password123');
+    await register(page, 'MarkdownUser', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

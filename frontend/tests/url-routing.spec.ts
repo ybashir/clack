@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, clickChannel } from './helpers';
+import { login, register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 
 test.describe('URL-based channel navigation', () => {
   test('clicking a channel updates the URL', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'URL Tester', email, 'password123');
+    await register(page, 'URL Tester', email, TEST_PASSWORD);
     await expect(page.getByTestId('sidebar')).toBeVisible();
 
     // Join the #engineering channel via API
@@ -48,7 +48,7 @@ test.describe('URL-based channel navigation', () => {
 
   test('page refresh preserves the active channel', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Refresh Tester', email, 'password123');
+    await register(page, 'Refresh Tester', email, TEST_PASSWORD);
     await expect(page.getByTestId('sidebar')).toBeVisible();
 
     // Join the #engineering channel so it's available in the sidebar
@@ -95,7 +95,7 @@ test.describe('URL-based channel navigation', () => {
 
   test('default route / redirects to a channel URL', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Default Redirect Tester', email, 'password123');
+    await register(page, 'Default Redirect Tester', email, TEST_PASSWORD);
     await expect(page.getByTestId('sidebar')).toBeVisible({ timeout: 10_000 });
 
     // After login/register, URL should NOT be just /
@@ -104,7 +104,7 @@ test.describe('URL-based channel navigation', () => {
 
   test('navigating to a channel URL directly loads that channel', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Direct URL Tester', email, 'password123');
+    await register(page, 'Direct URL Tester', email, TEST_PASSWORD);
     await expect(page.getByTestId('sidebar')).toBeVisible({ timeout: 10_000 });
 
     // Get the channel ID for #general via API

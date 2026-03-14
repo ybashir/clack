@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login , TEST_PASSWORD } from './helpers';
 
 test.describe('DM header controls (#35)', () => {
   test('DM header shows search bar, star, bell, and menu', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
     // Click a DM conversation in the sidebar
     const sidebar = page.getByTestId('sidebar');

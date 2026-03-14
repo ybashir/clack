@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, sendMessage, waitForMessage, uniqueEmail, clickChannel } from './helpers';
+import { register, sendMessage, waitForMessage, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 
 test.describe('Bug #2: Emoji shortcodes render as unicode', () => {
   test('reaction stored as shortcode +1 renders as 👍 emoji', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'EmojiCode User', email, 'password123');
+    await register(page, 'EmojiCode User', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await expect(page.locator('.ql-editor')).toBeVisible({ timeout: 10_000 });

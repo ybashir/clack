@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage } from './helpers';
+import { register, uniqueEmail, sendMessage , TEST_PASSWORD } from './helpers';
 
 test.describe('Threads', () => {
   test('user can reply to a message and see the thread panel', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'ThreadUser', email, 'password123');
+    await register(page, 'ThreadUser', email, TEST_PASSWORD);
 
     // Click general channel (scope to sidebar to avoid matching channel header)
     await page.getByTestId('sidebar').locator('button').filter({ has: page.locator('span.truncate', { hasText: 'general' }) }).first().click();
@@ -47,7 +47,7 @@ test.describe('Threads', () => {
 
   test('thread panel shows multiple replies', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'MultiReply', email, 'password123');
+    await register(page, 'MultiReply', email, TEST_PASSWORD);
 
     await page.getByTestId('sidebar').locator('button').filter({ has: page.locator('span.truncate', { hasText: 'general' }) }).first().click();
     await page.waitForTimeout(500);

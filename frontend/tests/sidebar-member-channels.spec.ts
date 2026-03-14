@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail } from './helpers';
+import { login, register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 test.describe('Sidebar member channels filter', () => {
   test('logged-in user only sees channels they are a member of', async ({ page }) => {
     // Log in as Nathan who is a member of all 8 public channels but not the
     // private "founders" channel (Hank, Iris, Jack only).
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
     const sidebar = page.getByTestId('sidebar');
     await expect(sidebar).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Sidebar member channels filter', () => {
   test('newly registered user only sees default member channels, not all channels', async ({ page }) => {
     // Register a fresh user. New users are auto-joined to general + random only.
     const email = uniqueEmail();
-    await register(page, 'Sidebar Tester', email, 'password123');
+    await register(page, 'Sidebar Tester', email, TEST_PASSWORD);
 
     const sidebar = page.getByTestId('sidebar');
     await expect(sidebar).toBeVisible();
@@ -72,7 +72,7 @@ test.describe('Sidebar member channels filter', () => {
   test('non-member channel created by another user does not appear in sidebar', async ({ page }) => {
     // Register user A who will create a channel.
     const emailA = uniqueEmail();
-    await register(page, 'Channel Creator', emailA, 'password123');
+    await register(page, 'Channel Creator', emailA, TEST_PASSWORD);
     const sidebar = page.getByTestId('sidebar');
     await expect(sidebar).toBeVisible();
 
@@ -98,7 +98,7 @@ test.describe('Sidebar member channels filter', () => {
     const emailB = uniqueEmail();
     const contextB = await page.context().browser()!.newContext();
     const pageB = await contextB.newPage();
-    await register(pageB, 'Non Member User', emailB, 'password123');
+    await register(pageB, 'Non Member User', emailB, TEST_PASSWORD);
 
     const sidebarB = pageB.getByTestId('sidebar');
     await expect(sidebarB).toBeVisible({ timeout: 10_000 });

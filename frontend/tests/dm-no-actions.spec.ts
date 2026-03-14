@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login , TEST_PASSWORD } from './helpers';
 
 test.describe('DM message actions', () => {
   test('other user messages do not show "..." more button (#79)', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
     // Open DM with Eve Johnson (seed DM conversation)
     const sidebar = page.getByTestId('sidebar');

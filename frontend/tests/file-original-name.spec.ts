@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel } from './helpers';
+import { register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -22,7 +22,7 @@ test.beforeAll(async () => {
 test.describe('File Original Name Display (#24)', () => {
   test('uploaded file shows original filename in message after page reload', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'FileNameUser', email, 'password123');
+    await register(page, 'FileNameUser', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

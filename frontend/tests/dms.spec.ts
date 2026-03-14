@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail } from './helpers';
+import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 test.describe('Direct Messages', () => {
   test('user can start a DM conversation from the teammates dialog', async ({ browser }) => {
@@ -12,11 +12,11 @@ test.describe('Direct Messages', () => {
     // Register two users
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 opens Add teammates dialog
     await page1.getByText('Add teammates').click();
@@ -55,11 +55,11 @@ test.describe('Direct Messages', () => {
 
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 sends DM to user 2 via Add teammates dialog
     await page1.getByText('Add teammates').click();

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Code block rendering', () => {
   test('code block toolbar button creates properly rendered code block', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'CodeBlockUser', email, 'password123');
+    await register(page, 'CodeBlockUser', email, TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

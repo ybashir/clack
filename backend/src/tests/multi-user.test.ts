@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -23,7 +24,7 @@ describe('Multi-User Scenarios', () => {
     // Register Alice
     const aliceRes = await request(app).post('/auth/register').send({
       email: 'alice@test.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Alice',
     });
     aliceToken = aliceRes.body.token;
@@ -32,7 +33,7 @@ describe('Multi-User Scenarios', () => {
     // Register Bob
     const bobRes = await request(app).post('/auth/register').send({
       email: 'bob@test.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Bob',
     });
     bobToken = bobRes.body.token;
@@ -41,7 +42,7 @@ describe('Multi-User Scenarios', () => {
     // Register Charlie
     const charlieRes = await request(app).post('/auth/register').send({
       email: 'charlie@test.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Charlie',
     });
     charlieToken = charlieRes.body.token;

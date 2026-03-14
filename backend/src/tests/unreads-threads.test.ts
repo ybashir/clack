@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -21,7 +22,7 @@ describe('Channel Unread Counts', () => {
     // Create user1 who owns the channel
     const user1Res = await request(app).post('/auth/register').send({
       email: 'unread-user1@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Unread User 1',
     });
     user1Token = user1Res.body.token;
@@ -29,7 +30,7 @@ describe('Channel Unread Counts', () => {
     // Create user2
     const user2Res = await request(app).post('/auth/register').send({
       email: 'unread-user2@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Unread User 2',
     });
     user2Token = user2Res.body.token;
@@ -136,7 +137,7 @@ describe('Channel Unread Counts', () => {
     // Create a third user who is not a member
     const user3Res = await request(app).post('/auth/register').send({
       email: 'unread-user3@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Unread User 3',
     });
 
@@ -210,7 +211,7 @@ describe('Thread Reply Counts', () => {
 
     const userRes = await request(app).post('/auth/register').send({
       email: 'thread-count@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Thread Count User',
     });
     authToken = userRes.body.token;
@@ -287,7 +288,7 @@ describe('Thread Reply Counts', () => {
     // Create second user
     const user2Res = await request(app).post('/auth/register').send({
       email: 'thread-user2@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Thread User 2',
     });
     const user2Token = user2Res.body.token;

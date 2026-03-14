@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('User Profiles', () => {
   test('user can view and edit their profile', async ({ page }) => {
     const name = `ProfileUser${Date.now()}`;
     const email = uniqueEmail();
-    await register(page, name, email, 'password123');
+    await register(page, name, email, TEST_PASSWORD);
 
     // Wait for sidebar to load
     await clickChannel(page, 'general');
@@ -45,11 +45,11 @@ test.describe('User Profiles', () => {
     const email2 = uniqueEmail();
 
     // Register both users (they are auto-joined to #general on registration)
-    await register(page, name1, email1, 'password123');
+    await register(page, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // Reload both pages so the socket reconnects cleanly and re-emits join:channel
     // for all member channels. This ensures the server processes join:channel before
@@ -89,7 +89,7 @@ test.describe('User Profiles', () => {
   });
 
   test('clicking member in Members panel opens their profile (#77)', async ({ page }) => {
-    await register(page, `MemberClick_${Date.now()}`, uniqueEmail(), 'password123');
+    await register(page, `MemberClick_${Date.now()}`, uniqueEmail(), TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

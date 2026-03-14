@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -15,7 +16,7 @@ describe('User Presence', () => {
 
   const testUser = {
     email: 'presence-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Presence Test User',
   };
 
@@ -209,7 +210,7 @@ describe('User Presence', () => {
         // Create user2
         const user2Res = await request(app).post('/auth/register').send({
           email: 'presence-user2@example.com',
-          password: 'password123',
+          password: TEST_PASSWORD,
           name: 'Presence User 2',
         });
         user2Token = user2Res.body.token;

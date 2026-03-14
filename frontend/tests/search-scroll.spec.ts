@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, clickChannel } from './helpers';
+import { register, uniqueEmail, sendMessage, clickChannel , TEST_PASSWORD } from './helpers';
 
 test.describe('Search result scrolls to matched message', () => {
   test('clicking a search result scrolls to and highlights the message', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'SearchScroller', email, 'password123');
+    await register(page, 'SearchScroller', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

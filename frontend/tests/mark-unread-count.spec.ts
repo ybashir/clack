@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Mark as unread count', () => {
   test('marking a message as unread shows correct count including subsequent messages', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Unread Tester', email, 'password123');
+    await register(page, 'Unread Tester', email, TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

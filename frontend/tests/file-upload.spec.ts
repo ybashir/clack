@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel } from './helpers';
+import { register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -33,7 +33,7 @@ test.beforeAll(async () => {
 test.describe('File Uploads', () => {
   test('user can upload an image and it appears in the message with preview', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'FileUser', email, 'password123');
+    await register(page, 'FileUser', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);
@@ -68,7 +68,7 @@ test.describe('File Uploads', () => {
 
   test('image upload shows filename, size, and download button (#29)', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'ImgMetaUser', email, 'password123');
+    await register(page, 'ImgMetaUser', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

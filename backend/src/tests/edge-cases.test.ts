@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -8,7 +9,7 @@ describe('Edge Cases & Error Handling', () => {
 
   const testUser = {
     email: 'edge-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Edge Test User',
   };
 

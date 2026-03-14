@@ -5,12 +5,17 @@
  */
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+if (!process.env.SEED_PASSWORD) {
+  console.error('Missing SEED_PASSWORD in environment. Check your .env file.');
+  process.exit(1);
+}
+const SEED_PASSWORD = process.env.SEED_PASSWORD;
 
 async function getToken() {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'alice@slawk.dev', password: 'password123' }),
+    body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }),
   });
   const data = await res.json();
   return data.token;
@@ -175,7 +180,7 @@ async function main() {
 
   const endpoints = [
     // Auth
-    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: 'password123' }) }],
+    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }) }],
 
     // Users
     ['GET /users/me', `${BASE_URL}/users/me`, {}],
@@ -276,7 +281,7 @@ async function main() {
     ['GET /channels/:id/messages', `${BASE_URL}/channels/${channelId}/messages`, {}],
     ['GET /dms', `${BASE_URL}/dms`, {}],
     ['GET /search?q=cache', `${BASE_URL}/search?q=cache`, {}],
-    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: 'password123' }) }],
+    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }) }],
   ];
 
   const stressResults = [];

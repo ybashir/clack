@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -10,13 +11,13 @@ describe('Admin API', () => {
 
   const adminUser = {
     email: 'admin-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Admin User',
   };
 
   const memberUser = {
     email: 'member-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Member User',
   };
 
@@ -325,7 +326,7 @@ describe('Admin API', () => {
           .post('/auth/register')
           .send({
             email: 'invited@example.com',
-            password: 'password123',
+            password: TEST_PASSWORD,
             name: 'Invited User',
             inviteCode: code,
           });
@@ -368,7 +369,7 @@ describe('Admin API', () => {
           .post('/auth/register')
           .send({
             email: 'first@example.com',
-            password: 'password123',
+            password: TEST_PASSWORD,
             name: 'First User',
             inviteCode: code,
           });
@@ -378,7 +379,7 @@ describe('Admin API', () => {
           .post('/auth/register')
           .send({
             email: 'second@example.com',
-            password: 'password123',
+            password: TEST_PASSWORD,
             name: 'Second User',
             inviteCode: code,
           });
@@ -505,7 +506,7 @@ describe('Admin API', () => {
         .post('/auth/register')
         .send({
           email: 'guest@example.com',
-          password: 'password123',
+          password: TEST_PASSWORD,
           name: 'Guest User',
           inviteCode: inviteRes.body.code,
         });

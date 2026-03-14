@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -9,13 +10,13 @@ describe('Edit and Delete Messages', () => {
 
   const alice = {
     email: 'alice-edit@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Alice Edit',
   };
 
   const bob = {
     email: 'bob-edit@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Bob Edit',
   };
 

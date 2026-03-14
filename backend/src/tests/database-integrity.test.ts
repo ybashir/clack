@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -23,7 +24,7 @@ describe('Database Integrity', () => {
       // Create user
       const userRes = await request(app).post('/auth/register').send({
         email: 'cascade-test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Cascade Test',
       });
       authToken = userRes.body.token;
@@ -86,7 +87,7 @@ describe('Database Integrity', () => {
     beforeEach(async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'channel-cascade@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Channel Cascade Test',
       });
       authToken = userRes.body.token;
@@ -152,7 +153,7 @@ describe('Database Integrity', () => {
     beforeEach(async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'thread-test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Thread Test',
       });
       authToken = userRes.body.token;
@@ -208,7 +209,7 @@ describe('Database Integrity', () => {
     beforeEach(async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'reaction-test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Reaction Test',
       });
       authToken = userRes.body.token;
@@ -258,13 +259,13 @@ describe('Database Integrity', () => {
     it('should prevent duplicate email registration', async () => {
       await request(app).post('/auth/register').send({
         email: 'unique@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 1',
       });
 
       const res = await request(app).post('/auth/register').send({
         email: 'unique@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 
@@ -274,7 +275,7 @@ describe('Database Integrity', () => {
     it('should prevent duplicate channel membership', async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'member@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Member',
       });
       const token = userRes.body.token;
@@ -282,7 +283,7 @@ describe('Database Integrity', () => {
       // Create another user to create a channel
       const ownerRes = await request(app).post('/auth/register').send({
         email: 'owner@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Owner',
       });
 
@@ -307,7 +308,7 @@ describe('Database Integrity', () => {
     it('should prevent duplicate reactions', async () => {
       const userRes = await request(app).post('/auth/register').send({
         email: 'reactor@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Reactor',
       });
       const token = userRes.body.token;

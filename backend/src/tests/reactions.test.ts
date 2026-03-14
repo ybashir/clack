@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -9,7 +10,7 @@ describe('Reactions', () => {
 
   const testUser = {
     email: 'reaction-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Reaction Test User',
   };
 
@@ -92,7 +93,7 @@ describe('Reactions', () => {
     it('should require channel membership', async () => {
       const user2Res = await request(app).post('/auth/register').send({
         email: 'user2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 

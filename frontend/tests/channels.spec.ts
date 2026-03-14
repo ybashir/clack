@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { login, sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady } from './helpers';
+import { login, sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Channels', () => {
   test.beforeEach(async ({ page }) => {
     // Register a fresh user who will be auto-joined to #general and #random
     const email = uniqueEmail();
-    await register(page, 'Channel Tester', email, 'password123');
+    await register(page, 'Channel Tester', email, TEST_PASSWORD);
     await expect(page.getByTestId('sidebar')).toBeVisible();
   });
 
@@ -96,8 +96,8 @@ test.describe('Channels', () => {
 
     const email1 = uniqueEmail();
     const email2 = uniqueEmail();
-    await register(page1, 'Badge User 1', email1, 'password123');
-    await register(page2, 'Badge User 2', email2, 'password123');
+    await register(page1, 'Badge User 1', email1, TEST_PASSWORD);
+    await register(page2, 'Badge User 2', email2, TEST_PASSWORD);
 
     // Both users join general and random channels via API
     for (const page of [page1, page2]) {

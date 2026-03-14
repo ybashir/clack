@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -22,7 +23,7 @@ describe('Security - Channel Access Control', () => {
     // Create user1 (channel owner)
     const user1Res = await request(app).post('/auth/register').send({
       email: 'owner@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Channel Owner',
     });
     user1Token = user1Res.body.token;
@@ -31,7 +32,7 @@ describe('Security - Channel Access Control', () => {
     // Create user2 (attacker)
     const user2Res = await request(app).post('/auth/register').send({
       email: 'attacker@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Attacker',
     });
     user2Token = user2Res.body.token;
@@ -157,7 +158,7 @@ describe('Security - Input Validation', () => {
 
     const userRes = await request(app).post('/auth/register').send({
       email: 'validator@example.com',
-      password: 'password123',
+      password: TEST_PASSWORD,
       name: 'Validator',
     });
     authToken = userRes.body.token;
@@ -213,7 +214,7 @@ describe('Security - Input Validation', () => {
       const longEmail = 'a'.repeat(250) + '@test.com';
       const res = await request(app).post('/auth/register').send({
         email: longEmail,
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Test User',
       });
 
@@ -224,7 +225,7 @@ describe('Security - Input Validation', () => {
       const longName = 'a'.repeat(150);
       const res = await request(app).post('/auth/register').send({
         email: 'longname@test.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: longName,
       });
 
@@ -234,7 +235,7 @@ describe('Security - Input Validation', () => {
     it('should accept valid email and name lengths', async () => {
       const res = await request(app).post('/auth/register').send({
         email: 'valid@test.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Valid Name',
       });
 

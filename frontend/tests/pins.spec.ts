@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Pinned Messages', () => {
   test('user can pin a message and view it in pins panel', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'PinTester', email, 'password123');
+    await register(page, 'PinTester', email, TEST_PASSWORD);
 
     // Select general channel and wait for socket join to settle
     await clickChannel(page, 'general');
@@ -45,14 +45,14 @@ test.describe('Pinned Messages', () => {
     // Set up user 1
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, 'PinnerUser', email1, 'password123');
+    await register(page1, 'PinnerUser', email1, TEST_PASSWORD);
     await clickChannel(page1, 'general');
     await waitForChannelReady(page1);
 
     // Set up user 2 (observer)
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, 'ObserverUser', email2, 'password123');
+    await register(page2, 'ObserverUser', email2, TEST_PASSWORD);
     await clickChannel(page2, 'general');
     await waitForChannelReady(page2);
 
@@ -89,14 +89,14 @@ test.describe('Pinned Messages', () => {
     // Set up user 1 (pinner)
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, 'PinnerB', email1, 'password123');
+    await register(page1, 'PinnerB', email1, TEST_PASSWORD);
     await clickChannel(page1, 'general');
     await waitForChannelReady(page1);
 
     // Set up user 2 (observer with pins panel open)
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, 'ObserverB', email2, 'password123');
+    await register(page2, 'ObserverB', email2, TEST_PASSWORD);
     await clickChannel(page2, 'general');
     await waitForChannelReady(page2);
 

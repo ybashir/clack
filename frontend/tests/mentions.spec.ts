@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('@Mentions', () => {
   test('user can @mention another user in a message', async ({ browser }) => {
@@ -12,11 +12,11 @@ test.describe('@Mentions', () => {
     // Register two users
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 selects general channel and waits for socket join to settle
     await clickChannel(page1, 'general');
@@ -53,7 +53,7 @@ test.describe('@Mentions', () => {
 
   test('@mention button inserts @ symbol in editor', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'MentionBtn User', email, 'password123');
+    await register(page, 'MentionBtn User', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await expect(page.locator('.ql-editor')).toBeVisible({ timeout: 5000 });

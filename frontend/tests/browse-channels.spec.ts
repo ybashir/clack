@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady } from './helpers';
+import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Browse channels', () => {
   test('browse channels tab shows all public channels with Joined badges', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -27,7 +27,7 @@ test.describe('Browse channels', () => {
   });
 
   test('#general channel appears in Browse channels list (#27)', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -51,7 +51,7 @@ test.describe('Browse channels', () => {
   });
 
   test('member count uses correct singular/plural (#76)', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

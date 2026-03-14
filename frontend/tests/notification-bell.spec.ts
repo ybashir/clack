@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady } from './helpers';
+import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Notification bell', () => {
   test('clicking bell opens activity panel and clicking again closes it', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'announcements');
     await waitForChannelReady(page);
 

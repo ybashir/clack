@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, TEST_USER } from './helpers';
+import { login, register, uniqueEmail, TEST_USER , TEST_PASSWORD } from './helpers';
 
 test.describe('Authentication', () => {
   test('user can register with name, email, password', async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('Authentication', () => {
   });
 
   test('user can login with email and password', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
     // Should be on the main app with the sidebar visible
     await expect(page.getByTestId('sidebar')).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Authentication', () => {
   test('after successful login, user sees channels page', async ({ page }) => {
     // Register a fresh user first, then login
     const email = uniqueEmail();
-    await register(page, 'Login Tester', email, 'password123');
+    await register(page, 'Login Tester', email, TEST_PASSWORD);
 
     // The Slawk workspace header should be visible
     await expect(page.locator('text=Slawk')).toBeVisible();

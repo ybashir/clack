@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
@@ -16,7 +17,7 @@ describe('WebSocket', () => {
 
   const testUser = {
     email: 'ws-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'WebSocket Test User',
   };
 
@@ -159,7 +160,7 @@ describe('WebSocket', () => {
       .post('/auth/register')
       .send({
         email: 'ws-test2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'WebSocket Test User 2',
       })
       .then((res) => {
@@ -212,7 +213,7 @@ describe('WebSocket', () => {
       .post('/auth/register')
       .send({
         email: 'ws-room-test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Room Test User',
       })
       .then((res) => {

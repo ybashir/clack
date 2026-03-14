@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login , TEST_PASSWORD } from './helpers';
 
 test.describe('DM dialog avatars', () => {
   test('direct message dialog shows real user avatars instead of initials', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
 
     // Click the compose/pencil icon to open the DM dialog
     const composeBtn = page.getByTestId('sidebar').locator('button').filter({ has: page.locator('.lucide-square-pen') });

@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -10,13 +11,13 @@ describe('Direct Messages', () => {
 
   const alice = {
     email: 'alice-dm@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Alice DM',
   };
 
   const bob = {
     email: 'bob-dm@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Bob DM',
   };
 
@@ -179,7 +180,7 @@ describe('Direct Messages', () => {
       // Create a third user
       const charlieRes = await request(app).post('/auth/register').send({
         email: 'charlie-dm@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'Charlie DM',
       });
       const charlieToken = charlieRes.body.token;

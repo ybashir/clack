@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady } from './helpers';
+import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Search results avatars and timestamps (#28)', () => {
   test('search results show user avatar and timestamp', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', 'password123');
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

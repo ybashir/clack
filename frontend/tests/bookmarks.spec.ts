@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady } from './helpers';
+import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Bookmarks', () => {
   test('bookmark persists after navigating away and back', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'BookmarkTester', email, 'password123');
+    await register(page, 'BookmarkTester', email, TEST_PASSWORD);
 
     // Navigate to general channel
     await clickChannel(page, 'general');
@@ -47,7 +47,7 @@ test.describe('Bookmarks', () => {
 
   test('can toggle bookmark off after re-navigation', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'UnbookmarkTester', email, 'password123');
+    await register(page, 'UnbookmarkTester', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
@@ -84,7 +84,7 @@ test.describe('Bookmarks', () => {
 
   test('clicking saved item scrolls to the bookmarked message (#80)', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'ScrollTester', email, 'password123');
+    await register(page, 'ScrollTester', email, TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await waitForChannelReady(page);

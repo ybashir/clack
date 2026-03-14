@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -8,7 +9,7 @@ describe('Channels', () => {
 
   const testUser = {
     email: 'channel-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Channel Test User',
   };
 
@@ -101,7 +102,7 @@ describe('Channels', () => {
       // Create another user and channel
       const user2Res = await request(app).post('/auth/register').send({
         email: 'user2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 

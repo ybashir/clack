@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import path from 'path';
 import fs from 'fs';
@@ -11,7 +12,7 @@ describe('File Uploads', () => {
 
   const testUser = {
     email: 'file-test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'File Test User',
   };
 
@@ -167,7 +168,7 @@ describe('File Uploads', () => {
     it('should not delete another user file', async () => {
       const user2Res = await request(app).post('/auth/register').send({
         email: 'user2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'User 2',
       });
 
@@ -301,7 +302,7 @@ describe('File Uploads', () => {
       // Create user2 with their own channel
       const user2Res = await request(app).post('/auth/register').send({
         email: 'fileuser2@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         name: 'File User 2',
       });
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail } from './helpers';
+import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 test.describe('DM Message Actions', () => {
   test('can edit own DM message', async ({ browser }) => {
@@ -12,11 +12,11 @@ test.describe('DM Message Actions', () => {
     // Register two users
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 opens Add teammates dialog and DMs user 2
     await page1.getByText('Add teammates').click();
@@ -81,11 +81,11 @@ test.describe('DM Message Actions', () => {
     // Register two users
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 DMs user 2
     await page1.getByText('Add teammates').click();
@@ -139,11 +139,11 @@ test.describe('DM Message Actions', () => {
 
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, name1, email1, 'password123');
+    await register(page1, name1, email1, TEST_PASSWORD);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, name2, email2, 'password123');
+    await register(page2, name2, email2, TEST_PASSWORD);
 
     // User 1 sends DM to user 2
     await page1.getByText('Add teammates').click();

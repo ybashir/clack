@@ -1,3 +1,4 @@
+import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -5,7 +6,7 @@ import prisma from '../db.js';
 describe('Authentication', () => {
   const testUser = {
     email: 'test@example.com',
-    password: 'password123',
+    password: TEST_PASSWORD,
     name: 'Test User',
   };
 
@@ -86,7 +87,7 @@ describe('Authentication', () => {
     it('should not login with non-existent email', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'nonexistent@example.com', password: 'password123' });
+        .send({ email: 'nonexistent@example.com', password: TEST_PASSWORD });
 
       expect(res.status).toBe(401);
       expect(res.body.error).toBe('Invalid credentials');
