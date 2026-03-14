@@ -103,18 +103,32 @@ export function AddChannelDialog({
                 type="text"
                 value={newChannelName}
                 onChange={(e) => {
-                  setNewChannelName(e.target.value);
-                  if (createChannelError) setCreateChannelError('');
+                  const val = e.target.value;
+                  setNewChannelName(val);
+                  if (val.trim().length > 25) {
+                    setCreateChannelError('Channel name must be 25 characters or fewer');
+                  } else if (createChannelError) {
+                    setCreateChannelError('');
+                  }
                 }}
+                maxLength={25}
                 placeholder="e.g. plan-budget"
                 autoFocus
                 className="w-full rounded border border-slack-input-border px-3 py-2 text-[15px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
               />
-              {createChannelError && (
-                <p data-testid="channel-error" className="mt-1 text-[13px] text-slack-error">
-                  {createChannelError}
-                </p>
-              )}
+              <div className="mt-1 flex items-center justify-between">
+                {createChannelError ? (
+                  <p data-testid="channel-error" className="text-[13px] text-slack-error">
+                    {createChannelError}
+                  </p>
+                ) : <span />}
+                <span className={cn(
+                  'text-[12px]',
+                  newChannelName.trim().length > 25 ? 'text-slack-error' : 'text-slack-hint'
+                )}>
+                  {newChannelName.trim().length}/25
+                </span>
+              </div>
 
               <div className="mt-3">
                 <label className="block text-[14px] font-medium text-slack-primary mb-2">

@@ -15,7 +15,7 @@ const router = Router();
 const createChannelSchema = z.object({
   name: z.string()
     .min(1)
-    .max(80)
+    .max(25, 'Channel name must be 25 characters or fewer')
     .refine(
       (name) => !name.includes('..') && !name.includes('/') && !name.includes('\\'),
       { message: 'Channel name cannot contain path traversal characters' }

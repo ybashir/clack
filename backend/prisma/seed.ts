@@ -98,7 +98,7 @@ const USERS = [
     password: DEMO_PASSWORD,
     bio: 'Demo account — explore Slawk freely!',
     status: 'offline',
-    avatar: null,
+    avatar: '/avatars/demo.jpg',
   },
 ];
 
