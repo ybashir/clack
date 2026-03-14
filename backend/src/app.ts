@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -21,6 +22,7 @@ import scheduledMessageRoutes from './routes/scheduled-messages.js';
 import adminRoutes from './routes/admin.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
+import { JWT_SECRET } from './config.js';
 
 const app = express();
 
@@ -64,6 +66,16 @@ const apiLimiter = isTest
       standardHeaders: true,
       legacyHeaders: false,
       message: { error: 'Too many requests, please try again later' },
+      keyGenerator: (req) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+          try {
+            const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, { algorithms: ['HS256'] }) as any;
+            if (decoded.userId) return `user:${decoded.userId}`;
+          } catch {}
+        }
+        return req.ip || 'unknown';
+      },
     });
 
 // Cache-Control: no-store for all API responses
