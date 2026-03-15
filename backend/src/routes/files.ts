@@ -349,6 +349,9 @@ router.get('/:id/download', (req: AuthRequest, res: Response, next) => {
   try {
     const file = req.file;
 
+    // Allow cross-origin embedding (Electron app loads from localhost, files from Cloud Run)
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+
     // GCS files: stream through backend (ADC on Cloud Run lacks signing key for getSignedUrl)
     if (file.gcsPath && bucket) {
       const forceAttachment = !INLINE_SAFE_TYPES.has(file.mimetype);
