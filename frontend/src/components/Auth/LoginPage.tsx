@@ -13,7 +13,7 @@ export function LoginPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <img src="/favicon-192.png" alt="Clack" className="h-12 w-12 rounded-lg" />
+          <img src="/clack-logo.png" alt="Clack" className="h-12 w-12" />
           <span className="text-3xl font-bold text-slack-primary">clack</span>
         </div>
         <h1 className="text-4xl font-bold text-slack-primary">Sign in to Clack</h1>
