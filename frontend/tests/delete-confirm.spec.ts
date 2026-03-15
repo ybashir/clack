@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('Delete confirmation dialog', () => {
   test('deleting a message shows confirmation dialog (#83)', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, `DeleteTest_${Date.now()}`, email, TEST_PASSWORD);
+    await register(page, `DeleteTest_${Date.now()}`, email);
 
     await clickChannel(page, 'general');
     await waitForChannelReady(page);

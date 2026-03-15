@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, TEST_USER , TEST_PASSWORD } from './helpers';
+import { login, register, uniqueEmail } from './helpers';
 
 test.describe('Authentication', () => {
-  test('user can register with name, email, password', async ({ page }) => {
+  test('new user can register and sees the sidebar', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'New Tester', email, 'securepass123');
+    await register(page, 'New Tester', email);
 
     // Should be on the main app with sidebar visible
     await expect(page.getByTestId('sidebar')).toBeVisible();
@@ -12,46 +12,18 @@ test.describe('Authentication', () => {
     await expect(page.getByTestId('sidebar').locator('button').filter({ has: page.locator('span.truncate', { hasText: 'general' }) }).first()).toBeVisible();
   });
 
-  test('user can login with email and password', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+  test('existing seed user can login and sees the sidebar', async ({ page }) => {
+    await login(page, 'alice@clack.dev');
 
     // Should be on the main app with the sidebar visible
     await expect(page.getByTestId('sidebar')).toBeVisible();
     await expect(page.getByTestId('sidebar').locator('button').filter({ has: page.locator('span.truncate', { hasText: 'general' }) }).first()).toBeVisible();
   });
 
-  test('login fails with wrong password', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByPlaceholder('name@work-email.com').fill(TEST_USER.email);
-    await page.getByPlaceholder('Password').fill('wrongpassword999');
-    await page.getByRole('button', { name: /sign in with email/i }).click();
-
-    // Should remain on the login page (not navigate away)
-    await expect(page).toHaveURL(/\/login/);
-
-    // Should show an error indication — either an alert, toast, or inline error
-    // The login page should NOT transition to the channels view
-    await expect(page.getByTestId('sidebar')).not.toBeVisible({ timeout: 3_000 });
-  });
-
-  test('login shows error message on invalid credentials', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByPlaceholder('name@work-email.com').fill('alice@clack.dev');
-    await page.getByPlaceholder('Password').fill('wrongpassword999');
-    await page.getByRole('button', { name: /sign in with email/i }).click();
-
-    // Error alert should be visible
-    const errorAlert = page.getByRole('alert');
-    await expect(errorAlert).toBeVisible({ timeout: 5_000 });
-
-    // Should remain on login page
-    await expect(page).toHaveURL(/\/login/);
-  });
-
   test('after successful login, user sees channels page', async ({ page }) => {
-    // Register a fresh user first, then login
+    // Register a fresh user first, then verify app loads
     const email = uniqueEmail();
-    await register(page, 'Login Tester', email, TEST_PASSWORD);
+    await register(page, 'Login Tester', email);
 
     // The Clack workspace header should be visible
     await expect(page.locator('text=Clack')).toBeVisible();

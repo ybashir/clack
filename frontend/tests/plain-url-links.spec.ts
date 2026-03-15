@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, clickChannel, waitForMessage , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, sendMessage, clickChannel, waitForMessage } from './helpers';
 
 test.describe('Plain URL auto-linking', () => {
   test('plain URLs in messages are rendered as clickable links', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'URLTestUser', email, TEST_PASSWORD);
+    await register(page, 'URLTestUser', email);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);
@@ -25,7 +25,7 @@ test.describe('Plain URL auto-linking', () => {
 
   test('http URLs are also auto-linked', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'HTTPURLUser', email, TEST_PASSWORD);
+    await register(page, 'HTTPURLUser', email);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);
@@ -43,7 +43,7 @@ test.describe('Plain URL auto-linking', () => {
 
   test('markdown links still work alongside plain URLs', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'MixedURLUser', email, TEST_PASSWORD);
+    await register(page, 'MixedURLUser', email);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, clickChannel } from './helpers';
 
 test.describe('Compose button', () => {
   test('compose button opens new message dialog', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'ComposeUser', email, TEST_PASSWORD);
+    await register(page, 'ComposeUser', email);
 
     await clickChannel(page, 'general');
     await page.waitForTimeout(500);

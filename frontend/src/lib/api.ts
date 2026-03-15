@@ -148,22 +148,11 @@ export interface AuthResponse {
   token: string;
 }
 
-export function login(email: string, password: string) {
-  return request<AuthResponse>('/auth/login', {
+export function googleLogin(credential: string) {
+  return request<AuthResponse>('/auth/google', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ credential }),
   });
-}
-
-export function register(name: string, email: string, password: string, inviteCode?: string) {
-  return request<AuthResponse>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ email, password, name, ...(inviteCode ? { inviteCode } : {}) }),
-  });
-}
-
-export function validateInvite(code: string) {
-  return request<{ valid: boolean; role: string }>(`/auth/invite/${encodeURIComponent(code)}`);
 }
 
 // ---- Channels ----

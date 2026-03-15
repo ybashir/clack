@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, sendMessage, waitForMessage, uniqueEmail, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { register, sendMessage, waitForMessage, uniqueEmail, clickChannel, waitForChannelReady } from './helpers';
 
 /**
  * Helper: open emoji picker from hover toolbar, search for an emoji, and click it.
@@ -27,7 +27,7 @@ async function addReactionViaHover(page: import('@playwright/test').Page, messag
 test.describe('Reactions', () => {
   test.beforeEach(async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Reaction Tester', email, TEST_PASSWORD);
+    await register(page, 'Reaction Tester', email);
     // Explicitly click general to ensure channel is loaded and socket has joined
     await clickChannel(page, 'general');
     // Wait for channel to be fully ready (socket join:channel processed server-side)

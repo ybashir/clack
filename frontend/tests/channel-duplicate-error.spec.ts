@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { uniqueEmail, register , TEST_PASSWORD } from './helpers';
+import { uniqueEmail, register } from './helpers';
 
 test.describe('Channel duplicate name error', () => {
   test.beforeEach(async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Dup Tester', email, TEST_PASSWORD);
+    await register(page, 'Dup Tester', email);
     await expect(page.getByTestId('sidebar')).toBeVisible();
   });
 

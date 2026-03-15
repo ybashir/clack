@@ -12,9 +12,8 @@ interface AuthState {
   isHydrating: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  googleLogin: (credential: string) => Promise<void>;
   logout: () => void;
-  register: (name: string, email: string, password: string, inviteCode?: string) => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   hydrate: () => void;
 }
@@ -26,10 +25,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  login: async (email: string, password: string) => {
+  googleLogin: async (credential: string) => {
     set({ isLoading: true, error: null });
     try {
-      const { user, token } = await api.login(email, password);
+      const { user, token } = await api.googleLogin(credential);
       localStorage.setItem('token', token);
       set({
         user: { ...user, status: 'online', role: user.role },
@@ -37,7 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      const message = err instanceof Error ? err.message : 'Sign in failed';
       set({ isLoading: false, error: message });
       throw err;
     }
@@ -49,23 +48,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     disconnectSocket();
     // Hard reload to wipe all in-memory Zustand state (messages, DMs, channels, bookmarks)
     window.location.href = '/login';
-  },
-
-  register: async (name: string, email: string, password: string, inviteCode?: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      const { user, token } = await api.register(name, email, password, inviteCode);
-      localStorage.setItem('token', token);
-      set({
-        user: { ...user, status: 'online', role: user.role },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
-      set({ isLoading: false, error: message });
-      throw err;
-    }
   },
 
   updateUser: (updates) => {

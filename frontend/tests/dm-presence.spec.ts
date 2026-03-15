@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, waitForChannelReady } from './helpers';
 
 test.describe('DM sidebar presence', () => {
   test('DM contacts show as offline when no other users are logged in', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
     await waitForChannelReady(page);
 
     // Wait for DM list items to appear

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, login , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, login } from './helpers';
 
 test.describe('DM search result navigation', () => {
   const suffix = Date.now().toString();
@@ -14,12 +14,12 @@ test.describe('DM search result navigation', () => {
     // Register sender
     const senderCtx = await browser.newContext();
     const senderPage = await senderCtx.newPage();
-    await register(senderPage, senderName, senderEmail, TEST_PASSWORD);
+    await register(senderPage, senderName, senderEmail);
 
     // Register receiver
     const receiverCtx = await browser.newContext();
     const receiverPage = await receiverCtx.newPage();
-    await register(receiverPage, receiverName, receiverEmail, TEST_PASSWORD);
+    await register(receiverPage, receiverName, receiverEmail);
 
     // Sender sends a DM to receiver
     // First, find the receiver's user ID by clicking "Add teammates"

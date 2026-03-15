@@ -1,21 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
-
-const SEED_PASSWORD = process.env.SEED_PASSWORD;
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
-
-if (!SEED_PASSWORD || !DEMO_PASSWORD) {
-  console.error('Missing SEED_PASSWORD or DEMO_PASSWORD in environment. Check your .env file.');
-  process.exit(1);
-}
 
 const USERS = [
   {
     name: 'Nathan Cavaglione',
     email: 'alice@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'Frontend lead • loves React + TypeScript • coffee → code',
     status: 'offline',
     avatar: '/ncavaglione.png',
@@ -23,7 +14,7 @@ const USERS = [
   {
     name: 'Bob Martinez',
     email: 'bob@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'Backend engineer • Rust & Go enthusiast • building the future one API at a time',
     status: 'offline',
     avatar: '/avatars/bob.jpg',
@@ -31,7 +22,7 @@ const USERS = [
   {
     name: 'Carol Smith',
     email: 'carol@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'Product designer • she/her • obsessed with design systems and user delight',
     status: 'offline',
     avatar: '/avatars/carol.jpg',
@@ -39,7 +30,7 @@ const USERS = [
   {
     name: 'Dave Kim',
     email: 'dave@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'DevOps & infra nerd • k8s wrangler • if it runs, I can break it',
     status: 'offline',
     avatar: '/avatars/dave.jpg',
@@ -47,7 +38,7 @@ const USERS = [
   {
     name: 'Eve Johnson',
     email: 'eve@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'QA lead — professional bug hunter 🐛 • accessibility advocate',
     status: 'offline',
     avatar: '/avatars/eve.jpg',
@@ -55,7 +46,7 @@ const USERS = [
   {
     name: 'Frank Lee',
     email: 'frank@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: "Full-stack + open source contributor • co-creator of 3 npm packages you've definitely used",
     status: 'offline',
     avatar: '/avatars/frank.jpg',
@@ -63,7 +54,7 @@ const USERS = [
   {
     name: 'Grace Park',
     email: 'grace@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'ML engineer • PhD in NLP • turning research papers into production code',
     status: 'offline',
     avatar: '/avatars/grace.jpg',
@@ -71,7 +62,7 @@ const USERS = [
   {
     name: 'Hank Torres',
     email: 'hank@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'CEO & co-founder @Clack • prev eng @ Stripe & Figma • building AI tools for devs',
     status: 'offline',
     avatar: '/avatars/hank.jpg',
@@ -79,7 +70,7 @@ const USERS = [
   {
     name: 'Iris Chen',
     email: 'iris@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'AI research lead • context windows, reasoning, and all the good stuff in between',
     status: 'offline',
     avatar: '/avatars/iris.jpg',
@@ -87,7 +78,7 @@ const USERS = [
   {
     name: 'Jack Wilson',
     email: 'jack@clack.dev',
-    password: SEED_PASSWORD,
+
     bio: 'Product manager • previously @ Linear, Notion • obsessed with developer experience',
     status: 'offline',
     avatar: '/avatars/jack.jpg',
@@ -95,7 +86,7 @@ const USERS = [
   {
     name: 'Demo User',
     email: 'demo@clack.dev',
-    password: DEMO_PASSWORD,
+
     bio: 'Demo account — explore Clack freely!',
     status: 'offline',
     avatar: '/avatars/demo.jpg',
@@ -457,7 +448,7 @@ async function main() {
         data: {
           name: u.name,
           email: u.email,
-          password: bcrypt.hashSync(u.password, 10),
+          password: null,
           bio: u.bio,
           status: u.status,
           avatar: u.avatar,

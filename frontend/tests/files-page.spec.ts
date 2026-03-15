@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login , TEST_PASSWORD } from './helpers';
+import { login } from './helpers';
 
 test.describe('Files page', () => {
   test('Files nav icon navigates to full-page files view', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
 
     // Click the Files nav item in the left rail
     await page.getByTestId('nav-item-files').click();

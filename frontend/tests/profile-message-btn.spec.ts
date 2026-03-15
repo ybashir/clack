@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel , TEST_PASSWORD } from './helpers';
+import { login, clickChannel } from './helpers';
 
 test.describe('Profile Message button', () => {
   test('clicking Message button in another user profile opens DM', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
     await clickChannel(page, 'product');
 
     // Wait for messages to load

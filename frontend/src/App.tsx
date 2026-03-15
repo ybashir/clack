@@ -11,7 +11,7 @@ import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { LoginPage } from '@/components/Auth/LoginPage';
-import { RegisterPage } from '@/components/Auth/RegisterPage';
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isHydrating } = useAuthStore();
@@ -423,14 +423,6 @@ function App() {
           element={
             <PublicRoute>
               <LoginPage />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <RegisterPage />
             </PublicRoute>
           }
         />

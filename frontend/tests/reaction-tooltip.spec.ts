@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { login , TEST_PASSWORD } from './helpers';
+import { login } from './helpers';
 
 test.describe('Reaction tooltip', () => {
   test('hovering a reaction pill shows tooltip with user names', async ({ page }) => {
     // Login as the seeded user (Nathan Cavaglione) who has channels with reactions
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
 
     // Navigate to #product which has reactions in the seed data
     const sidebar = page.getByTestId('sidebar');

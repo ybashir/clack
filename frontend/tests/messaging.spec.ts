@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { login, sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('Messaging', () => {
   test.beforeEach(async ({ page }) => {
     // Register a fresh user who will be auto-joined to #general and #random
     const email = uniqueEmail();
-    await register(page, 'Msg Tester', email, TEST_PASSWORD);
+    await register(page, 'Msg Tester', email);
     // Navigate explicitly to general so we know which channel we're on
     await clickChannel(page, 'general');
     // Wait for the channel to be fully ready (socket join:channel processed)
@@ -86,8 +86,8 @@ test.describe('Messaging', () => {
     // Register two unique users
     const email1 = uniqueEmail();
     const email2 = uniqueEmail();
-    await register(page1, 'User One', email1, TEST_PASSWORD);
-    await register(page2, 'User Two', email2, TEST_PASSWORD);
+    await register(page1, 'User One', email1);
+    await register(page2, 'User Two', email2);
 
     // Both users join the "general" channel via API
     for (const page of [page1, page2]) {

@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('@mention rendering', () => {
   test('@mentions in announcements render as highlighted spans not italic', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
     await clickChannel(page, 'announcements');
     await waitForChannelReady(page);
 

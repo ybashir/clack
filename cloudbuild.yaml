@@ -32,8 +32,7 @@ steps:
       - '--set-env-vars=GCS_BUCKET_NAME=${_GCS_BUCKET}'
       - '--set-env-vars=NODE_ENV=production'
       - '--set-env-vars=RUN_SEED=${_RUN_SEED}'
-      - '--set-env-vars=SEED_PASSWORD=${_SEED_PASSWORD}'
-      - '--set-env-vars=DEMO_PASSWORD=${_DEMO_PASSWORD}'
+      - '--set-env-vars=GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID}'
       - '--timeout=3600'
       - '--session-affinity'
       - '--min-instances=1'
@@ -62,8 +61,7 @@ substitutions:
   _RUN_SEED: 'false'
   _DATABASE_URL: ''
   _JWT_SECRET: ''
-  _SEED_PASSWORD: ''
-  _DEMO_PASSWORD: ''
+  _GOOGLE_CLIENT_ID: ''
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -1,32 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuthStore();
+  const { googleLogin } = useAuthStore();
   const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await login(email, password);
-      navigate('/');
-    } catch (err) {
-      const raw = err instanceof Error ? err.message : '';
-      const errorMap: Record<string, string> = {
-        'Invalid credentials': 'Invalid email or password',
-        'User not found': 'Invalid email or password',
-        'Invalid email address': 'Please enter a valid email address',
-      };
-      setError(errorMap[raw] || raw || 'Something went wrong. Please try again.');
-    }
-  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white">
@@ -38,54 +18,41 @@ export function LoginPage() {
         </div>
         <h1 className="text-4xl font-bold text-slack-primary">Sign in to Clack</h1>
         <p className="mt-2 text-gray-600">
-          We suggest using the <strong>email address you use at work.</strong>
+          Sign in with your Google account to get started.
         </p>
       </div>
 
-      {/* Login Form */}
-      <div className="w-full max-w-[400px] px-4">
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert">
-              {error}
-            </div>
-          )}
-          <div>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@work-email.com"
-              required
-              className="h-11"
-            />
+      {/* Google Sign-In */}
+      <div className="w-full max-w-[400px] px-4 flex flex-col items-center">
+        {error && (
+          <div className="mb-4 w-full rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert">
+            {error}
           </div>
-          <div>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              className="h-11"
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
-          >
-            {isLoading ? 'Signing in...' : 'Sign in with Email'}
-          </Button>
-        </form>
+        )}
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          New to Clack?{' '}
-          <Link to="/register" className="text-slack-link hover:underline">
-            Create an account
-          </Link>
-        </p>
+        <GoogleLogin
+          onSuccess={async (response) => {
+            setError('');
+            if (!response.credential) {
+              setError('No credential received from Google');
+              return;
+            }
+            try {
+              await googleLogin(response.credential);
+              navigate('/');
+            } catch (err) {
+              const message = err instanceof Error ? err.message : 'Sign in failed';
+              setError(message);
+            }
+          }}
+          onError={() => {
+            setError('Google sign in failed. Please try again.');
+          }}
+          size="large"
+          width={350}
+          text="signin_with"
+          shape="rectangular"
+        />
       </div>
     </div>
   );

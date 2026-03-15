@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail } from './helpers';
 
 test.describe('DM formatting toolbar', () => {
   test('DM composer has formatting toolbar and action buttons', async ({ browser }) => {
@@ -10,11 +10,11 @@ test.describe('DM formatting toolbar', () => {
     // Register two users
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
-    await register(page1, `Sender${ts}`, email1, TEST_PASSWORD);
+    await register(page1, `Sender${ts}`, email1);
 
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
-    await register(page2, `Receiver${ts}`, email2, TEST_PASSWORD);
+    await register(page2, `Receiver${ts}`, email2);
 
     // User 1 opens Add teammates dialog and starts DM
     await page1.getByText('Add teammates').click();

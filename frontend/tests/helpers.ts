@@ -1,51 +1,50 @@
 import { type Page, expect } from '@playwright/test';
 
-if (!process.env.SEED_PASSWORD) {
-  throw new Error('Missing SEED_PASSWORD in environment. Check your .env file.');
-}
-export const TEST_PASSWORD = process.env.SEED_PASSWORD;
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-/** Default test credentials */
+/** Default test user */
 export const TEST_USER = {
   email: 'test@example.com',
-  password: TEST_PASSWORD,
   name: 'Test User',
 };
 
 /**
- * Login with the given credentials and wait for the channels page to load.
- * Navigates to /login, fills the form, submits, and asserts we land on the main app.
+ * Login via the test-only endpoint (bypasses Google OAuth).
+ * Sets the JWT in localStorage and navigates to the app.
  */
 export async function login(
   page: Page,
   email = TEST_USER.email,
-  password = TEST_USER.password
 ) {
-  await page.goto('/login');
-  await page.getByPlaceholder('name@work-email.com').fill(email);
-  await page.getByPlaceholder('Password').fill(password);
-  await page.getByRole('button', { name: /sign in with email/i }).click();
+  const response = await page.request.post(`${BASE_URL}/auth/test-login`, {
+    data: { email },
+  });
+  const { token } = await response.json();
+
+  await page.goto('/');
+  await page.evaluate((t) => localStorage.setItem('token', t), token);
+  await page.goto('/');
 
   // Wait for the main app layout to appear (sidebar with channels)
-  // Use a longer timeout to handle backend contention under parallel test workers
   await expect(page.getByTestId('sidebar')).toBeVisible({ timeout: 20_000 });
 }
 
 /**
- * Register a new user and wait for the channels page to load.
+ * Register a new user via the test-only endpoint and navigate to the app.
  */
 export async function register(
   page: Page,
   name: string,
   email: string,
-  password: string
 ) {
-  await page.goto('/register');
-  await page.getByPlaceholder('Full name').fill(name);
-  await page.getByPlaceholder('name@work-email.com').fill(email);
-  await page.getByPlaceholder('Password', { exact: true }).fill(password);
-  await page.getByPlaceholder('Confirm password').fill(password);
-  await page.getByRole('button', { name: /create account/i }).click();
+  const response = await page.request.post(`${BASE_URL}/auth/test-login`, {
+    data: { email, name },
+  });
+  const { token } = await response.json();
+
+  await page.goto('/');
+  await page.evaluate((t) => localStorage.setItem('token', t), token);
+  await page.goto('/');
 
   // Wait for the main app layout to appear
   await expect(page.getByTestId('sidebar')).toBeVisible({ timeout: 10_000 });

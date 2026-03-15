@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('mind_blown shortcode rendering', () => {
   test('mind_blown reaction renders as emoji not text', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

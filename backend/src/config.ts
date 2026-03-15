@@ -21,3 +21,5 @@ function resolveJwtSecret(): string {
 }
 
 export const JWT_SECRET = resolveJwtSecret();
+
+export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '363893517164-neg7ekang0au7sip47s433krdfjrrlr0.apps.googleusercontent.com';

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail } from './helpers';
 
 test.describe('User Presence', () => {
   test('logged-in user shows online status indicator', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Presence User', email, TEST_PASSWORD);
+    await register(page, 'Presence User', email);
 
     // The user's own avatar in the sidebar should show an online indicator (green dot)
     const avatarButton = page.getByTestId('user-menu-button');

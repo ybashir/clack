@@ -1,13 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
-import { login , TEST_PASSWORD } from './helpers';
+import { login } from './helpers';
 
 // Huddle tests need two browser contexts communicating in real-time.
 // Run serially to avoid state conflicts between tests.
 test.describe.configure({ mode: 'serial' });
 
 // Use seed users to avoid registration rate limits.
-const USER_A = { email: 'bob@clack.dev', password: TEST_PASSWORD, name: 'Bob Martinez' };
-const USER_B = { email: 'carol@clack.dev', password: TEST_PASSWORD, name: 'Carol Smith' };
+const USER_A = { email: 'bob@clack.dev', name: 'Bob Martinez' };
+const USER_B = { email: 'carol@clack.dev', name: 'Carol Smith' };
 
 /**
  * Get the current user's ID and find the other user's ID from the users API.
@@ -31,8 +31,8 @@ async function setupTwoUsersInDM(browser: import('@playwright/test').Browser) {
   const page1 = await ctx1.newPage();
   const page2 = await ctx2.newPage();
 
-  await login(page1, USER_A.email, USER_A.password);
-  await login(page2, USER_B.email, USER_B.password);
+  await login(page1, USER_A.email);
+  await login(page2, USER_B.email);
 
   // Get user IDs for direct URL navigation
   const userBId = await getUserId(page1, USER_B.name);

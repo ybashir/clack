@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady } from './helpers';
 
 test.describe('Bug #1: No console errors for non-member channels', () => {
   test('page loads without "must be a member" errors', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Bug1 User', email, TEST_PASSWORD);
+    await register(page, 'Bug1 User', email);
 
     // Listen for console errors
     const consoleErrors: string[] = [];
@@ -30,7 +30,7 @@ test.describe('Bug #1: No console errors for non-member channels', () => {
 test.describe('Bug #2: New users auto-joined to default channels', () => {
   test('new user sees general and random channels after registration', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Bug2 User', email, TEST_PASSWORD);
+    await register(page, 'Bug2 User', email);
 
     // User should see #general and #random in the sidebar (use first() to avoid ambiguity with header)
     await expectChannelInSidebar(page, 'general');
@@ -52,7 +52,7 @@ test.describe('Bug #3: Channel browser to join existing channels', () => {
     const ctx1 = await browser.newContext();
     const page1 = await ctx1.newPage();
     const email1 = uniqueEmail();
-    await register(page1, 'Creator', email1, TEST_PASSWORD);
+    await register(page1, 'Creator', email1);
     const channelName = `browse-${Date.now()}`;
     await page1.locator('button').filter({ hasText: 'Add channels' }).click();
     // Fill in channel name in the Create tab
@@ -68,7 +68,7 @@ test.describe('Bug #3: Channel browser to join existing channels', () => {
     const ctx2 = await browser.newContext();
     const page2 = await ctx2.newPage();
     const email2 = uniqueEmail();
-    await register(page2, 'Joiner', email2, TEST_PASSWORD);
+    await register(page2, 'Joiner', email2);
 
     // Click "Add channels" - should show a dialog with tabs
     await page2.locator('button').filter({ hasText: 'Add channels' }).click();
@@ -96,7 +96,7 @@ test.describe('Bug #3: Channel browser to join existing channels', () => {
 test.describe('Bug #4: Search functionality', () => {
   test('user can search for messages', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Search User', email, TEST_PASSWORD);
+    await register(page, 'Search User', email);
 
     // Wait for general channel to appear and click it
     await expectChannelInSidebar(page, 'general');
@@ -127,7 +127,7 @@ test.describe('Bug #4: Search functionality', () => {
 test.describe('Bug #5: Logout functionality', () => {
   test('user can log out via avatar menu', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Logout User', email, TEST_PASSWORD);
+    await register(page, 'Logout User', email);
 
     // Click avatar in the nav rail
     await page.locator('[data-testid="user-menu-button"]').click();
@@ -143,44 +143,10 @@ test.describe('Bug #5: Logout functionality', () => {
   });
 });
 
-test.describe('Bug #9: Registration error display', () => {
-  test('shows error when registration fails with duplicate email', async ({ page }) => {
-    const email = uniqueEmail();
-
-    // Register first time - should succeed
-    await register(page, 'First User', email, TEST_PASSWORD);
-
-    // Clear localStorage and navigate to register page again
-    await page.evaluate(() => localStorage.clear());
-    await page.goto('/register');
-
-    // Try to register again with same email
-    await page.getByPlaceholder('Full name').fill('Second User');
-    await page.getByPlaceholder('name@work-email.com').fill(email);
-    await page.getByPlaceholder('Password', { exact: true }).fill(TEST_PASSWORD);
-    await page.getByPlaceholder('Confirm password').fill(TEST_PASSWORD);
-    await page.getByRole('button', { name: /create account/i }).click();
-
-    // Should show error message
-    await expect(page.getByText(/unable to complete registration|already registered|already exists|error/i)).toBeVisible({ timeout: 5_000 });
-  });
-
-  test('shows error for mismatched passwords', async ({ page }) => {
-    await page.goto('/register');
-    await page.getByPlaceholder('Full name').fill('Mismatch User');
-    await page.getByPlaceholder('name@work-email.com').fill(uniqueEmail());
-    await page.getByPlaceholder('Password', { exact: true }).fill(TEST_PASSWORD);
-    await page.getByPlaceholder('Confirm password').fill('differentpassword');
-    await page.getByRole('button', { name: /create account/i }).click();
-
-    // Should show error about password mismatch
-    await expect(page.getByText(/passwords do not match/i)).toBeVisible({ timeout: 3_000 });
-  });
-});
 
 test.describe('Bug #10: Create channel validation', () => {
   test('shows validation error for empty channel name', async ({ page }) => {
-    await register(page, 'ChanVal User', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'ChanVal User', uniqueEmail());
     await page.locator('button').filter({ hasText: 'Add channels' }).click();
 
     // Create button should be disabled when name is empty
@@ -196,7 +162,7 @@ test.describe('Bug #10: Create channel validation', () => {
 test.describe('Bug #11: Add teammates button', () => {
   test('add teammates button opens a user picker dialog', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'DM User', email, TEST_PASSWORD);
+    await register(page, 'DM User', email);
 
     // Wait for sidebar to load
     await expect(page.locator('button').filter({ hasText: 'Add teammates' })).toBeVisible({ timeout: 10_000 });
@@ -237,7 +203,7 @@ test.describe('Bug #3: No TypeError from fetchDirectMessages with null entries',
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await register(page, 'DmNull User', email, TEST_PASSWORD);
+    await register(page, 'DmNull User', email);
     await expectChannelInSidebar(page, 'general');
     await page.waitForTimeout(1_000);
 
@@ -249,7 +215,7 @@ test.describe('Bug #3: No TypeError from fetchDirectMessages with null entries',
 test.describe('Bug #12: Channel star/favorite', () => {
   test('starring a channel adds it to a Starred section in the sidebar', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Star User', email, TEST_PASSWORD);
+    await register(page, 'Star User', email);
 
     // Open general channel
     await expectChannelInSidebar(page, 'general');
@@ -270,7 +236,7 @@ test.describe('Bug #12: Channel star/favorite', () => {
 
   test('un-starring a channel removes it from the Starred section', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Unstar User', email, TEST_PASSWORD);
+    await register(page, 'Unstar User', email);
 
     await expectChannelInSidebar(page, 'general');
     await clickChannel(page, 'general');
@@ -291,7 +257,7 @@ test.describe('Bug #12: Channel star/favorite', () => {
 test.describe('Bug #11: Reaction emoji size inside pill', () => {
   test('reaction emoji span has font-size of 14px (text-sm for uniform pill height)', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'EmojiSize User', email, TEST_PASSWORD);
+    await register(page, 'EmojiSize User', email);
 
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
@@ -325,7 +291,7 @@ test.describe('Bug #11: Reaction emoji size inside pill', () => {
 test.describe('Bug #10: No video icon in message composer', () => {
   test('video camera button is not present in the composer toolbar', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'NoVideo User', email, TEST_PASSWORD);
+    await register(page, 'NoVideo User', email);
 
     await expectChannelInSidebar(page, 'general');
     await clickChannel(page, 'general');
@@ -340,7 +306,7 @@ test.describe('Bug #10: No video icon in message composer', () => {
 test.describe('Bug #1: Pinned message does not show (edited) label', () => {
   test('pinning a message does not make it show (edited)', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'PinEdit User', email, TEST_PASSWORD);
+    await register(page, 'PinEdit User', email);
 
     await expectChannelInSidebar(page, 'general');
     await clickChannel(page, 'general');
@@ -369,7 +335,7 @@ test.describe('Bug #1: Pinned message does not show (edited) label', () => {
 test.describe('Bug #9: Pinned message has orange background', () => {
   test('pinned message row shows #FEF9ED background', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'PinBg User', email, TEST_PASSWORD);
+    await register(page, 'PinBg User', email);
 
     await expectChannelInSidebar(page, 'general');
     await clickChannel(page, 'general');
@@ -397,7 +363,7 @@ test.describe('Bug #9: Pinned message has orange background', () => {
 test.describe('Bug #12: Bookmark button', () => {
   test('bookmark button shows feedback when clicked', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'Bookmark User', email, TEST_PASSWORD);
+    await register(page, 'Bookmark User', email);
 
     // Wait for general channel and click it
     await expectChannelInSidebar(page, 'general');
@@ -428,7 +394,7 @@ test.describe('Bug #4: Leave channel UI', () => {
     const ctx1 = await browser.newContext();
     const page1 = await ctx1.newPage();
     const email1 = uniqueEmail();
-    await register(page1, 'LeaveOwner', email1, TEST_PASSWORD);
+    await register(page1, 'LeaveOwner', email1);
     const channelName = `leave-test-${Date.now()}`;
     await page1.locator('button').filter({ hasText: 'Add channels' }).click();
     await expect(page1.getByPlaceholder(/plan-budget/i)).toBeVisible({ timeout: 3_000 });
@@ -444,7 +410,7 @@ test.describe('Bug #4: Leave channel UI', () => {
     const ctx2 = await browser.newContext();
     const page2 = await ctx2.newPage();
     const email2 = uniqueEmail();
-    await register(page2, 'LeaveJoiner', email2, TEST_PASSWORD);
+    await register(page2, 'LeaveJoiner', email2);
 
     // Browse and join the channel
     await page2.locator('button').filter({ hasText: 'Add channels' }).click();

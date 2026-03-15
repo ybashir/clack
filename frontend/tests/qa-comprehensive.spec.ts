@@ -3,27 +3,15 @@
  * Acts as manual QA testing via automation.
  */
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady } from './helpers';
 
 test.describe('QA: Comprehensive Feature Verification', () => {
-  test('Feature #1: User authentication - register, login, logout', async ({ page }) => {
+  test('Feature #1: User authentication - register and see sidebar', async ({ page }) => {
     const name = `QA_Auth_${Date.now()}`;
     const email = uniqueEmail();
-    const password = TEST_PASSWORD;
 
-    // Register
-    await register(page, name, email, password);
-    await expectChannelInSidebar(page, 'general');
-
-    // Logout
-    await page.getByTestId('user-menu-button').click();
-    await page.getByRole('button', { name: /sign out/i }).click();
-    await expect(page).toHaveURL(/login/);
-
-    // Login
-    await page.getByPlaceholder('name@work-email.com').fill(email);
-    await page.getByPlaceholder('Password').fill(password);
-    await page.getByRole('button', { name: /sign in with email/i }).click();
+    // Register via test-login endpoint
+    await register(page, name, email);
     await expectChannelInSidebar(page, 'general');
   });
 
@@ -31,7 +19,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     const ctx1 = await browser.newContext();
     const page1 = await ctx1.newPage();
     const email1 = uniqueEmail();
-    await register(page1, 'ChannelCreator', email1, TEST_PASSWORD);
+    await register(page1, 'ChannelCreator', email1);
 
     // Create a channel
     const channelName = `qa-ch-${Date.now()}`;
@@ -44,7 +32,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     // Another user joins
     const ctx2 = await browser.newContext();
     const page2 = await ctx2.newPage();
-    await register(page2, 'ChannelJoiner', uniqueEmail(), TEST_PASSWORD);
+    await register(page2, 'ChannelJoiner', uniqueEmail());
     await page2.locator('button').filter({ hasText: 'Add channels' }).click();
     await page2.getByText('Browse channels').click();
     await expect(page2.getByText(channelName).first()).toBeVisible({ timeout: 5000 });
@@ -54,7 +42,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #3: Real-time messaging', async ({ page }) => {
-    await register(page, 'MsgUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'MsgUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -65,7 +53,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
 
   test('Feature #4: Message history - messages persist', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'HistoryUser', email, TEST_PASSWORD);
+    await register(page, 'HistoryUser', email);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -80,7 +68,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #5: User presence', async ({ page }) => {
-    await register(page, 'PresenceUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'PresenceUser', uniqueEmail());
     const avatarButton = page.getByTestId('user-menu-button');
     await expect(avatarButton).toBeVisible();
     // Check for green dot (online status)
@@ -89,7 +77,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #6: File uploads', async ({ page }) => {
-    await register(page, 'FileUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'FileUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -105,7 +93,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #7: Threads', async ({ page }) => {
-    await register(page, 'ThreadUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'ThreadUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -125,7 +113,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #8: Search', async ({ page }) => {
-    await register(page, 'SearchUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'SearchUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -145,14 +133,14 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     const ctx1 = await browser.newContext();
     const page1 = await ctx1.newPage();
     const name1 = `DM1_${ts}`;
-    await register(page1, name1, uniqueEmail(), TEST_PASSWORD);
+    await register(page1, name1, uniqueEmail());
     // Wait for app to load
     await expectChannelInSidebar(page1, 'general');
 
     const ctx2 = await browser.newContext();
     const page2 = await ctx2.newPage();
     const name2 = `DM2_${ts}`;
-    await register(page2, name2, uniqueEmail(), TEST_PASSWORD);
+    await register(page2, name2, uniqueEmail());
     await expectChannelInSidebar(page2, 'general');
 
     // User1 starts a DM with User2
@@ -169,7 +157,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #10: Reactions', async ({ page }) => {
-    await register(page, 'ReactionUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'ReactionUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -188,7 +176,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #11: Message editing', async ({ page }) => {
-    await register(page, 'EditUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'EditUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -211,7 +199,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #12: @mentions', async ({ page }) => {
-    await register(page, 'MentionUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'MentionUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -222,7 +210,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
   });
 
   test('Feature #13: Pinned messages', async ({ page }) => {
-    await register(page, 'PinUser', uniqueEmail(), TEST_PASSWORD);
+    await register(page, 'PinUser', uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 
@@ -242,7 +230,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
 
   test('Feature #14: User profiles', async ({ page }) => {
     const name = `ProfileQA_${Date.now()}`;
-    await register(page, name, uniqueEmail(), TEST_PASSWORD);
+    await register(page, name, uniqueEmail());
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('Code block background color', () => {
   test('code block in editor has light background, not black', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'CodeBGUser', email, TEST_PASSWORD);
+    await register(page, 'CodeBGUser', email);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { login, clickChannel, waitForChannelReady } from './helpers';
 
 test.describe('Thread avatar indicator', () => {
   test('thread indicator shows real avatars, not "?" placeholders', async ({ page }) => {
-    await login(page, 'alice@clack.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev');
     await clickChannel(page, 'random');
     await waitForChannelReady(page);
 

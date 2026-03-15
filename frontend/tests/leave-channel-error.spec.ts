@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail } from './helpers';
 
 test.describe('Leave channel error feedback', () => {
   test('shows error when trying to leave channel as last member', async ({ page }) => {
     const email = uniqueEmail();
-    await register(page, 'LeaveUser', email, TEST_PASSWORD);
+    await register(page, 'LeaveUser', email);
 
     // Create a new channel (user will be the only member)
     await page.locator('button').filter({ hasText: 'Add channels' }).click();
