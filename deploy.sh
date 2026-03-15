@@ -24,7 +24,10 @@ JWT_SECRET="${JWT_SECRET:?Set JWT_SECRET}"
 GCS_BUCKET_NAME="${GCS_BUCKET_NAME:-clack-uploads-${GCP_PROJECT_ID}}"
 RUN_SEED="${RUN_SEED:-false}"
 GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-363893517164-neg7ekang0au7sip47s433krdfjrrlr0.apps.googleusercontent.com}"
+# Use semicolons instead of commas for CORS_ORIGIN in gcloud substitutions
+# (commas break the --substitutions flag parser). The cloudbuild step converts back.
 CORS_ORIGIN="${CORS_ORIGIN:-http://localhost:31311}"
+CORS_ORIGIN_ESCAPED="${CORS_ORIGIN//,/;}"
 
 echo "Deploying ${SERVICE_NAME} to Cloud Run..."
 echo "  Project:  ${GCP_PROJECT_ID}"
@@ -78,7 +81,7 @@ IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/clac
 gcloud builds submit "${DEPLOY_DIR}" \
   --config="${DEPLOY_DIR}/cloudbuild.yaml" \
   --project "${GCP_PROJECT_ID}" \
-  --substitutions="_IMAGE=${IMAGE},_CLOUD_SQL=${CLOUD_SQL_INSTANCE},_DATABASE_URL=${DATABASE_URL},_JWT_SECRET=${JWT_SECRET},_GCS_BUCKET=${GCS_BUCKET_NAME},_RUN_SEED=${RUN_SEED},_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID},_CORS_ORIGIN=${CORS_ORIGIN}"
+  --substitutions="_IMAGE=${IMAGE},_CLOUD_SQL=${CLOUD_SQL_INSTANCE},_DATABASE_URL=${DATABASE_URL},_JWT_SECRET=${JWT_SECRET},_GCS_BUCKET=${GCS_BUCKET_NAME},_RUN_SEED=${RUN_SEED},_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID},_CORS_ORIGIN=${CORS_ORIGIN_ESCAPED}"
 
 echo ""
 echo "Deploy complete! Service URL:"
