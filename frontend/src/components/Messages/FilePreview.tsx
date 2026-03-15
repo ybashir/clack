@@ -1,6 +1,7 @@
 import { FileIcon, X } from 'lucide-react';
 import { getFileUrl } from '@/lib/api';
 import type { ApiFile } from '@/lib/api';
+import { useDownloadToken } from '@/hooks/useDownloadToken';
 
 interface FilePreviewProps {
   files: ApiFile[];
@@ -8,6 +9,7 @@ interface FilePreviewProps {
 }
 
 export function FilePreview({ files, onRemove }: FilePreviewProps) {
+  useDownloadToken();
   if (files.length === 0) return null;
 
   return (

@@ -33,6 +33,7 @@ steps:
       - '--set-env-vars=NODE_ENV=production'
       - '--set-env-vars=RUN_SEED=${_RUN_SEED}'
       - '--set-env-vars=GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID}'
+      - '--set-env-vars=CORS_ORIGIN=${_CORS_ORIGIN}'
       - '--timeout=3600'
       - '--session-affinity'
       - '--min-instances=1'
@@ -62,6 +63,7 @@ substitutions:
   _DATABASE_URL: ''
   _JWT_SECRET: ''
   _GOOGLE_CLIENT_ID: ''
+  _CORS_ORIGIN: ''
 
 options:
   logging: CLOUD_LOGGING_ONLY

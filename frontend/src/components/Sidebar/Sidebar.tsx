@@ -141,10 +141,10 @@ export function Sidebar() {
   return (
     <div className="flex h-full">
       {/* Nav Rail - 70px wide, darker purple */}
-      <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
+      <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(2.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
         <button className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden hover:rounded-xl transition-all">
-          <img src="/favicon-192.png" alt="Clack" className="h-full w-full object-cover" />
+          <img src="/clack-logo.png" alt="Clack" className="h-full w-full object-cover" />
         </button>
 
         {/* Nav Items - 52x68px each with icon + label */}

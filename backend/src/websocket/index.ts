@@ -95,7 +95,11 @@ async function getSharedUsers(userId: number): Promise<number[]> {
 export function initializeWebSocket(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173'),
+      origin: (() => {
+        const raw = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173');
+        if (!raw) return false;
+        return raw.includes(',') ? raw.split(',').map(s => s.trim()) : raw;
+      })(),
       methods: ['GET', 'POST'],
     },
     cookie: {

@@ -34,6 +34,7 @@ import { HuddleSystemMessage } from '@/components/Huddle/HuddleInvite';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { markDMUnread, pinDM, unpinDM, getPinnedDMs, getFileUrl, getAuthFileUrl } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
+import { useDownloadToken } from '@/hooks/useDownloadToken';
 import type { DMMessage } from '@/stores/useDMStore';
 
 interface DMConversationProps {
@@ -52,6 +53,7 @@ function formatDateSeparator(date: Date): string {
 const EMPTY_MESSAGES: DMMessage[] = [];
 
 export function DMConversation({ userId, userName, userAvatar }: DMConversationProps) {
+  useDownloadToken();
   const messages = useDMStore((s) => s.messages[userId]) ?? EMPTY_MESSAGES;
   const isLoading = useDMStore((s) => s.isLoading);
   const loadError = useDMStore((s) => s.loadError);

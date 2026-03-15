@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import * as api from '@/lib/api';
 import type { Channel, DirectMessage } from '@/lib/types';
+import { getCachedChannels, cacheChannels, getCachedDmConversations, cacheDmConversations } from '@/lib/cache';
 
 function getStarredKey(): string {
   try {
@@ -70,8 +71,22 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   loadError: null,
 
   fetchDirectMessages: async () => {
+    // Stale-while-revalidate: show cached DMs instantly, then refresh
+    const cached = await getCachedDmConversations();
+    if (cached && cached.length > 0 && get().directMessages.length === 0) {
+      const dms: DirectMessage[] = cached.filter((c: any) => c?.otherUser).map((c: any) => ({
+        id: c.otherUser.id,
+        userId: c.otherUser.id,
+        userName: c.otherUser.name,
+        userAvatar: c.otherUser.avatar || '',
+        userStatus: (c.otherUser.status as DirectMessage['userStatus']) || 'offline',
+        unreadCount: c.unreadCount,
+      }));
+      set({ directMessages: dms });
+    }
     try {
       const conversations = await api.getDirectMessages();
+      cacheDmConversations(conversations);
       const dms: DirectMessage[] = conversations.filter((c) => c?.otherUser).map((c) => ({
         id: c.otherUser.id,
         userId: c.otherUser.id,
@@ -88,9 +103,26 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
 
   fetchChannels: async () => {
     set({ isLoading: true, loadError: null });
+    const starred = loadStarred();
+
+    // Stale-while-revalidate: show cached channels instantly, then refresh
+    const cached = await getCachedChannels();
+    if (cached && cached.length > 0 && get().channels.length === 0) {
+      const channels: Channel[] = cached.map((ch: any) => ({
+        id: ch.id,
+        name: ch.name,
+        isPrivate: ch.isPrivate,
+        memberCount: ch._count?.members ?? 0,
+        unreadCount: ch.unreadCount ?? 0,
+        isMember: ch.isMember ?? true,
+        isStarred: starred.has(ch.id),
+      }));
+      set({ channels, isLoading: false });
+    }
+
     try {
-      const starred = loadStarred();
       const apiChannels = await api.getChannels();
+      cacheChannels(apiChannels);
       const channels: Channel[] = apiChannels.map((ch) => ({
         id: ch.id,
         name: ch.name,

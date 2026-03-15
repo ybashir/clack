@@ -5,8 +5,10 @@ import { getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type Ap
 import { formatBytes, FileIcon } from '@/lib/fileUtils';
 import { ImageLightbox } from './ImageLightbox';
 import { useMobileStore } from '@/stores/useMobileStore';
+import { useDownloadToken } from '@/hooks/useDownloadToken';
 
 export function FilesPage() {
+  useDownloadToken();
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);

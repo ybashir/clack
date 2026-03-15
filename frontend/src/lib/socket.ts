@@ -12,7 +12,7 @@ export function connectSocket(): Socket | null {
   const token = localStorage.getItem('token');
   if (!token) return null;
 
-  socket = io({
+  socket = io(import.meta.env.VITE_API_URL || undefined, {
     auth: (cb) => { cb({ token: localStorage.getItem('token') }); },
     transports: ['websocket', 'polling'],
   });

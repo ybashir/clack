@@ -34,7 +34,7 @@ app.use(helmet({
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       'script-src': ["'self'", "'unsafe-inline'", 'https://accounts.google.com'],
-      'img-src': ["'self'", 'blob:', 'data:', 'https://*.googleusercontent.com', ...(process.env.NODE_ENV !== 'production' ? ['https://randomuser.me'] : []), ...(process.env.GCS_BUCKET_NAME ? [`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`] : [])],
+      'img-src': ["'self'", 'blob:', 'data:', 'https://*.googleusercontent.com', 'https://*.slack-edge.com', 'https://secure.gravatar.com', ...(process.env.NODE_ENV !== 'production' ? ['https://randomuser.me'] : []), ...(process.env.GCS_BUCKET_NAME ? [`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`] : [])],
       'connect-src': ["'self'", 'wss:', 'ws:', 'https://accounts.google.com', 'https://oauth2.googleapis.com'],
       'frame-src': ['https://accounts.google.com'],
       'media-src': ["'self'", 'blob:', 'https://storage.googleapis.com'],
@@ -44,8 +44,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: 'credentialless' as any,
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
 }));
-const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173');
-app.use(cors({ origin: corsOrigin as string | boolean }));
+const rawCorsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173');
+const corsOrigin = rawCorsOrigin ? (rawCorsOrigin.includes(',') ? rawCorsOrigin.split(',').map(s => s.trim()) : rawCorsOrigin) : false;
+app.use(cors({ origin: corsOrigin as string | string[] | boolean }));
 app.use(express.json({ limit: '100kb' }));
 
 // Rate limiting (skip in test environment)

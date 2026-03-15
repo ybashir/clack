@@ -16,6 +16,7 @@ import { useMessageHover } from '@/hooks/useMessageHover';
 import { useMessageEdit } from '@/hooks/useMessageEdit';
 import type { Message as MessageType } from '@/lib/types';
 import { getAuthFileUrl, getFileUrl, getUsers, markChannelUnread } from '@/lib/api';
+import { useDownloadToken } from '@/hooks/useDownloadToken';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { ImageLightbox } from './ImageLightbox';
 import { MessageToolbar } from './MessageToolbar';
@@ -41,6 +42,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState<string>('');
+  useDownloadToken(); // Re-render when download token becomes available
   const { addReaction, removeReaction, editMessage, deleteMessage } = useMessageStore();
   const currentUser = useAuthStore((s) => s.user);
   const { openProfile } = useProfileStore();

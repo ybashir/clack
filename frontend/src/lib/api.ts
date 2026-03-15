@@ -1,9 +1,24 @@
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
 /**
  * Manages a short-lived download token for file URLs.
  * Uses a scoped JWT (5min expiry) instead of the full auth token to limit exposure.
  */
 let _downloadToken: string | null = null;
 let _downloadTokenExpires = 0;
+let _tokenVersion = 0;
+const _tokenListeners = new Set<() => void>();
+
+/** Subscribe to download token changes (returns unsubscribe function) */
+export function onDownloadTokenChange(listener: () => void): () => void {
+  _tokenListeners.add(listener);
+  return () => { _tokenListeners.delete(listener); };
+}
+
+/** Current token version — changes when a new download token is obtained */
+export function getDownloadTokenVersion(): number {
+  return _tokenVersion;
+}
 
 export async function refreshDownloadToken(): Promise<string | null> {
   const now = Date.now();
@@ -13,7 +28,7 @@ export async function refreshDownloadToken(): Promise<string | null> {
   if (!authToken) return null;
 
   try {
-    const res = await fetch('/files/download-token', {
+    const res = await fetch(`${BASE_URL}/files/download-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,6 +39,8 @@ export async function refreshDownloadToken(): Promise<string | null> {
     const data = await res.json();
     _downloadToken = data.token;
     _downloadTokenExpires = now + 4 * 60 * 1000; // refresh 1 min before expiry
+    _tokenVersion++;
+    _tokenListeners.forEach(fn => fn());
     return _downloadToken;
   } catch {
     return null;
@@ -57,7 +74,7 @@ if (localStorage.getItem('token')) {
 export function getAuthFileUrl(url: string, { download = false }: { download?: boolean } = {}): string {
   if (!url) return url;
   // Only append token to our own download endpoints, not external URLs (GCS signed URLs)
-  if (url.startsWith('/files/') && url.includes('/download')) {
+  if ((url.startsWith('/files/') || url.startsWith(`${BASE_URL}/files/`)) && url.includes('/download')) {
     let result = url;
     if (download) {
       const sep1 = result.includes('?') ? '&' : '?';
@@ -82,7 +99,7 @@ export function getAuthFileUrl(url: string, { download = false }: { download?: b
  * avoiding GCS signed URL expiration issues (30-min TTL).
  */
 export function getFileUrl(fileId: number): string {
-  return getAuthFileUrl(`/files/${fileId}/download`);
+  return getAuthFileUrl(`${BASE_URL}/files/${fileId}/download`);
 }
 
 /** Clear cached download token and stop refresh interval (call on logout) */
@@ -105,7 +122,7 @@ class ApiError extends Error {
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem('token');
 
-  const res = await fetch(endpoint, {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -387,7 +404,7 @@ export async function uploadFile(file: File): Promise<ApiFile> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch('/files', {
+  const res = await fetch(`${BASE_URL}/files`, {
     method: 'POST',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -441,7 +458,7 @@ export async function uploadAvatar(file: Blob): Promise<UserProfile> {
   const formData = new FormData();
   formData.append('avatar', file);
 
-  const res = await fetch('/users/me/avatar', {
+  const res = await fetch(`${BASE_URL}/users/me/avatar`, {
     method: 'POST',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -5,6 +5,7 @@ import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, refreshDownl
 import { ImageLightbox } from './ImageLightbox';
 import { PanelHeader } from './PanelHeader';
 import { formatBytes, FileIcon } from '@/lib/fileUtils';
+import { useDownloadToken } from '@/hooks/useDownloadToken';
 
 interface FilesPanelProps {
   channelId?: number;
@@ -14,6 +15,7 @@ interface FilesPanelProps {
 
 
 export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
+  useDownloadToken();
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
