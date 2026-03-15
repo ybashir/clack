@@ -13,7 +13,7 @@ test.describe('Authentication', () => {
   });
 
   test('user can login with email and password', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     // Should be on the main app with the sidebar visible
     await expect(page.getByTestId('sidebar')).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Authentication', () => {
 
   test('login shows error message on invalid credentials', async ({ page }) => {
     await page.goto('/login');
-    await page.getByPlaceholder('name@work-email.com').fill('alice@slawk.dev');
+    await page.getByPlaceholder('name@work-email.com').fill('alice@clack.dev');
     await page.getByPlaceholder('Password').fill('wrongpassword999');
     await page.getByRole('button', { name: /sign in with email/i }).click();
 
@@ -53,8 +53,8 @@ test.describe('Authentication', () => {
     const email = uniqueEmail();
     await register(page, 'Login Tester', email, TEST_PASSWORD);
 
-    // The Slawk workspace header should be visible
-    await expect(page.locator('text=Slawk')).toBeVisible();
+    // The Clack workspace header should be visible
+    await expect(page.locator('text=Clack')).toBeVisible();
 
     // Sidebar channel list should be visible
     await expect(page.getByTestId('sidebar')).toBeVisible();

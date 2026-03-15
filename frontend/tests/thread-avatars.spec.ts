@@ -4,7 +4,7 @@ import { login, clickChannel , TEST_PASSWORD } from './helpers';
 test.describe('Bug fix: Thread panel avatars', () => {
   test('thread panel shows profile photo img elements (not just initials)', async ({ page }) => {
     // Log in as the seeded user who has existing threaded messages
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     // Navigate to #engineering which has seeded thread replies
     // Seeded users in engineering have randomuser.me avatars, so their threads will have img elements

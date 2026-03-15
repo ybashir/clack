@@ -3,7 +3,7 @@ import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './help
 
 test.describe('Composer draft isolation', () => {
   test('switching channels clears the message composer (#78)', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

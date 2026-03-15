@@ -3,7 +3,7 @@ import { login , TEST_PASSWORD } from './helpers';
 
 test.describe('Files page', () => {
   test('Files nav icon navigates to full-page files view', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     // Click the Files nav item in the left rail
     await page.getByTestId('nav-item-files').click();

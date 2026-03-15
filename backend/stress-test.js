@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Slawk Backend Latency & Stress Test
+ * Clack Backend Latency & Stress Test
  * Tests all major endpoints for response time and throughput at 100 req/s
  */
 
@@ -15,7 +15,7 @@ async function getToken() {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }),
+    body: JSON.stringify({ email: 'alice@clack.dev', password: SEED_PASSWORD }),
   });
   const data = await res.json();
   return data.token;
@@ -133,7 +133,7 @@ async function stressTest(name, url, options, token, rps = 100, durationSec = 10
 
 async function main() {
   console.log('='.repeat(80));
-  console.log('  SLAWK BACKEND LATENCY & STRESS TEST');
+  console.log('  CLACK BACKEND LATENCY & STRESS TEST');
   console.log('='.repeat(80));
 
   const token = await getToken();
@@ -180,7 +180,7 @@ async function main() {
 
   const endpoints = [
     // Auth
-    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }) }],
+    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@clack.dev', password: SEED_PASSWORD }) }],
 
     // Users
     ['GET /users/me', `${BASE_URL}/users/me`, {}],
@@ -281,7 +281,7 @@ async function main() {
     ['GET /channels/:id/messages', `${BASE_URL}/channels/${channelId}/messages`, {}],
     ['GET /dms', `${BASE_URL}/dms`, {}],
     ['GET /search?q=cache', `${BASE_URL}/search?q=cache`, {}],
-    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@slawk.dev', password: SEED_PASSWORD }) }],
+    ['POST /auth/login', `${BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'alice@clack.dev', password: SEED_PASSWORD }) }],
   ];
 
   const stressResults = [];

@@ -3,7 +3,7 @@ import { login, clickChannel, sendMessage, waitForMessage, waitForChannelReady ,
 
 test.describe('Mention click opens profile', () => {
   test('clicking an @mention of a real user opens their profile popup', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

@@ -6,8 +6,8 @@ import { login , TEST_PASSWORD } from './helpers';
 test.describe.configure({ mode: 'serial' });
 
 // Use seed users to avoid registration rate limits.
-const USER_A = { email: 'bob@slawk.dev', password: TEST_PASSWORD, name: 'Bob Martinez' };
-const USER_B = { email: 'carol@slawk.dev', password: TEST_PASSWORD, name: 'Carol Smith' };
+const USER_A = { email: 'bob@clack.dev', password: TEST_PASSWORD, name: 'Bob Martinez' };
+const USER_B = { email: 'carol@clack.dev', password: TEST_PASSWORD, name: 'Carol Smith' };
 
 /**
  * Get the current user's ID and find the other user's ID from the users API.

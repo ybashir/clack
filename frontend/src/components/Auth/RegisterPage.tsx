@@ -54,8 +54,8 @@ export function RegisterPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <img src="/favicon-192.png" alt="Slawk" className="h-12 w-12 rounded-lg" />
-          <span className="text-3xl font-bold text-slack-primary">slawk</span>
+          <img src="/favicon-192.png" alt="Clack" className="h-12 w-12 rounded-lg" />
+          <span className="text-3xl font-bold text-slack-primary">clack</span>
         </div>
         <h1 className="text-4xl font-bold text-slack-primary">Create your account</h1>
         <p className="mt-2 text-gray-600">

@@ -159,12 +159,12 @@ body {
 }
 
 /* Quill editor overrides for Slack-style composer */
-.slawk-editor .ql-snow {
+.clack-editor .ql-snow {
   border: none !important;
   font-family: inherit;
 }
 
-.slawk-editor .ql-editor {
+.clack-editor .ql-editor {
   padding: 8px 12px;
   font-size: 15px;
   line-height: 22px;
@@ -174,34 +174,34 @@ body {
   overflow-y: auto;
 }
 
-.slawk-editor .ql-editor.ql-blank::before {
+.clack-editor .ql-editor.ql-blank::before {
   color: var(--color-slack-secondary);
   font-style: normal;
   left: 12px;
   right: 12px;
 }
 
-.slawk-editor .ql-container {
+.clack-editor .ql-container {
   font-family: inherit;
   font-size: inherit;
 }
 
-.slawk-editor .ql-editor p {
+.clack-editor .ql-editor p {
   margin: 0;
 }
 
-.slawk-editor .ql-editor strong {
+.clack-editor .ql-editor strong {
   font-weight: 700;
 }
 
-.slawk-editor .ql-editor blockquote {
+.clack-editor .ql-editor blockquote {
   border-left: 4px solid var(--color-slack-border);
   padding-left: 12px;
   margin: 4px 0;
 }
 
-.slawk-editor .ql-editor pre.ql-syntax,
-.slawk-editor .ql-editor .ql-code-block-container {
+.clack-editor .ql-editor pre.ql-syntax,
+.clack-editor .ql-editor .ql-code-block-container {
   background: var(--color-slack-code-bg) !important;
   color: var(--color-slack-primary) !important;
   border: 1px solid var(--color-slack-border);
@@ -212,7 +212,7 @@ body {
   margin: 4px 0;
 }
 
-.slawk-editor .ql-editor code {
+.clack-editor .ql-editor code {
   background: var(--color-slack-code-bg);
   border: 1px solid var(--color-slack-border);
   border-radius: 3px;
@@ -222,12 +222,12 @@ body {
   color: var(--color-slack-code-inline);
 }
 
-.slawk-editor .ql-editor a {
+.clack-editor .ql-editor a {
   color: var(--color-slack-link);
   text-decoration: none;
 }
 
-.slawk-editor .ql-editor a:hover {
+.clack-editor .ql-editor a:hover {
   text-decoration: underline;
 }
 

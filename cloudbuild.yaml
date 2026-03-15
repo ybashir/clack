@@ -52,7 +52,7 @@ steps:
       - '--region=${_REGION}'
 
 substitutions:
-  _SERVICE: slawk
+  _SERVICE: clack
   _REGION: us-central1
   _IMAGE: ''
   _CLOUD_SQL: ''

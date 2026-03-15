@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { login, register, uniqueEmail , TEST_PASSWORD } from './helpers';
 
 async function loginAsAdmin(page: Page) {
-  await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+  await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
   // Wait for channels to fully load in the sidebar (indicates app is stable)
   await expect(

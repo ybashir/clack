@@ -3,7 +3,7 @@ import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './help
 
 test.describe('Sidebar channel sorting', () => {
   test('channels are sorted alphabetically in the sidebar (#85)', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

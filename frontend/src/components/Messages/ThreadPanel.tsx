@@ -370,7 +370,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         {editor.uploadError && (
           <p className="mb-2 text-xs text-slack-error">{editor.uploadError}</p>
         )}
-        <div data-testid={`${testPrefix}-reply-input`} className="slawk-editor rounded-[8px] border border-slack-border-light">
+        <div data-testid={`${testPrefix}-reply-input`} className="clack-editor rounded-[8px] border border-slack-border-light">
           <FormatToolbar onApplyFormat={editor.applyFormat} />
           <FilePreview files={editor.pendingFiles} onRemove={editor.removePendingFile} />
 

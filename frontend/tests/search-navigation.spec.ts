@@ -4,7 +4,7 @@ import { login, clickChannel , TEST_PASSWORD } from './helpers';
 test.describe('Search result navigation', () => {
   test('clicking a search result navigates to the channel and closes the dropdown', async ({ page }) => {
     // Use the seeded user who has access to all channels with seed data
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     // Start on #general channel
     await clickChannel(page, 'general');
@@ -61,7 +61,7 @@ test.describe('Search result navigation', () => {
   });
 
   test('search dropdown closes and input clears after clicking a result', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     await clickChannel(page, 'general');
     await expect(page.locator('.ql-editor')).toBeVisible();

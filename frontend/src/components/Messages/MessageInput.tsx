@@ -150,7 +150,7 @@ export function MessageInput({ placeholder, onSend, sendError, clearSendError, c
 
   return (
     <div className="relative px-5 pb-6 pt-4 bg-white">
-      <div className="slawk-editor rounded-[8px] border border-slack-border-light">
+      <div className="clack-editor rounded-[8px] border border-slack-border-light">
         <FormatToolbar onApplyFormat={editor.applyFormat} />
         <FilePreview files={editor.pendingFiles} onRemove={editor.removePendingFile} />
 

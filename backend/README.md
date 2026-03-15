@@ -1,6 +1,6 @@
-# Slawk Backend
+# Clack Backend
 
-Backend API for Slawk - a self-hosted Slack alternative.
+Backend API for Clack - a self-hosted Slack alternative.
 
 ## Tech Stack
 

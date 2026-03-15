@@ -14,7 +14,7 @@ if (!SEED_PASSWORD || !DEMO_PASSWORD) {
 const USERS = [
   {
     name: 'Nathan Cavaglione',
-    email: 'alice@slawk.dev',
+    email: 'alice@clack.dev',
     password: SEED_PASSWORD,
     bio: 'Frontend lead • loves React + TypeScript • coffee → code',
     status: 'offline',
@@ -22,7 +22,7 @@ const USERS = [
   },
   {
     name: 'Bob Martinez',
-    email: 'bob@slawk.dev',
+    email: 'bob@clack.dev',
     password: SEED_PASSWORD,
     bio: 'Backend engineer • Rust & Go enthusiast • building the future one API at a time',
     status: 'offline',
@@ -30,7 +30,7 @@ const USERS = [
   },
   {
     name: 'Carol Smith',
-    email: 'carol@slawk.dev',
+    email: 'carol@clack.dev',
     password: SEED_PASSWORD,
     bio: 'Product designer • she/her • obsessed with design systems and user delight',
     status: 'offline',
@@ -38,7 +38,7 @@ const USERS = [
   },
   {
     name: 'Dave Kim',
-    email: 'dave@slawk.dev',
+    email: 'dave@clack.dev',
     password: SEED_PASSWORD,
     bio: 'DevOps & infra nerd • k8s wrangler • if it runs, I can break it',
     status: 'offline',
@@ -46,7 +46,7 @@ const USERS = [
   },
   {
     name: 'Eve Johnson',
-    email: 'eve@slawk.dev',
+    email: 'eve@clack.dev',
     password: SEED_PASSWORD,
     bio: 'QA lead — professional bug hunter 🐛 • accessibility advocate',
     status: 'offline',
@@ -54,7 +54,7 @@ const USERS = [
   },
   {
     name: 'Frank Lee',
-    email: 'frank@slawk.dev',
+    email: 'frank@clack.dev',
     password: SEED_PASSWORD,
     bio: "Full-stack + open source contributor • co-creator of 3 npm packages you've definitely used",
     status: 'offline',
@@ -62,7 +62,7 @@ const USERS = [
   },
   {
     name: 'Grace Park',
-    email: 'grace@slawk.dev',
+    email: 'grace@clack.dev',
     password: SEED_PASSWORD,
     bio: 'ML engineer • PhD in NLP • turning research papers into production code',
     status: 'offline',
@@ -70,15 +70,15 @@ const USERS = [
   },
   {
     name: 'Hank Torres',
-    email: 'hank@slawk.dev',
+    email: 'hank@clack.dev',
     password: SEED_PASSWORD,
-    bio: 'CEO & co-founder @Slawk • prev eng @ Stripe & Figma • building AI tools for devs',
+    bio: 'CEO & co-founder @Clack • prev eng @ Stripe & Figma • building AI tools for devs',
     status: 'offline',
     avatar: '/avatars/hank.jpg',
   },
   {
     name: 'Iris Chen',
-    email: 'iris@slawk.dev',
+    email: 'iris@clack.dev',
     password: SEED_PASSWORD,
     bio: 'AI research lead • context windows, reasoning, and all the good stuff in between',
     status: 'offline',
@@ -86,7 +86,7 @@ const USERS = [
   },
   {
     name: 'Jack Wilson',
-    email: 'jack@slawk.dev',
+    email: 'jack@clack.dev',
     password: SEED_PASSWORD,
     bio: 'Product manager • previously @ Linear, Notion • obsessed with developer experience',
     status: 'offline',
@@ -94,9 +94,9 @@ const USERS = [
   },
   {
     name: 'Demo User',
-    email: 'demo@slawk.dev',
+    email: 'demo@clack.dev',
     password: DEMO_PASSWORD,
-    bio: 'Demo account — explore Slawk freely!',
+    bio: 'Demo account — explore Clack freely!',
     status: 'offline',
     avatar: '/avatars/demo.jpg',
   },
@@ -134,7 +134,7 @@ const MESSAGES: Record<string, MsgTuple[]> = {
     [1, "Yes! I used it for the cache layer.\n\nKey thing I noticed: if you ask it to *reason about performance characteristics* before writing code, the output quality jumps significantly. Also the `code_execution` tool integration is a game changer", 2875],
     [8, "The reasoning trace is super helpful for debugging complex prompts — you can see exactly *why* it made a particular architectural choice", 2870],
     [5, "The token cost though 😅 watching our API bill climb in real-time lol", 2865],
-    [6, "That's why we need the [semantic caching layer](https://github.com/slawk/semantic-cache) Bob's building", 2860],
+    [6, "That's why we need the [semantic caching layer](https://github.com/clack/semantic-cache) Bob's building", 2860],
     [1, "Exactly, semantic caching should cut costs **60-70%** for repeated queries. The key insight is using cosine similarity on embeddings rather than exact string matching", 2855],
     [9, "Do we have a timeline on that? Several customers are asking about cost predictability", 2850],
     [1, "Targeting **end of month**. Nathan, do you want to pair on the frontend cost dashboard?", 2845],
@@ -244,7 +244,7 @@ const MESSAGES: Record<string, MsgTuple[]> = {
     [2, "I'll design the survey to be concise — max 5 questions. Completion rate tanks after 5", 705],
   ],
   design: [
-    [2, "**Design system v3 is live in Figma!** 🎨\n\nBiggest update since we launched:\n- New token system (spacing, typography, color)\n- Full dark mode support  \n- 40 new component variants\n- `@slawk/design-tokens` npm package for devs\n\n[Figma link →](https://figma.com/slawk-design-system)", 7200],
+    [2, "**Design system v3 is live in Figma!** 🎨\n\nBiggest update since we launched:\n- New token system (spacing, typography, color)\n- Full dark mode support  \n- 40 new component variants\n- `@clack/design-tokens` npm package for devs\n\n[Figma link →](https://figma.com/clack-design-system)", 7200],
     [0, "The dark mode is SO polished. The syntax highlighting palette is *chef's kiss* 👨‍🍳", 7190],
     [7, "This is exactly the quality bar we need for enterprise customers. Well done Carol!", 7185],
     [5, "Already implementing — the token system is a **massive** DX improvement. No more hardcoded hex values in the codebase 🙏", 7180],
@@ -279,10 +279,10 @@ const MESSAGES: Record<string, MsgTuple[]> = {
     [1, "Great write-up Dave, added to the runbook with the dashboard link", 1425],
   ],
   announcements: [
-    [7, "🎉 Welcome to Slawk — the AI coding assistant built by developers, for developers. This channel is for company-wide updates.", 20160],
+    [7, "🎉 Welcome to Clack — the AI coding assistant built by developers, for developers. This channel is for company-wide updates.", 20160],
     [7, "We just hit **1,000 registered developers**! This community is growing faster than we ever imagined. Thank you all for being early adopters 🚀", 10080],
     [7, "All-hands this **Thursday at 3pm UTC**. Agenda: Q1 results, product roadmap, and a surprise announcement. Don't miss it!", 7200],
-    [7, "🚀 **v2.0 ships TODAY!** This is the biggest release in Slawk's history.\n\nNew in v2.0:\n- ⚡ Streaming completions\n- 📁 Multi-file context (up to 20 files)\n- 🔍 PR review automation (beta)\n- 🏎️ 3x faster inference engine\n\nDetails in #engineering. Thank you team!", 4320],
+    [7, "🚀 **v2.0 ships TODAY!** This is the biggest release in Clack's history.\n\nNew in v2.0:\n- ⚡ Streaming completions\n- 📁 Multi-file context (up to 20 files)\n- 🔍 PR review automation (beta)\n- 🏎️ 3x faster inference engine\n\nDetails in #engineering. Thank you team!", 4320],
     [7, "We've been named one of **YC's 'Top 10 AI Dev Tools' for 2025** 🏆\n\nFull list in TechCrunch. Huge validation for the whole team.", 2880],
     [7, "Reminder: **security training** required for all team members by Friday. Link in your email. This is mandatory per our SOC 2 compliance.", 1440],
     [7, "📣 **We closed our Series A!** $18M led by Benchmark, with participation from Sequoia and several incredible angels.\n\nWe're going to use this to triple the team and ship the features you've been asking for. More details in all-hands.", 720],
@@ -314,7 +314,7 @@ const THREAD_REPLIES: Array<[string, number, number, string, number]> = [
   ['engineering', 0, 0, "Also consider: the embedding model version should be pinned in the cache key, otherwise a model upgrade silently invalidates your whole cache", 30],
   ['engineering', 0, 1, "Oh wow yes — adding `embedding_model_version` to the cache key now. That would have been a brutal prod incident 😬", 40],
   // engineering: context window strategy
-  ['engineering', 6, 5, "I prototyped AST-aware chunking with `tree-sitter` last week. The POC is at github.com/slawk/tree-sitter-poc (internal). Happy to walk you through it", 10],
+  ['engineering', 6, 5, "I prototyped AST-aware chunking with `tree-sitter` last week. The POC is at github.com/clack/tree-sitter-poc (internal). Happy to walk you through it", 10],
   ['engineering', 6, 0, "Please! That would save us days. Can we schedule a 30-min walkthrough?", 15],
   ['engineering', 6, 5, "Done — calendar invite sent for tomorrow 2pm. I'll screen-share the code", 20],
   ['engineering', 6, 8, "Add me to that invite please — I want to see how the chunk overlap strategy handles multi-file dependencies", 25],
@@ -338,7 +338,7 @@ const THREAD_REPLIES: Array<[string, number, number, string, number]> = [
   ['random', 9, 0, "You'll thank me in a week. Trust the process 😎", 25],
   ['random', 9, 3, "...ok I like it. I hate that I like it. The AI history search alone is worth it", 10080],
   // design: v3 launch
-  ['design', 0, 5, "The `@slawk/design-tokens` package is *incredibly* clean. Used it this morning, zero friction", 30],
+  ['design', 0, 5, "The `@clack/design-tokens` package is *incredibly* clean. Used it this morning, zero friction", 30],
   ['design', 0, 9, "Can we use these tokens in the marketing site too? Or is it eng-only?", 35],
   ['design', 0, 2, "Designed to be universal! The tokens are just CSS custom properties, works anywhere 🎨", 40],
 ];
@@ -405,7 +405,7 @@ const DMS: Array<[number, number, string, number]> = [
   [7, 0, "Amazing. You're the best 🙏", 710],
   [0, 7, "Also noticed a subtle cursor flicker in the token stream — fixing that tonight, shouldn't block the demo", 700],
   // Nathan <-> Carol: design handoff
-  [2, 0, "Nathan, the new design tokens are ready in Figma. The `@slawk/design-tokens` package is published to the internal registry", 2880],
+  [2, 0, "Nathan, the new design tokens are ready in Figma. The `@clack/design-tokens` package is published to the internal registry", 2880],
   [0, 2, "Just installed it. This is SO much cleaner than hardcoded hex values everywhere 😍 The dark mode tokens especially look great", 2875],
   [2, 0, "Glad you like it! Let me know if any tokens are missing — I can add to v3.1 quickly", 2870],
   [0, 2, "Will do. One thing: there's no token for the code block background. Using #f0f0f0 for now but should be in the system", 2865],
@@ -436,7 +436,7 @@ async function main() {
     console.error('Refusing to seed in production. Set RUN_SEED=true to override.');
     process.exit(1);
   }
-  console.log('🌱 Seeding Slawk database...\n');
+  console.log('🌱 Seeding Clack database...\n');
 
   // Wipe existing data (FK order)
   await prisma.inviteLink.deleteMany();
@@ -603,8 +603,8 @@ async function main() {
   console.log('  Updated channel read states');
 
   console.log('\n✅ Seed complete!\n');
-  console.log(`Login as: alice@slawk.dev / ${SEED_PASSWORD} (Nathan Cavaglione)`);
-  console.log(`Demo:     demo@slawk.dev / ${DEMO_PASSWORD}`);
+  console.log(`Login as: alice@clack.dev / ${SEED_PASSWORD} (Nathan Cavaglione)`);
+  console.log(`Demo:     demo@clack.dev / ${DEMO_PASSWORD}`);
 }
 
 main()

@@ -1,7 +1,7 @@
 {
-  "name": "slawk-backend",
+  "name": "clack-backend",
   "version": "1.0.0",
-  "description": "Backend for Slawk - a self-hosted Slack alternative",
+  "description": "Backend for Clack - a self-hosted Slack alternative",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {

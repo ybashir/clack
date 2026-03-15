@@ -1,6 +1,6 @@
 
 
-# 🐛 Slawk Bug Report - UI/UX Issues
+# 🐛 Clack Bug Report - UI/UX Issues
 
 **Testing Date:** March 3, 2026  
 **Reference:** Compare all behaviors with actual Slack (slack.com)

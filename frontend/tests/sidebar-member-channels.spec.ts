@@ -5,7 +5,7 @@ test.describe('Sidebar member channels filter', () => {
   test('logged-in user only sees channels they are a member of', async ({ page }) => {
     // Log in as Nathan who is a member of all 8 public channels but not the
     // private "founders" channel (Hank, Iris, Jack only).
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     const sidebar = page.getByTestId('sidebar');
     await expect(sidebar).toBeVisible();

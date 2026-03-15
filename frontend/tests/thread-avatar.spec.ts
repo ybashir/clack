@@ -3,7 +3,7 @@ import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './help
 
 test.describe('Thread avatar indicator', () => {
   test('thread indicator shows real avatars, not "?" placeholders', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
     await clickChannel(page, 'random');
     await waitForChannelReady(page);
 

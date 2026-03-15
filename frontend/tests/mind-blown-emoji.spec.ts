@@ -3,7 +3,7 @@ import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './help
 
 test.describe('mind_blown shortcode rendering', () => {
   test('mind_blown reaction renders as emoji not text', async ({ page }) => {
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
     await clickChannel(page, 'general');
     await waitForChannelReady(page);
 

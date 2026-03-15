@@ -25,7 +25,7 @@ After creating a channel, there's no UI to invite/add members. Check how Slack h
 Channel creation has no option for public or private. Public channels should be browsable and joinable by anyone. Private channels should not appear in browse and require an invite.
 
 ## 9. Remove workspace dropdown menu (redundant)
-The "Slawk" dropdown at the top of the sidebar shows Profile and Sign Out, but these are already available from the avatar menu at the bottom left. Remove the dropdown — just show "Slawk" as plain text with no chevron/click behavior.
+The "Clack" dropdown at the top of the sidebar shows Profile and Sign Out, but these are already available from the avatar menu at the bottom left. Remove the dropdown — just show "Clack" as plain text with no chevron/click behavior.
 
 ## 10. Channel header member avatars — shape and alignment broken
 The small member avatars in the channel header have become round instead of square, and the first one is misaligned (slightly above the others). They used to look correct. Fix the shape back to rounded-square and fix vertical alignment.

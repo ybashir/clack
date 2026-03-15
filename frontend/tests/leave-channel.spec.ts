@@ -4,7 +4,7 @@ import { login, clickChannel, waitForChannelReady , TEST_PASSWORD } from './help
 test.describe('Leave channel', () => {
   test('leaving a channel marks it as non-member but keeps it in browse list (#81)', async ({ page }) => {
     // Use seed user who is a member of multiple channels
-    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+    await login(page, 'alice@clack.dev', TEST_PASSWORD);
 
     // Navigate to #random (has multiple members from seed)
     await clickChannel(page, 'random');

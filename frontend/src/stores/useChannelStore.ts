@@ -7,10 +7,10 @@ function getStarredKey(): string {
     const token = localStorage.getItem('token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.userId) return `slawk:starred_channels:${payload.userId}`;
+      if (payload.userId) return `clack:starred_channels:${payload.userId}`;
     }
   } catch { /* ignore */ }
-  return 'slawk:starred_channels';
+  return 'clack:starred_channels';
 }
 
 function loadStarred(): Set<number> {
