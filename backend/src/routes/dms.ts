@@ -70,6 +70,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     // Broadcast to both users so the DM appears in real-time
     const io = getIO();
     if (io && dm) {
+      const senderRoom = await io.in(`user:${fromUserId}`).fetchSockets();
+      const recipientRoom = fromUserId !== toUserId ? await io.in(`user:${toUserId}`).fetchSockets() : [];
+      console.log(`[DM] Emitting dm:new id=${dm.id} from=${fromUserId} to=${toUserId} senderSockets=${senderRoom.length} recipientSockets=${recipientRoom.length}`);
       io.to(`user:${fromUserId}`).emit('dm:new', dm);
       if (fromUserId !== toUserId) {
         io.to(`user:${toUserId}`).emit('dm:new', dm);
