@@ -67,6 +67,15 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       });
     });
 
+    // Broadcast to both users so the DM appears in real-time
+    const io = getIO();
+    if (io && dm) {
+      io.to(`user:${fromUserId}`).emit('dm:new', dm);
+      if (fromUserId !== toUserId) {
+        io.to(`user:${toUserId}`).emit('dm:new', dm);
+      }
+    }
+
     res.status(201).json(dm);
   } catch (error) {
     if (error instanceof z.ZodError) {
