@@ -20,6 +20,9 @@ declare global {
         setDmMessages: (key: string, messages: any[]) => Promise<void>;
         clear: () => Promise<void>;
       };
+      setBadgeCount: (count: number) => Promise<void>;
+      focusWindow: () => Promise<void>;
+      showNotification: (title: string, body: string, route?: string) => Promise<void>;
     };
   }
 }

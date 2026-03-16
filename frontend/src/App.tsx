@@ -6,6 +6,7 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { useDMStore } from '@/stores/useDMStore';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
+import { initNotifications, showNotification, setBadgeCount, plainText } from '@/lib/notifications';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
@@ -145,12 +146,24 @@ function DefaultRedirect() {
 }
 
 function AppShell() {
+  console.log('[AppShell] Mounted, token exists:', !!localStorage.getItem('token'));
   const fetchChannels = useChannelStore((s) => s.fetchChannels);
   const channels = useChannelStore((s) => s.channels);
+  const directMessages = useChannelStore((s) => s.directMessages);
   const joinedChannelsRef = useRef<Set<number>>(new Set());
 
   const fetchDirectMessages = useChannelStore((s) => s.fetchDirectMessages);
   const loadBookmarks = useBookmarkStore((s) => s.load);
+
+  // Init desktop notifications
+  useEffect(() => { initNotifications(); }, []);
+
+  // Update dock badge with total unread count
+  useEffect(() => {
+    const channelUnread = channels.reduce((sum, ch) => sum + ch.unreadCount, 0);
+    const dmUnread = directMessages.reduce((sum, dm) => sum + dm.unreadCount, 0);
+    setBadgeCount(channelUnread + dmUnread);
+  }, [channels, directMessages]);
 
   useEffect(() => {
     fetchChannels();
@@ -172,11 +185,19 @@ function AppShell() {
 
     const handleNewMessage = (msg: import('@/lib/api').ApiMessage) => {
       const { onMessageNew } = useMessageStore.getState();
-      const { activeChannelId, incrementUnread } = useChannelStore.getState();
+      const { activeChannelId, incrementUnread, channels } = useChannelStore.getState();
       onMessageNew(msg);
       // If the message is for a channel we're not viewing, increment unread
       if (msg.channelId !== activeChannelId) {
         incrementUnread(msg.channelId);
+        // Desktop notification
+        const channel = channels.find(ch => ch.id === msg.channelId);
+        const senderName = msg.user?.name || 'Someone';
+        showNotification({
+          title: channel ? `#${channel.name}` : 'New message',
+          body: `${senderName}: ${plainText(msg.content)}`,
+          route: `/c/${msg.channelId}`,
+        });
       }
     };
 
@@ -206,6 +227,12 @@ function AppShell() {
       }
       if (activeDMId !== otherUserId && !isSelfDM) {
         incrementDMUnread(otherUserId);
+        // Desktop notification
+        showNotification({
+          title: otherUser.name,
+          body: plainText(dm.content),
+          route: `/d/${otherUserId}`,
+        });
       }
       // Add message to DM store if conversation is loaded
       useDMStore.getState().addIncomingMessage(dm, currentUser.id);
@@ -380,11 +407,11 @@ function AppShell() {
     if (!socket) return;
 
     const joinChannels = () => {
-      for (const ch of channels) {
-        if (ch.isMember && !joinedChannelsRef.current.has(ch.id)) {
-          socket.emit('join:channel', ch.id);
-          joinedChannelsRef.current.add(ch.id);
-        }
+      const memberChannels = channels.filter(ch => ch.isMember && !joinedChannelsRef.current.has(ch.id));
+      console.log('[AppShell] Joining channels:', memberChannels.length, 'already joined:', joinedChannelsRef.current.size, 'socket connected:', socket.connected);
+      for (const ch of memberChannels) {
+        socket.emit('join:channel', ch.id);
+        joinedChannelsRef.current.add(ch.id);
       }
     };
 

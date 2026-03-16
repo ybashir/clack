@@ -9,7 +9,7 @@ export default defineConfig({
     sourcemap: false,
   },
   esbuild: {
-    drop: ['console', 'debugger'],
+    ...(process.env.VITE_KEEP_CONSOLE ? {} : { drop: ['console', 'debugger'] }),
   },
   resolve: {
     alias: {
