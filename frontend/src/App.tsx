@@ -220,12 +220,14 @@ function AppShell() {
       if (typeof dm.fromUser?.name !== 'string' || typeof dm.toUser?.name !== 'string') return;
       const isSelfDM = dm.fromUserId === currentUser.id && dm.toUserId === currentUser.id;
       const isFromMe = dm.fromUserId === currentUser.id;
+      // Skip if sent by us — the REST response already added it to the store.
+      // (WebSocket still delivers it for our other tabs/devices, but addIncomingMessage deduplicates by id.)
       const otherUser = isFromMe ? dm.toUser : dm.fromUser;
       const otherUserId = otherUser.id;
       if (!isSelfDM) {
         addOrUpdateDM(otherUserId, otherUser.name, otherUser.avatar ?? undefined);
       }
-      if (activeDMId !== otherUserId && !isSelfDM) {
+      if (!isFromMe && activeDMId !== otherUserId) {
         incrementDMUnread(otherUserId);
         // Desktop notification
         showNotification({
